@@ -9,8 +9,10 @@
     "lint": "eslint",
     "db:up": "docker-compose up -d",
     "db:down": "docker-compose down",
-    "db:reset": "docker-compose down -v && docker-compose up -d --wait && npx prisma migrate reset --force",
-    "db:seed": "npx tsx prisma/seed.ts"
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:reset": "docker-compose down -v && docker-compose up -d --wait && prisma migrate reset --force",
+    "db:seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",
