@@ -1,36 +1,53 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Domain Mapper — Tech Radar
 
-## Getting Started
+Dependency graph visualization for software systems, built with Next.js 15, React Flow, and Prisma.
 
-First, run the development server:
+## Prerequisites
+
+- [Node.js](https://nodejs.org/) 20+
+- [pnpm](https://pnpm.io/) 9+
+- [Docker](https://www.docker.com/) & Docker Compose
+
+## Quick Start
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+# 1. Install dependencies and configure environment
+pnpm install && cp .env.example .env
+
+# 2. Start PostgreSQL and run migrations
+pnpm db:up && npx prisma migrate dev
+
+# 3. Start the development server
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to see the app.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Database Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Script         | Description                                      |
+| -------------- | ------------------------------------------------ |
+| `pnpm db:up`   | Start PostgreSQL container in the background      |
+| `pnpm db:down` | Stop PostgreSQL container                         |
+| `pnpm db:reset`| Drop volume, restart container, and reset database|
+
+## Environment Variables
+
+Copy `.env.example` to `.env` and adjust values as needed:
+
+| Variable            | Description                          | Default                |
+| ------------------- | ------------------------------------ | ---------------------- |
+| `POSTGRES_USER`     | PostgreSQL user                      | `user`                 |
+| `POSTGRES_PASSWORD` | PostgreSQL password                  | `password`             |
+| `POSTGRES_DB`       | PostgreSQL database name             | `domain_mapper`        |
+| `POSTGRES_PORT`     | PostgreSQL host port                 | `5432`                 |
+| `DATABASE_URL`      | Prisma connection string             | matches Compose values |
+| `AUTH_SECRET`       | Auth.js secret                       | —                      |
+| `AUTH_GITHUB_ID`    | GitHub OAuth App ID                  | —                      |
+| `AUTH_GITHUB_SECRET`| GitHub OAuth App Secret              | —                      |
 
 ## Learn More
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- [Next.js Documentation](https://nextjs.org/docs)
+- [Prisma Documentation](https://www.prisma.io/docs)
+- [React Flow Documentation](https://reactflow.dev)
