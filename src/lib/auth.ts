@@ -18,10 +18,16 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        const email = credentials.email as string | undefined;
-        const password = credentials.password as string | undefined;
+        if (
+          typeof credentials.email !== "string" ||
+          typeof credentials.password !== "string" ||
+          !credentials.email ||
+          !credentials.password
+        ) {
+          return null;
+        }
 
-        if (!email || !password) return null;
+        const { email, password } = credentials;
 
         const user = await prisma.user.findUnique({
           where: { email },
