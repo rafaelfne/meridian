@@ -9,7 +9,9 @@
     "lint": "eslint",
     "db:up": "docker-compose up -d",
     "db:down": "docker-compose down",
+    "db:log": "docker-compose logs -f",
     "db:generate": "prisma generate",
+    "db:studio": "prisma studio",
     "db:migrate": "prisma migrate dev",
     "db:reset": "docker-compose down -v && docker-compose up -d --wait && prisma migrate reset --force",
     "db:seed": "tsx prisma/seed.ts"
