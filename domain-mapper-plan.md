@@ -8,16 +8,16 @@ description: >
   mutations, and comprehensive testing. Always keep the repo buildable, type-safe, and lint-clean.
 ---
 
-# Domain Mapper — Plano de Epics & Issues para GitHub Copilot Agent
+# Domain Mapper — Epics & Issues Plan for GitHub Copilot Agent
 
-**Projeto:** Domain Mapper (Next.js 15 + React Flow + Prisma 6.17.1 + PostgreSQL)
-**Objetivo:** Ferramenta para ingestão de inventários tecnológicos (JSON), persistência em Postgres e visualização de mapa de dependências entre domínios via React Flow.
+**Project:** Domain Mapper (Next.js 15 + React Flow + Prisma 6.17.1 + PostgreSQL)
+**Goal:** A tool for ingesting technology inventories (JSON), persisting data in Postgres, and visualizing a dependency map between domains via React Flow.
 
 ---
 
-## 1. Copilot Agent — Instruções Completas
+## 1. Copilot Agent — Full Instructions
 
-O bloco abaixo deve ser incluído no **corpo de cada issue** para que o Copilot Agent tenha contexto completo ao executar tarefas. Copie o conteúdo entre os delimitadores.
+The block below should be included in the **body of each issue** so the Copilot Agent has full context when executing tasks. Copy the content between the delimiters.
 
 ````markdown
 > [!NOTE]
@@ -230,66 +230,66 @@ O bloco abaixo deve ser incluído no **corpo de cada issue** para que o Copilot 
 
 ---
 
-## 2. Epics e Issues
+## 2. Epics and Issues
 
-### Epic 1 — Project Bootstrap & Infraestrutura
+### Epic 1 — Project Bootstrap & Infrastructure
 
-**Objetivo:** Scaffold do projeto, configuração de ferramentas, banco local, auth e CI mínimo.
+**Goal:** Project scaffold, tooling configuration, local database, auth, and minimal CI.
 
 ---
 
-#### Issue 1.1 — Scaffold do projeto Next.js 15 com dependências core
+#### Issue 1.1 — Scaffold Next.js 15 project with core dependencies
 
 **Labels:** `epic:bootstrap`, `priority:high`, `copilot-agent`
 
-**Descrição:**
+**Description:**
 
-Criar o projeto Next.js 15 com App Router, Turbopack, e todas as dependências. Seguir a estrutura de diretórios definida no Agent Instructions.
+Create the Next.js 15 project with App Router, Turbopack, and all dependencies. Follow the directory structure defined in the Agent Instructions.
 
 **Acceptance Criteria:**
-- [ ] Instalar dependências:
+- [ ] Install dependencies:
   - Core: `@xyflow/react`, `prisma@6.17.1`, `@prisma/client@6.17.1`, `zod`, `clsx`, `react-dropzone`, `lucide-react`
   - Auth: `next-auth@beta`, `@auth/prisma-adapter`
   - Layout: `dagre` (graph layout)
   - Dev: `vitest`, `@testing-library/react`, `@testing-library/jest-dom`, `msw`, `@vitejs/plugin-react`
-- [ ] Configurar shadcn/ui (`npx shadcn@latest init`) com componentes: `button`, `card`, `dialog`, `table`, `badge`, `tabs`, `toast`, `dropdown-menu`, `input`, `sheet`, `separator`
-- [ ] `tsconfig.json` com `strict: true`, `noUncheckedIndexedAccess: true`, path alias `@/*` → `src/*`
-- [ ] Criar toda a estrutura de pastas conforme Agent Instructions (incluindo `src/modules/`, `src/components/graph/`, `src/lib/`)
-- [ ] `src/types/css.d.ts` com declaração para CSS Modules
-- [ ] `src/lib/prisma.ts` com singleton pattern (usando `globalThis` para dev)
-- [ ] `src/lib/utils.ts` com função `cn()` (clsx + twMerge)
-- [ ] `.env.example` com todas as variáveis necessárias
-- [ ] `globals.css` com CSS custom properties para theme tokens (cores dos tipos de dependência, etc.)
-- [ ] Verificar que `npm run build` passa sem erros
+- [ ] Configure shadcn/ui (`npx shadcn@latest init`) with components: `button`, `card`, `dialog`, `table`, `badge`, `tabs`, `toast`, `dropdown-menu`, `input`, `sheet`, `separator`
+- [ ] `tsconfig.json` with `strict: true`, `noUncheckedIndexedAccess: true`, path alias `@/*` → `src/*`
+- [ ] Create the full folder structure per Agent Instructions (including `src/modules/`, `src/components/graph/`, `src/lib/`)
+- [ ] `src/types/css.d.ts` with CSS Modules declaration
+- [ ] `src/lib/prisma.ts` with singleton pattern (using `globalThis` for dev)
+- [ ] `src/lib/utils.ts` with `cn()` function (clsx + twMerge)
+- [ ] `.env.example` with all required variables
+- [ ] `globals.css` with CSS custom properties for theme tokens (dependency type colors, etc.)
+- [ ] Verify that `npm run build` passes without errors
 
 ---
 
-#### Issue 1.2 — Docker Compose para desenvolvimento local
+#### Issue 1.2 — Docker Compose for local development
 
 **Labels:** `epic:bootstrap`, `priority:high`, `copilot-agent`
 
-**Descrição:**
+**Description:**
 
-Criar `docker-compose.yml` para ambiente de desenvolvimento local.
+Create `docker-compose.yml` for the local development environment.
 
 **Acceptance Criteria:**
-- [ ] PostgreSQL 16 com volume persistente, porta 5432
-- [ ] Variáveis configuráveis via `.env`
-- [ ] Scripts npm: `db:up`, `db:down`, `db:reset` (drop + migrate + seed)
-- [ ] `README.md` com instruções de setup (3 comandos para rodar localmente)
-- [ ] Healthcheck configurado no container Postgres
+- [ ] PostgreSQL 16 with persistent volume, port 5432
+- [ ] Variables configurable via `.env`
+- [ ] npm scripts: `db:up`, `db:down`, `db:reset` (drop + migrate + seed)
+- [ ] `README.md` with setup instructions (3 commands to run locally)
+- [ ] Healthcheck configured on the Postgres container
 
 ---
 
-#### Issue 1.3 — Schema Prisma e migrations iniciais
+#### Issue 1.3 — Prisma schema and initial migrations
 
 **Labels:** `epic:bootstrap`, `priority:high`, `copilot-agent`
 
-**Descrição:**
+**Description:**
 
-Definir o schema Prisma completo para persistir dados de inventários tecnológicos e o grafo de dependências. Incluir models para Auth.js.
+Define the complete Prisma schema to persist technology inventory data and the dependency graph. Include Auth.js models.
 
-**Schema esperado:**
+**Expected schema:**
 
 ```prisma
 generator client {
@@ -536,249 +536,249 @@ enum UploadStatus {
 ```
 
 **Acceptance Criteria:**
-- [ ] Schema criado em `prisma/schema.prisma` com todos os models acima
-- [ ] `npx prisma migrate dev --name init` executado com sucesso
-- [ ] `npx prisma generate` sem erros
-- [ ] Seed em `prisma/seed.ts` com ao menos 1 domínio, 1 sistema, e dados de exemplo baseados no Grifo
-- [ ] Script `npm run db:seed` configurado no `package.json`
+- [ ] Schema created in `prisma/schema.prisma` with all models above
+- [ ] `npx prisma migrate dev --name init` executed successfully
+- [ ] `npx prisma generate` without errors
+- [ ] Seed in `prisma/seed.ts` with at least 1 domain, 1 system, and example data based on Grifo
+- [ ] `npm run db:seed` script configured in `package.json`
 
 ---
 
-#### Issue 1.4 — Configurar Auth.js v5 com GitHub + Credentials
+#### Issue 1.4 — Configure Auth.js v5 with GitHub + Credentials
 
 **Labels:** `epic:bootstrap`, `priority:high`, `copilot-agent`
 
-**Descrição:**
+**Description:**
 
-Configurar autenticação com Auth.js v5 (next-auth@beta) seguindo o padrão split config para compatibilidade com Edge Runtime.
+Configure authentication with Auth.js v5 (next-auth@beta) following the split config pattern for Edge Runtime compatibility.
 
 **Acceptance Criteria:**
-- [ ] `src/lib/auth.config.ts` — config edge-compatible (providers, pages, callbacks básicos, sem adapter)
-- [ ] `src/lib/auth.ts` — config completa com Prisma adapter, jwt/session callbacks
-- [ ] `src/app/api/auth/[...nextauth]/route.ts` — exportando `{ GET, POST }` dos handlers
-- [ ] `middleware.ts` na raiz — protegendo rotas `(dashboard)` usando `auth.config.ts`
-- [ ] Providers configurados: GitHub OAuth + Credentials (email/password com bcrypt)
-- [ ] Página de login em `src/app/(auth)/login/page.tsx` com form usando Server Action
-- [ ] `SessionProvider` wrapper em Client Component para `(dashboard)` layout
-- [ ] Variáveis: `AUTH_SECRET`, `AUTH_GITHUB_ID`, `AUTH_GITHUB_SECRET`
-- [ ] Tipos estendidos em `src/types/next-auth.d.ts` (session com `user.id`)
-- [ ] Rota `/` redireciona para `/dashboard` se autenticado, senão para `/login`
+- [ ] `src/lib/auth.config.ts` — edge-compatible config (providers, pages, basic callbacks, no adapter)
+- [ ] `src/lib/auth.ts` — full config with Prisma adapter, jwt/session callbacks
+- [ ] `src/app/api/auth/[...nextauth]/route.ts` — exporting `{ GET, POST }` from handlers
+- [ ] `middleware.ts` at root — protecting `(dashboard)` routes using `auth.config.ts`
+- [ ] Configured providers: GitHub OAuth + Credentials (email/password with bcrypt)
+- [ ] Login page at `src/app/(auth)/login/page.tsx` with form using Server Action
+- [ ] `SessionProvider` wrapper in Client Component for `(dashboard)` layout
+- [ ] Variables: `AUTH_SECRET`, `AUTH_GITHUB_ID`, `AUTH_GITHUB_SECRET`
+- [ ] Extended types in `src/types/next-auth.d.ts` (session with `user.id`)
+- [ ] Route `/` redirects to `/dashboard` if authenticated, otherwise to `/login`
 
 ---
 
-#### Issue 1.5 — Setup de testes (Vitest + RTL + MSW)
+#### Issue 1.5 — Testing setup (Vitest + RTL + MSW)
 
 **Labels:** `epic:bootstrap`, `priority:medium`, `copilot-agent`
 
-**Descrição:**
+**Description:**
 
-Configurar o stack de testes completo.
+Configure the complete testing stack.
 
 **Acceptance Criteria:**
-- [ ] `vitest.config.ts` com path aliases, setup files, environment `jsdom`
-- [ ] `vitest.setup.ts` com imports do `@testing-library/jest-dom`
-- [ ] MSW configurado com handlers de exemplo para API routes
-- [ ] Primeiro teste passando: teste de validação Zod em `src/modules/inventory/validators/`
-- [ ] Scripts npm: `test`, `test:watch`, `test:coverage`
+- [ ] `vitest.config.ts` with path aliases, setup files, environment `jsdom`
+- [ ] `vitest.setup.ts` with `@testing-library/jest-dom` imports
+- [ ] MSW configured with example handlers for API routes
+- [ ] First passing test: Zod validation test in `src/modules/inventory/validators/`
+- [ ] npm scripts: `test`, `test:watch`, `test:coverage`
 - [ ] GitHub Actions workflow `.github/workflows/ci.yml`: typecheck → lint → test → build
 
 ---
 
-### Epic 2 — Ingestão de Inventários (Upload & Parsing)
+### Epic 2 — Inventory Ingestion (Upload & Parsing)
 
-**Objetivo:** Receber JSON padronizado via upload, validar, processar e persistir.
+**Goal:** Receive standardized JSON via upload, validate, process, and persist.
 
 ---
 
-#### Issue 2.1 — Schema Zod de entrada e tipos do inventário
+#### Issue 2.1 — Zod input schema and inventory types
 
 **Labels:** `epic:ingestao`, `priority:high`, `copilot-agent`
 
-**Descrição:**
+**Description:**
 
-Criar os schemas Zod que definem o contrato JSON de entrada dos inventários em `src/modules/inventory/validators/`.
+Create the Zod schemas that define the JSON input contract for inventories in `src/modules/inventory/validators/`.
 
 **Acceptance Criteria:**
-- [ ] Schemas Zod em `src/modules/inventory/validators/inventory-schema.ts` (conforme padrão na seção de Agent Instructions)
-- [ ] Types inferidos exportados em `src/modules/inventory/types.ts`
-- [ ] Testes unitários cobrindo: JSON válido aceito, campos obrigatórios faltando, enums inválidos, slug com caracteres inválidos, array vazio rejeitado
-- [ ] `examples/grifo-inventory.json` com dados reais (ver seção 6 deste documento)
+- [ ] Zod schemas in `src/modules/inventory/validators/inventory-schema.ts` (following the pattern in the Agent Instructions section)
+- [ ] Inferred types exported in `src/modules/inventory/types.ts`
+- [ ] Unit tests covering: valid JSON accepted, missing required fields, invalid enums, slug with invalid characters, empty array rejected
+- [ ] `examples/grifo-inventory.json` with real data (see section 6 of this document)
 
 ---
 
-#### Issue 2.2 — Server Action de upload e persistência
+#### Issue 2.2 — Upload and persistence Server Action
 
 **Labels:** `epic:ingestao`, `priority:high`, `copilot-agent`
 
-**Descrição:**
+**Description:**
 
-Criar o Server Action que recebe o arquivo JSON, valida e persiste no banco.
+Create the Server Action that receives the JSON file, validates, and persists it to the database.
 
 **Acceptance Criteria:**
-- [ ] Server Action `uploadInventory` em `src/modules/inventory/actions/upload.ts`
-- [ ] Aceita `FormData` com campo `file` (JSON)
-- [ ] Valida com `InventoryPayloadSchema`
-- [ ] Para cada system: upsert Domain por nome, upsert System por slug, delete + create filhos em transaction
-- [ ] Salva JSON raw em `System.inventoryRaw`
-- [ ] Cria registro `InventoryUpload` com status tracking
-- [ ] Retorna `{ success, uploadId, systemsProcessed, errors? }` (never throws)
-- [ ] `revalidatePath("/dashboard")` e `revalidatePath("/graph")` após sucesso
-- [ ] Testes unitários com Prisma mockado via injeção
+- [ ] Server Action `uploadInventory` in `src/modules/inventory/actions/upload.ts`
+- [ ] Accepts `FormData` with `file` field (JSON)
+- [ ] Validates with `InventoryPayloadSchema`
+- [ ] For each system: upsert Domain by name, upsert System by slug, delete + create children in transaction
+- [ ] Saves raw JSON in `System.inventoryRaw`
+- [ ] Creates `InventoryUpload` record with status tracking
+- [ ] Returns `{ success, uploadId, systemsProcessed, errors? }` (never throws)
+- [ ] `revalidatePath("/dashboard")` and `revalidatePath("/graph")` after success
+- [ ] Unit tests with Prisma mocked via injection
 
 ---
 
-#### Issue 2.3 — Página de Upload com Drag & Drop
+#### Issue 2.3 — Upload page with Drag & Drop
 
 **Labels:** `epic:ingestao`, `priority:medium`, `copilot-agent`
 
-**Descrição:**
+**Description:**
 
-Página `/upload` com interface de drag & drop. Dropzone é Client Component; page é Server Component.
+`/upload` page with drag & drop interface. Dropzone is a Client Component; page is a Server Component.
 
 **Acceptance Criteria:**
-- [ ] `src/app/(dashboard)/upload/page.tsx` — Server Component, busca uploads recentes via Prisma
-- [ ] `src/components/inventory/UploadDropzone.tsx` — Client Component com `react-dropzone`
-- [ ] `src/components/inventory/UploadDropzone.module.css` — estilos do dropzone (drag states, hover, idle, error)
-- [ ] Aceitar apenas `.json`, max 5MB
-- [ ] Preview do JSON antes do envio (collapsible `<pre>`)
-- [ ] Validação client-side com Zod antes do envio, erros inline
-- [ ] Chama Server Action `uploadInventory` via `useActionState`
-- [ ] Estados visuais: idle → validating → uploading → success/error
-- [ ] Feedback de sucesso: quantos sistemas processados, link para o grafo
-- [ ] Tabela de uploads recentes (últimos 10) com status badges
+- [ ] `src/app/(dashboard)/upload/page.tsx` — Server Component, fetches recent uploads via Prisma
+- [ ] `src/components/inventory/UploadDropzone.tsx` — Client Component with `react-dropzone`
+- [ ] `src/components/inventory/UploadDropzone.module.css` — dropzone styles (drag states, hover, idle, error)
+- [ ] Accept only `.json`, max 5MB
+- [ ] JSON preview before submission (collapsible `<pre>`)
+- [ ] Client-side validation with Zod before submission, inline errors
+- [ ] Calls Server Action `uploadInventory` via `useActionState`
+- [ ] Visual states: idle → validating → uploading → success/error
+- [ ] Success feedback: how many systems processed, link to the graph
+- [ ] Recent uploads table (last 10) with status badges
 
 ---
 
-#### Issue 2.4 — Route Handlers de consulta (sistemas, domínios, uploads)
+#### Issue 2.4 — Query Route Handlers (systems, domains, uploads)
 
 **Labels:** `epic:ingestao`, `priority:medium`, `copilot-agent`
 
-**Descrição:**
+**Description:**
 
-Criar Route Handlers para consultar dados persistidos. Consumidos pelo grafo e dashboard.
+Create Route Handlers to query persisted data. Consumed by the graph and dashboard.
 
 **Acceptance Criteria:**
-- [ ] `GET /api/systems` — lista com domínio, counts. Query: `?domain=X`, `?page=1&limit=20`
-- [ ] `GET /api/systems/[slug]` — detalhe completo, `?include=services,databases,integrations`
-- [ ] `GET /api/domains` — lista com count de sistemas
-- [ ] `GET /api/inventories/uploads` — uploads recentes
-- [ ] Query params validados com Zod
-- [ ] Retorno tipado com `NextResponse.json()`
-- [ ] Testes com Prisma mockado
+- [ ] `GET /api/systems` — list with domain, counts. Query: `?domain=X`, `?page=1&limit=20`
+- [ ] `GET /api/systems/[slug]` — full detail, `?include=services,databases,integrations`
+- [ ] `GET /api/domains` — list with system count
+- [ ] `GET /api/inventories/uploads` — recent uploads
+- [ ] Query params validated with Zod
+- [ ] Typed return with `NextResponse.json()`
+- [ ] Tests with mocked Prisma
 
 ---
 
-### Epic 3 — Motor de Inferência de Dependências
+### Epic 3 — Dependency Inference Engine
 
-**Objetivo:** Services puros com DI que processam dados e geram arestas do grafo.
+**Goal:** Pure services with DI that process data and generate graph edges.
 
 ---
 
-#### Issue 3.1 — Resolver de dependências HTTP
+#### Issue 3.1 — HTTP dependency resolver
 
 **Labels:** `epic:graph-engine`, `priority:high`, `copilot-agent`
 
 **Acceptance Criteria:**
 - [ ] `src/modules/graph/services/resolve-http-deps.ts`
-- [ ] Função recebe `getAllIntegrations` e `getSystemBySlug` como parâmetros (DI)
-- [ ] Retorna `Dependency[]` com `type: HTTP_API`
-- [ ] Integrações não resolvidas retornadas em `unresolved[]`
-- [ ] Testes unitários com mocks injetados (zero deps de banco)
+- [ ] Function receives `getAllIntegrations` and `getSystemBySlug` as parameters (DI)
+- [ ] Returns `Dependency[]` with `type: HTTP_API`
+- [ ] Unresolved integrations returned in `unresolved[]`
+- [ ] Unit tests with injected mocks (zero database deps)
 
 ---
 
-#### Issue 3.2 — Resolver de dependências Kafka
+#### Issue 3.2 — Kafka dependency resolver
 
 **Labels:** `epic:graph-engine`, `priority:high`, `copilot-agent`
 
 **Acceptance Criteria:**
 - [ ] `src/modules/graph/services/resolve-kafka-deps.ts`
-- [ ] DI: recebe `getAllKafkaTopicsWithSystem`
-- [ ] Agrupa por tópico, cruza PRODUCER/BOTH × CONSUMER/BOTH entre sistemas diferentes
-- [ ] Sem self-loops. Label = nome do tópico
-- [ ] Testes unitários
+- [ ] DI: receives `getAllKafkaTopicsWithSystem`
+- [ ] Groups by topic, crosses PRODUCER/BOTH × CONSUMER/BOTH between different systems
+- [ ] No self-loops. Label = topic name
+- [ ] Unit tests
 
 ---
 
-#### Issue 3.3 — Resolver de dependências DB e pacotes
+#### Issue 3.3 — Database and package dependency resolver
 
 **Labels:** `epic:graph-engine`, `priority:medium`, `copilot-agent`
 
 **Acceptance Criteria:**
-- [ ] `resolve-database-deps.ts` — mesmo DB name+provider em sistemas ≠ → `SHARED_DATABASE`; Integration DATABASE_DIRECT → `CROSS_DATABASE_QUERY`
-- [ ] `resolve-package-deps.ts` — mesmo Package INTERNAL entre sistemas ≠ → `SHARED_PACKAGE`
-- [ ] Ambos com DI. Testes unitários.
+- [ ] `resolve-database-deps.ts` — same DB name+provider across different systems → `SHARED_DATABASE`; Integration DATABASE_DIRECT → `CROSS_DATABASE_QUERY`
+- [ ] `resolve-package-deps.ts` — same INTERNAL Package across different systems → `SHARED_PACKAGE`
+- [ ] Both with DI. Unit tests.
 
 ---
 
-#### Issue 3.4 — Orquestrador e Server Action de processamento
+#### Issue 3.4 — Orchestrator and processing Server Action
 
 **Labels:** `epic:graph-engine`, `priority:high`, `copilot-agent`
 
 **Acceptance Criteria:**
-- [ ] `src/modules/graph/processors/dependency-processor.ts` — orquestra todos os resolvers (puro, recebe funções)
-- [ ] Server Action `processDependencies` em `src/modules/graph/actions/process.ts` — wiring com Prisma
-- [ ] Delete + create dentro de transaction
-- [ ] Retorna `{ total, byType, unresolved }`
-- [ ] Chamado automaticamente no final de `uploadInventory`
-- [ ] Route Handler `POST /api/dependencies/process` para trigger manual
-- [ ] `revalidatePath("/graph")` após processamento
-- [ ] Testes unitários no processor + teste do Server Action
+- [ ] `src/modules/graph/processors/dependency-processor.ts` — orchestrates all resolvers (pure, receives functions)
+- [ ] Server Action `processDependencies` in `src/modules/graph/actions/process.ts` — wiring with Prisma
+- [ ] Delete + create within transaction
+- [ ] Returns `{ total, byType, unresolved }`
+- [ ] Called automatically at the end of `uploadInventory`
+- [ ] Route Handler `POST /api/dependencies/process` for manual trigger
+- [ ] `revalidatePath("/graph")` after processing
+- [ ] Unit tests for the processor + Server Action test
 
 ---
 
-### Epic 4 — Visualização do Grafo com React Flow
+### Epic 4 — Graph Visualization with React Flow
 
 ---
 
-#### Issue 4.1 — Route Handler de dados do grafo
+#### Issue 4.1 — Graph data Route Handler
 
 **Labels:** `epic:graph-ui`, `priority:high`, `copilot-agent`
 
 **Acceptance Criteria:**
-- [ ] `GET /api/graph` retorna `{ nodes, edges }` formatados para React Flow
-- [ ] System → nó com `data: { label, domain, language, framework, servicesCount, risksCount, domainColor }`
-- [ ] Dependency → edge com `data: { type, label }`, styled por tipo
-- [ ] Positions calculadas server-side com dagre
-- [ ] Filtros: `?domain=X`, `?dependencyType=HTTP_API,KAFKA_TOPIC`
+- [ ] `GET /api/graph` returns `{ nodes, edges }` formatted for React Flow
+- [ ] System → node with `data: { label, domain, language, framework, servicesCount, risksCount, domainColor }`
+- [ ] Dependency → edge with `data: { type, label }`, styled by type
+- [ ] Positions calculated server-side with dagre
+- [ ] Filters: `?domain=X`, `?dependencyType=HTTP_API,KAFKA_TOPIC`
 
 ---
 
-#### Issue 4.2 — Componente React Flow com nodes e edges customizados
+#### Issue 4.2 — React Flow component with custom nodes and edges
 
 **Labels:** `epic:graph-ui`, `priority:high`, `copilot-agent`
 
 **Acceptance Criteria:**
 - [ ] `DependencyGraph.tsx` (Client) + `DependencyGraph.module.css`
-- [ ] `SystemNode.tsx` + `SystemNode.module.css` — nome, domain badge, linguagem, ícone risco
-- [ ] `DependencyEdge.tsx` — cores por tipo (HTTP=azul, Kafka=verde, DB=laranja, Package=cinza)
-- [ ] Layout dagre nos initial nodes. MiniMap, Controls, Background.
-- [ ] `src/app/(dashboard)/graph/page.tsx` — Server Component que busca e passa dados
+- [ ] `SystemNode.tsx` + `SystemNode.module.css` — name, domain badge, language, risk icon
+- [ ] `DependencyEdge.tsx` — colors by type (HTTP=blue, Kafka=green, DB=orange, Package=gray)
+- [ ] Dagre layout for initial nodes. MiniMap, Controls, Background.
+- [ ] `src/app/(dashboard)/graph/page.tsx` — Server Component that fetches and passes data
 
 ---
 
-#### Issue 4.3 — Painel lateral de detalhes
+#### Issue 4.3 — Side detail panel
 
 **Labels:** `epic:graph-ui`, `priority:medium`, `copilot-agent`
 
 **Acceptance Criteria:**
-- [ ] Click no nó → Sheet (shadcn) lateral
-- [ ] Busca detalhes via Server Action
-- [ ] Tabs: Serviços, Bancos, Integrações, Kafka, Pacotes, Riscos
-- [ ] Badges de severidade, link para repo, botão "highlight dependencies"
+- [ ] Click on node → side Sheet (shadcn)
+- [ ] Fetches details via Server Action
+- [ ] Tabs: Services, Databases, Integrations, Kafka, Packages, Risks
+- [ ] Severity badges, repo link, "highlight dependencies" button
 - [ ] `SystemDetail.module.css`
 
 ---
 
-#### Issue 4.4 — Toolbar de filtros e legendas
+#### Issue 4.4 — Filter toolbar and legends
 
 **Labels:** `epic:graph-ui`, `priority:medium`, `copilot-agent`
 
 **Acceptance Criteria:**
 - [ ] `GraphToolbar.tsx` + `GraphToolbar.module.css`
-- [ ] Filtros: domínio (multi-select), tipo dependência (checkboxes coloridos), linguagem, search
-- [ ] Toggle sistemas isolados. Legenda cores. Contador.
-- [ ] Filtros sincronizados com query params (URL shareable)
+- [ ] Filters: domain (multi-select), dependency type (colored checkboxes), language, search
+- [ ] Toggle isolated systems. Color legend. Counter.
+- [ ] Filters synced with query params (shareable URL)
 
 ---
 
@@ -786,31 +786,31 @@ Criar Route Handlers para consultar dados persistidos. Consumidos pelo grafo e d
 
 ---
 
-#### Issue 5.1 — Dashboard com métricas
+#### Issue 5.1 — Dashboard with metrics
 
 **Labels:** `epic:dashboard`, `priority:medium`, `copilot-agent`
 
 **Acceptance Criteria:**
 - [ ] `src/app/(dashboard)/dashboard/page.tsx` — Server Component
-- [ ] Cards: domínios, sistemas, dependências, riscos HIGH+CRITICAL
-- [ ] Distribuição linguagens, dependências por tipo (charts simples ou Recharts)
-- [ ] Top 5 sistemas mais conectados. Riscos recentes. Uploads recentes.
-- [ ] Link para grafo. `Dashboard.module.css`
+- [ ] Cards: domains, systems, dependencies, HIGH+CRITICAL risks
+- [ ] Language distribution, dependencies by type (simple charts or Recharts)
+- [ ] Top 5 most connected systems. Recent risks. Recent uploads.
+- [ ] Link to graph. `Dashboard.module.css`
 
 ---
 
-#### Issue 5.2 — Listagem de sistemas
+#### Issue 5.2 — Systems listing
 
 **Labels:** `epic:dashboard`, `priority:low`, `copilot-agent`
 
 **Acceptance Criteria:**
-- [ ] Tabela server-rendered com busca e filtro por domínio
-- [ ] Click → `/systems/[slug]` com page de detalhe
-- [ ] Sorting client-side
+- [ ] Server-rendered table with search and domain filter
+- [ ] Click → `/systems/[slug]` with detail page
+- [ ] Client-side sorting
 
 ---
 
-### Epic 6 — Qualidade & Documentação
+### Epic 6 — Quality & Documentation
 
 ---
 
@@ -820,67 +820,67 @@ Criar Route Handlers para consultar dados persistidos. Consumidos pelo grafo e d
 
 **Acceptance Criteria:**
 - [ ] `.github/workflows/ci.yml`: typecheck → lint → test → build (Node 20)
-- [ ] Prisma generate antes de typecheck. Coverage thresholds.
-- [ ] Status checks required para merge.
+- [ ] Prisma generate before typecheck. Coverage thresholds.
+- [ ] Status checks required for merge.
 
 ---
 
-#### Issue 6.2 — Documentação
+#### Issue 6.2 — Documentation
 
 **Labels:** `epic:qualidade`, `priority:low`, `copilot-agent`
 
 **Acceptance Criteria:**
-- [ ] README: visão geral, stack, setup local, screenshots
-- [ ] `CONTRIBUTING.md`: convenções, estrutura, como adicionar resolver
-- [ ] `docs/json-schema.md`: schema entrada documentado
-- [ ] `docs/architecture.md`: diagrama Mermaid do fluxo
+- [ ] README: overview, stack, local setup, screenshots
+- [ ] `CONTRIBUTING.md`: conventions, structure, how to add a resolver
+- [ ] `docs/json-schema.md`: documented input schema
+- [ ] `docs/architecture.md`: Mermaid flow diagram
 
 ---
 
-## 3. Sequência de Execução
+## 3. Execution Sequence
 
 ```
 Epic 1 (Bootstrap) — sequential
   1.1 → 1.2 → 1.3 → 1.4 → 1.5
 
-Epic 2 (Ingestão) — depende de Epic 1
-  2.1 → 2.2 → 2.3 + 2.4 (paralelo)
+Epic 2 (Ingestion) — depends on Epic 1
+  2.1 → 2.2 → 2.3 + 2.4 (parallel)
 
-Epic 3 (Graph Engine) — depende de 2.2
-  3.1 + 3.2 + 3.3 (paralelo) → 3.4
+Epic 3 (Graph Engine) — depends on 2.2
+  3.1 + 3.2 + 3.3 (parallel) → 3.4
 
-Epic 4 (Visualização) — depende de 3.4
-  4.1 → 4.2 → 4.3 + 4.4 (paralelo)
+Epic 4 (Visualization) — depends on 3.4
+  4.1 → 4.2 → 4.3 + 4.4 (parallel)
 
-Epic 5 (Dashboard) — depende de 2.4 e 4.1
+Epic 5 (Dashboard) — depends on 2.4 and 4.1
   5.1 → 5.2
 
-Epic 6 (Qualidade) — CI em paralelo desde Epic 1, docs ao final
-  6.1 (junto com 1.5) → 6.2 (ao final)
+Epic 6 (Quality) — CI in parallel since Epic 1, docs at the end
+  6.1 (alongside 1.5) → 6.2 (at the end)
 ```
 
 ---
 
-## 4. Labels do GitHub
+## 4. GitHub Labels
 
-| Label               | Cor       | Descrição                           |
-| ------------------- | --------- | ----------------------------------- |
-| `epic:bootstrap`    | `#0E8A16` | Setup e infraestrutura              |
-| `epic:ingestao`     | `#1D76DB` | Upload e parsing de inventários     |
-| `epic:graph-engine` | `#D93F0B` | Motor de inferência de dependências |
-| `epic:graph-ui`     | `#7057FF` | Visualização React Flow             |
-| `epic:dashboard`    | `#FBCA04` | Dashboard e métricas                |
-| `epic:qualidade`    | `#B60205` | Testes, CI, docs                    |
-| `priority:high`     | `#D93F0B` | Prioridade alta                     |
-| `priority:medium`   | `#FBCA04` | Prioridade média                    |
-| `priority:low`      | `#0E8A16` | Prioridade baixa                    |
-| `copilot-agent`     | `#5319E7` | Tarefa para Copilot Agent           |
+| Label               | Color     | Description                  |
+| ------------------- | --------- | ---------------------------- |
+| `epic:bootstrap`    | `#0E8A16` | Setup and infrastructure     |
+| `epic:ingestao`     | `#1D76DB` | Inventory upload and parsing |
+| `epic:graph-engine` | `#D93F0B` | Dependency inference engine  |
+| `epic:graph-ui`     | `#7057FF` | React Flow visualization     |
+| `epic:dashboard`    | `#FBCA04` | Dashboard and metrics        |
+| `epic:qualidade`    | `#B60205` | Tests, CI, docs              |
+| `priority:high`     | `#D93F0B` | High priority                |
+| `priority:medium`   | `#FBCA04` | Medium priority              |
+| `priority:low`      | `#0E8A16` | Low priority                 |
+| `copilot-agent`     | `#5319E7` | Task for Copilot Agent       |
 
 ---
 
 ## 5. Issue Template
 
-Criar em `.github/ISSUE_TEMPLATE/copilot-agent-task.md`:
+Create at `.github/ISSUE_TEMPLATE/copilot-agent-task.md`:
 
 ```markdown
 ---
@@ -893,35 +893,35 @@ assignees: ''
 
 > [!NOTE]
 > **Copilot Agent Instructions — Domain Mapper**
-> (Cole aqui o bloco completo da Seção 1)
+> (Paste the full block from Section 1 here)
 
-## Descrição
+## Description
 
-<!-- Descreva a tarefa com contexto claro -->
+<!-- Describe the task with clear context -->
 
 ## Acceptance Criteria
 
-- [ ] Critério 1
-- [ ] Critério 2
+- [ ] Criterion 1
+- [ ] Criterion 2
 
-## Arquivos Relevantes
+## Relevant Files
 
-<!-- Arquivos a criar ou modificar -->
+<!-- Files to create or modify -->
 
-## Dependências
+## Dependencies
 
-<!-- Issues que devem estar completas antes -->
+<!-- Issues that must be completed first -->
 
-## Notas Técnicas
+## Technical Notes
 
-<!-- Decisões de design, edge cases -->
+<!-- Design decisions, edge cases -->
 ```
 
 ---
 
-## 6. JSON de Exemplo — Inventário Grifo
+## 6. Example JSON — Grifo Inventory
 
-Arquivo `examples/grifo-inventory.json`:
+File `examples/grifo-inventory.json`:
 
 ```json
 {
@@ -930,7 +930,7 @@ Arquivo `examples/grifo-inventory.json`:
       "name": "Grifo",
       "slug": "grifo",
       "domain": "Tesouro Direto",
-      "purpose": "Gestão de posições e ordens de Tesouro Direto com integração Sinacor",
+      "purpose": "Position and order management for Tesouro Direto with Sinacor integration",
       "language": "C#",
       "framework": ".NET",
       "frameworkVersion": "9.0",
@@ -1029,23 +1029,23 @@ Arquivo `examples/grifo-inventory.json`:
         { "name": "FluentAssertions", "version": "8.2.0", "scope": "TEST" }
       ],
       "apiEndpoints": [
-        { "path": "/v1/bonds", "method": "GET", "description": "Buscar/popular bonds do Athena" },
-        { "path": "/v1/customers/processings/enqueue", "method": "POST", "description": "Enfileirar processamento" },
-        { "path": "/v1/positions", "method": "GET", "description": "Consultar posições" },
-        { "path": "/v1/orders", "method": "GET", "description": "Consultar ordens" },
-        { "path": "/v1/dates", "method": "GET", "description": "Calendário de negócios" },
-        { "path": "/v1/data-checks", "method": "GET", "description": "Data checks por cliente" },
-        { "path": "/v1/reports/ir", "method": "GET", "description": "Relatório de IR" },
-        { "path": "/v1/backfill", "method": "POST", "description": "Trigger backfill de ordens" }
+        { "path": "/v1/bonds", "method": "GET", "description": "Fetch/populate bonds from Athena" },
+        { "path": "/v1/customers/processings/enqueue", "method": "POST", "description": "Enqueue processing" },
+        { "path": "/v1/positions", "method": "GET", "description": "Query positions" },
+        { "path": "/v1/orders", "method": "GET", "description": "Query orders" },
+        { "path": "/v1/dates", "method": "GET", "description": "Business calendar" },
+        { "path": "/v1/data-checks", "method": "GET", "description": "Data checks by customer" },
+        { "path": "/v1/reports/ir", "method": "GET", "description": "Income tax report" },
+        { "path": "/v1/backfill", "method": "POST", "description": "Trigger order backfill" }
       ],
       "risks": [
-        { "title": "Pomelo MySQL preview", "description": "9.0.0-preview.3 — dependência preview em produção", "severity": "HIGH" },
-        { "title": "Oracle dependency", "description": "Acoplamento forte com infraestrutura legada Sinacor", "severity": "HIGH" },
-        { "title": "Warren.Core version mismatch", "description": "3 versões no mesmo repo (4.1.0, 6.1.4, 7.0.3)", "severity": "MEDIUM" },
-        { "title": "Cross-database queries", "description": "Raw SQL entre schemas Grifo e GrifoIntegration", "severity": "MEDIUM" },
-        { "title": "Sem testes de integração", "description": "Apenas unit tests", "severity": "MEDIUM" },
-        { "title": "FluentAssertions mismatch", "description": "7.0.0 vs 8.2.0 entre solutions", "severity": "LOW" },
-        { "title": "RestSharp 106.x deprecated", "description": "Versão deprecated mas não utilizada", "severity": "LOW" }
+        { "title": "Pomelo MySQL preview", "description": "9.0.0-preview.3 — preview dependency in production", "severity": "HIGH" },
+        { "title": "Oracle dependency", "description": "Strong coupling with legacy Sinacor infrastructure", "severity": "HIGH" },
+        { "title": "Warren.Core version mismatch", "description": "3 versions in the same repo (4.1.0, 6.1.4, 7.0.3)", "severity": "MEDIUM" },
+        { "title": "Cross-database queries", "description": "Raw SQL across Grifo and GrifoIntegration schemas", "severity": "MEDIUM" },
+        { "title": "No integration tests", "description": "Only unit tests", "severity": "MEDIUM" },
+        { "title": "FluentAssertions mismatch", "description": "7.0.0 vs 8.2.0 between solutions", "severity": "LOW" },
+        { "title": "RestSharp 106.x deprecated", "description": "Deprecated version but not in use", "severity": "LOW" }
       ]
     }
   ]
