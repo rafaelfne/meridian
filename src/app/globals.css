@@ -49,6 +49,19 @@
 
 :root {
   --radius: 0.625rem;
+
+  /* Dependency type colors */
+  --dep-http: oklch(0.637 0.237 25.331);
+  --dep-grpc: oklch(0.627 0.214 259.815);
+  --dep-event: oklch(0.723 0.219 149.579);
+  --dep-database: oklch(0.705 0.213 47.604);
+  --dep-queue: oklch(0.606 0.25 292.717);
+  --dep-file: oklch(0.554 0.046 257.417);
+
+  /* Graph node colors */
+  --node-default: oklch(0.968 0.007 247.896);
+  --node-highlighted: oklch(0.901 0.058 230.902);
+  --node-selected: oklch(0.852 0.099 231.264);
   --background: oklch(1 0 0);
   --foreground: oklch(0.129 0.042 264.695);
   --card: oklch(1 0 0);
