@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
@@ -12,4 +6,237 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+// ── Auth.js Models ──────────────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?
+  accounts      Account[]
+  sessions      Session[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ── Domain Models ───────────────────────────────────────
+
+model Domain {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  systems     System[]
+}
+
+model System {
+  id               String   @id @default(cuid())
+  name             String
+  slug             String   @unique
+  purpose          String?
+  language         String?
+  framework        String?
+  frameworkVersion  String?
+  repositoryUrl    String?
+  domainId         String
+  domain           Domain   @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  inventoryRaw     Json?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  services         Service[]
+  databases        Database[]
+  integrations     Integration[]
+  kafkaTopics      KafkaTopic[]
+  packages         Package[]
+  apiEndpoints     ApiEndpoint[]
+  risks            Risk[]
+  dependsOn        Dependency[] @relation("DependencySource")
+  dependedBy       Dependency[] @relation("DependencyTarget")
+
+  @@unique([domainId, name])
+}
+
+model Service {
+  id       String      @id @default(cuid())
+  name     String
+  type     ServiceType
+  systemId String
+  system   System      @relation(fields: [systemId], references: [id], onDelete: Cascade)
+}
+
+enum ServiceType {
+  API
+  WORKER
+  CRONJOB
+  BACKGROUND_SERVICE
+}
+
+model Database {
+  id       String  @id @default(cuid())
+  name     String
+  provider String
+  version  String?
+  orm      String?
+  tables   Json?
+  systemId String
+  system   System  @relation(fields: [systemId], references: [id], onDelete: Cascade)
+}
+
+model Integration {
+  id           String          @id @default(cuid())
+  name         String
+  type         IntegrationType
+  targetSystem String?
+  url          String?
+  protocol     String?
+  systemId     String
+  system       System          @relation(fields: [systemId], references: [id], onDelete: Cascade)
+}
+
+enum IntegrationType {
+  HTTP_API
+  DATABASE_DIRECT
+  GRPC
+  GRAPHQL
+  SOAP
+  FILE_TRANSFER
+  OTHER
+}
+
+model KafkaTopic {
+  id       String    @id @default(cuid())
+  name     String
+  role     TopicRole
+  systemId String
+  system   System    @relation(fields: [systemId], references: [id], onDelete: Cascade)
+}
+
+enum TopicRole {
+  PRODUCER
+  CONSUMER
+  BOTH
+}
+
+model Package {
+  id       String       @id @default(cuid())
+  name     String
+  version  String?
+  scope    PackageScope
+  systemId String
+  system   System       @relation(fields: [systemId], references: [id], onDelete: Cascade)
+}
+
+enum PackageScope {
+  INTERNAL
+  OPEN_SOURCE
+  TEST
+}
+
+model ApiEndpoint {
+  id          String  @id @default(cuid())
+  path        String
+  method      String?
+  description String?
+  systemId    String
+  system      System  @relation(fields: [systemId], references: [id], onDelete: Cascade)
+}
+
+model Risk {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  severity    Severity
+  systemId    String
+  system      System   @relation(fields: [systemId], references: [id], onDelete: Cascade)
+}
+
+enum Severity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+model Dependency {
+  id        String         @id @default(cuid())
+  sourceId  String
+  targetId  String
+  type      DependencyType
+  label     String?
+  metadata  Json?
+  source    System         @relation("DependencySource", fields: [sourceId], references: [id], onDelete: Cascade)
+  target    System         @relation("DependencyTarget", fields: [targetId], references: [id], onDelete: Cascade)
+  createdAt DateTime       @default(now())
+
+  @@unique([sourceId, targetId, type, label])
+}
+
+enum DependencyType {
+  HTTP_API
+  KAFKA_TOPIC
+  SHARED_DATABASE
+  CROSS_DATABASE_QUERY
+  SHARED_PACKAGE
+  GRPC
+  FILE_DEPENDENCY
+}
+
+model InventoryUpload {
+  id           String       @id @default(cuid())
+  filename     String
+  status       UploadStatus @default(PENDING)
+  systemsCount Int          @default(0)
+  errors       Json?
+  rawPayload   Json
+  uploadedById String?
+  createdAt    DateTime     @default(now())
+  processedAt  DateTime?
+}
+
+enum UploadStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
 }
