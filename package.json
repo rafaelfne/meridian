@@ -17,6 +17,7 @@
     "db:generate": "prisma generate",
     "db:studio": "prisma studio",
     "db:migrate": "prisma migrate dev",
+    "db:push": "prisma migrate deploy",
     "db:reset": "docker-compose down -v && docker-compose up -d --wait && prisma migrate reset --force",
     "db:seed": "tsx prisma/seed.ts"
   },
