@@ -65,3 +65,17 @@ export interface SystemDetail {
   packages: SystemDetailPackage[];
   risks: SystemDetailRisk[];
 }
+
+export interface SystemListItem {
+  id: string;
+  name: string;
+  slug: string;
+  language: string | null;
+  framework: string | null;
+  domain: { id: string; name: string };
+  _count: {
+    services: number;
+    databases: number;
+    integrations: number;
+  };
+}
