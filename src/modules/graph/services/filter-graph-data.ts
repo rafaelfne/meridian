@@ -1,5 +1,8 @@
 import type { GraphData, GraphNode, GraphEdge } from "../types";
 
+/** Layout mode for the graph visualization. */
+export type LayoutMode = "default" | "layered";
+
 /** Filter criteria for client-side graph filtering. */
 export interface GraphFilters {
   domains: string[];
@@ -7,6 +10,9 @@ export interface GraphFilters {
   languages: string[];
   search: string;
   showIsolated: boolean;
+  showParticles: boolean;
+  layoutMode: LayoutMode;
+  clustering: boolean;
 }
 
 export const DEFAULT_GRAPH_FILTERS: GraphFilters = {
@@ -15,6 +21,9 @@ export const DEFAULT_GRAPH_FILTERS: GraphFilters = {
   languages: [],
   search: "",
   showIsolated: true,
+  showParticles: true,
+  layoutMode: "default",
+  clustering: false,
 };
 
 /**
@@ -69,6 +78,15 @@ export function filterGraphData(
       connectedNodeIds.add(edge.target);
     }
     nodes = nodes.filter((n) => connectedNodeIds.has(n.id));
+  }
+
+  // Strip particle animation when disabled
+  if (!filters.showParticles) {
+    edges = edges.map((e) =>
+      e.data.showParticles
+        ? { ...e, data: { ...e.data, showParticles: false } }
+        : e,
+    );
   }
 
   return { nodes, edges };

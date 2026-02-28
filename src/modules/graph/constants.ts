@@ -3,6 +3,8 @@
  * Used by both the server-side graph builder and client-side toolbar/legend.
  */
 
+import type { LayerName } from "./types";
+
 export const DEPENDENCY_TYPES = [
   "HTTP_API",
   "KAFKA_TOPIC",
@@ -56,3 +58,19 @@ export const DEPENDENCY_TYPE_CONFIG: Record<
 };
 
 export const DEFAULT_EDGE_STYLE = { color: "#94a3b8", animated: false };
+
+/* ── Topological Layer Configuration ──────────────────── */
+
+export interface LayerConfig {
+  label: string;
+  color: string;
+}
+
+export const LAYER_CONFIG: Record<LayerName, LayerConfig> = {
+  EDGE: { label: "Edge / Ingress", color: "#0891b2" },
+  BUSINESS_LOGIC: { label: "Business Logic", color: "#4f46e5" },
+  DATA_INFRA: { label: "Data / Infrastructure", color: "#d97706" },
+};
+
+export const COLLAPSE_ZOOM_THRESHOLD = 0.4;
+export const EXPAND_ZOOM_THRESHOLD = 0.5;

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Search, ChevronDown, RotateCcw, Eye, EyeOff } from "lucide-react";
+import { Search, ChevronDown, RotateCcw, Eye, EyeOff, Zap, Layers, Group } from "lucide-react";
 import clsx from "clsx";
 import {
   DEPENDENCY_TYPE_CONFIG,
@@ -168,7 +168,10 @@ export function GraphToolbar({
     filters.dependencyTypes.length > 0 ||
     filters.languages.length > 0 ||
     filters.search.trim() !== "" ||
-    !filters.showIsolated;
+    !filters.showIsolated ||
+    !filters.showParticles ||
+    filters.layoutMode !== "default" ||
+    filters.clustering;
 
   const depTypeOptions = [...DEPENDENCY_TYPES] as string[];
 
@@ -185,6 +188,9 @@ export function GraphToolbar({
           onChange={(e) => setFilters({ search: e.target.value })}
           aria-label="Search systems"
         />
+        <kbd className={styles.kbd}>
+          <span>⌘</span>K
+        </kbd>
       </div>
 
       <span className={styles.separator} />
@@ -236,6 +242,64 @@ export function GraphToolbar({
       >
         {filters.showIsolated ? <Eye size={14} /> : <EyeOff size={14} />}
         Isolated
+      </button>
+
+      {/* Toggle particle animation */}
+      <button
+        type="button"
+        className={clsx(styles.toggle, {
+          [styles.toggleActive ?? ""]: filters.showParticles,
+        })}
+        onClick={() => setFilters({ showParticles: !filters.showParticles })}
+        aria-pressed={filters.showParticles}
+        title={
+          filters.showParticles
+            ? "Disable flow animation"
+            : "Enable flow animation"
+        }
+      >
+        <Zap size={14} />
+        Flow
+      </button>
+
+      {/* Toggle layered topology */}
+      <button
+        type="button"
+        className={clsx(styles.toggle, {
+          [styles.toggleActive ?? ""]: filters.layoutMode === "layered",
+        })}
+        onClick={() =>
+          setFilters({
+            layoutMode: filters.layoutMode === "layered" ? "default" : "layered",
+          })
+        }
+        aria-pressed={filters.layoutMode === "layered"}
+        title={
+          filters.layoutMode === "layered"
+            ? "Switch to default layout"
+            : "Switch to layered topology"
+        }
+      >
+        <Layers size={14} />
+        Layered
+      </button>
+
+      {/* Toggle domain clustering */}
+      <button
+        type="button"
+        className={clsx(styles.toggle, {
+          [styles.toggleActive ?? ""]: filters.clustering,
+        })}
+        onClick={() => setFilters({ clustering: !filters.clustering })}
+        aria-pressed={filters.clustering}
+        title={
+          filters.clustering
+            ? "Disable domain clustering"
+            : "Enable domain clustering"
+        }
+      >
+        <Group size={14} />
+        Cluster
       </button>
 
       {/* Reset */}

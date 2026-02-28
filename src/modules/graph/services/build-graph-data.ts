@@ -92,6 +92,7 @@ export function buildGraphData(
       servicesCount: system._count.services,
       risksCount: system._count.risks,
       domainColor: getDomainColor(system.domain.name),
+      layer: system.layer ?? undefined,
     },
   }));
 
@@ -110,6 +111,7 @@ export function buildGraphData(
         data: {
           type: dep.type,
           label: resolveEdgeLabel(dep.type, dep.label),
+          showParticles: style.animated,
         },
       };
     });

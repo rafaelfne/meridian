@@ -7,6 +7,7 @@ import {
 } from "@xyflow/react";
 import type { EdgeProps } from "@xyflow/react";
 import type { GraphEdgeData } from "@/modules/graph/types";
+import { EdgeParticles } from "./EdgeParticles";
 
 type DependencyEdgeProps = EdgeProps & { data: GraphEdgeData };
 
@@ -34,6 +35,14 @@ export function DependencyEdge({
   return (
     <>
       <BaseEdge id={id} path={edgePath} markerEnd={markerEnd} style={style} />
+      {data.showParticles && (
+        <EdgeParticles
+          edgePath={edgePath}
+          color={style?.stroke as string}
+          count={data.particleCount}
+          duration={data.particleSpeed}
+        />
+      )}
       <EdgeLabelRenderer>
         <div
           style={{

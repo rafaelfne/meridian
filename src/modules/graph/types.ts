@@ -79,6 +79,9 @@ export interface ResolveHttpDepsResult {
 
 // ── React Flow Graph Types ─────────────────────────────
 
+/** Supported layer names for topological layout. */
+export type LayerName = "EDGE" | "BUSINESS_LOGIC" | "DATA_INFRA";
+
 /** Data payload for a system node rendered in React Flow. */
 export interface GraphNodeData extends Record<string, unknown> {
   label: string;
@@ -88,12 +91,16 @@ export interface GraphNodeData extends Record<string, unknown> {
   servicesCount: number;
   risksCount: number;
   domainColor: string;
+  layer?: LayerName;
 }
 
 /** Data payload for a dependency edge rendered in React Flow. */
 export interface GraphEdgeData extends Record<string, unknown> {
   type: string;
   label: string;
+  showParticles?: boolean;
+  particleSpeed?: number;
+  particleCount?: number;
 }
 
 /** A React Flow node representing a system. */
@@ -128,6 +135,7 @@ export interface SystemWithCounts {
   slug: string;
   language: string | null;
   framework: string | null;
+  layer?: LayerName | null;
   domain: { name: string };
   _count: { services: number; risks: number };
 }

@@ -5,6 +5,7 @@ import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import {
   DEFAULT_GRAPH_FILTERS,
   type GraphFilters,
+  type LayoutMode,
 } from "@/modules/graph/services/filter-graph-data";
 
 function parseList(value: string | null): string[] {
@@ -35,6 +36,9 @@ export function useGraphFilters() {
       languages: parseList(searchParams.get("languages")),
       search: searchParams.get("search") ?? "",
       showIsolated: searchParams.get("showIsolated") !== "false",
+      showParticles: searchParams.get("showParticles") !== "false",
+      layoutMode: (searchParams.get("layout") as LayoutMode) || "default",
+      clustering: searchParams.get("clustering") === "true",
     }),
     [searchParams],
   );
@@ -56,6 +60,12 @@ export function useGraphFilters() {
       if (merged.search.trim()) params.set("search", merged.search.trim());
 
       if (!merged.showIsolated) params.set("showIsolated", "false");
+
+      if (!merged.showParticles) params.set("showParticles", "false");
+
+      if (merged.layoutMode !== "default") params.set("layout", merged.layoutMode);
+
+      if (merged.clustering) params.set("clustering", "true");
 
       const qs = params.toString();
       router.replace(`${pathname}${qs ? `?${qs}` : ""}`, { scroll: false });

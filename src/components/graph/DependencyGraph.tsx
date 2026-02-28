@@ -10,14 +10,23 @@ import {
   useNodesState,
   useEdgesState,
   type NodeMouseHandler,
+  type Viewport,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import type { GraphData } from "@/modules/graph/types";
 import { SystemNode } from "./SystemNode";
 import { DependencyEdge } from "./DependencyEdge";
+import { LayerLabelNode } from "./LayerLabelNode";
+import { DomainGroupNode } from "./DomainGroupNode";
+import { CollapsedDomainNode } from "./CollapsedDomainNode";
 import styles from "./DependencyGraph.module.css";
 
-const nodeTypes = { system: SystemNode };
+const nodeTypes = {
+  system: SystemNode,
+  layerLabel: LayerLabelNode,
+  domainGroup: DomainGroupNode,
+  collapsedDomain: CollapsedDomainNode,
+};
 const edgeTypes = { smoothstep: DependencyEdge };
 
 const DIMMED_OPACITY = 0.15;
@@ -26,12 +35,14 @@ interface DependencyGraphProps {
   data: GraphData;
   onNodeClick?: (nodeId: string) => void;
   highlightedSystemId?: string | null;
+  onViewportChange?: (viewport: Viewport) => void;
 }
 
 export function DependencyGraph({
   data,
   onNodeClick,
   highlightedSystemId,
+  onViewportChange,
 }: DependencyGraphProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState(data.nodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(data.edges);
@@ -84,6 +95,13 @@ export function DependencyGraph({
     [onNodeClick],
   );
 
+  const handleMoveEnd = useCallback(
+    (_event: MouseEvent | TouchEvent | null, viewport: Viewport) => {
+      onViewportChange?.(viewport);
+    },
+    [onViewportChange],
+  );
+
   if (data.nodes.length === 0) {
     return (
       <div className={styles.empty}>
@@ -101,6 +119,7 @@ export function DependencyGraph({
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onNodeClick={handleNodeClick}
+        onMoveEnd={handleMoveEnd}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         fitView

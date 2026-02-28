@@ -14,6 +14,7 @@ export default async function GraphPage() {
         slug: true,
         language: true,
         framework: true,
+        layer: true,
         domain: { select: { name: true } },
         _count: { select: { services: true, risks: true } },
       },
@@ -31,5 +32,11 @@ export default async function GraphPage() {
 
   const graphData = buildGraphData(systems, dependencies);
 
-  return <GraphPageClient data={graphData} />;
+  return (
+    <GraphPageClient
+      data={graphData}
+      systems={systems}
+      dependencies={dependencies}
+    />
+  );
 }
