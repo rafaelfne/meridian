@@ -13,7 +13,7 @@ function buildSystem(overrides: Partial<SystemInventory> = {}): SystemInventory 
     services: [],
     databases: [],
     integrations: [],
-    kafkaTopics: [],
+    messageTopics: [],
     packages: [],
     apiEndpoints: [],
     risks: [],

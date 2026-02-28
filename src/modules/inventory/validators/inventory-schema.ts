@@ -29,9 +29,17 @@ export const IntegrationSchema = z.object({
   description: z.string().optional(),
 });
 
-export const KafkaTopicSchema = z.object({
+export const MessageTopicSchema = z.object({
   name: z.string().min(1, "Topic name is required"),
   role: z.enum(["PRODUCER", "CONSUMER", "BOTH"]),
+  broker: z.enum(["KAFKA", "RABBITMQ", "SQS", "SNS", "OTHER"]),
+  metadata: z.object({
+    consumerGroup: z.string().optional(),
+    exchange: z.string().optional(),
+    routingKey: z.string().optional(),
+    dlqEnabled: z.boolean().optional(),
+    retryPolicy: z.string().optional(),
+  }).passthrough().optional(),
 });
 
 export const PackageSchema = z.object({
@@ -69,7 +77,7 @@ export const SystemInventorySchema = z.object({
   services: z.array(ServiceSchema).optional().default([]),
   databases: z.array(DatabaseSchema).optional().default([]),
   integrations: z.array(IntegrationSchema).optional().default([]),
-  kafkaTopics: z.array(KafkaTopicSchema).optional().default([]),
+  messageTopics: z.array(MessageTopicSchema).optional().default([]),
   packages: z.array(PackageSchema).optional().default([]),
   apiEndpoints: z.array(ApiEndpointSchema).optional().default([]),
   risks: z.array(RiskSchema).optional().default([]),
@@ -86,7 +94,9 @@ export type SystemInventory = z.infer<typeof SystemInventorySchema>;
 export type Service = z.infer<typeof ServiceSchema>;
 export type Database = z.infer<typeof DatabaseSchema>;
 export type Integration = z.infer<typeof IntegrationSchema>;
-export type KafkaTopic = z.infer<typeof KafkaTopicSchema>;
+/** @deprecated Use MessageTopic instead. Kept for backward compatibility. */
+export type KafkaTopic = z.infer<typeof MessageTopicSchema>;
+export type MessageTopic = z.infer<typeof MessageTopicSchema>;
 export type Package = z.infer<typeof PackageSchema>;
 export type ApiEndpoint = z.infer<typeof ApiEndpointSchema>;
 export type Risk = z.infer<typeof RiskSchema>;

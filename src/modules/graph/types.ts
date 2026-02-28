@@ -26,16 +26,17 @@ export interface DependencyResult {
   label?: string;
 }
 
-export interface KafkaTopicWithSystem {
+export interface MessageTopicWithSystem {
   name: string;
   role: "PRODUCER" | "CONSUMER" | "BOTH";
+  broker: "KAFKA" | "RABBITMQ" | "SQS" | "SNS" | "OTHER";
   systemId: string;
 }
 
 export interface ResolvedDependency {
   sourceId: string;
   targetId: string;
-  type: "KAFKA_TOPIC";
+  type: "KAFKA_TOPIC" | "RABBITMQ_QUEUE" | "SQS_QUEUE";
   label: string;
 }
 

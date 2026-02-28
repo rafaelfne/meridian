@@ -23,7 +23,7 @@ export interface ProcessDependenciesResult {
 export interface DependencyProcessorDeps {
   resolveHttp: () => Promise<ResolveHttpDepsResult>;
   resolveDatabase: () => Promise<DependencyResult[]>;
-  resolveKafka: () => Promise<ResolvedDependency[]>;
+  resolveMessaging: () => Promise<ResolvedDependency[]>;
   resolvePackage: () => Promise<DependencyResult[]>;
   persistDependencies: (deps: NormalizedDependency[]) => Promise<void>;
 }
@@ -50,7 +50,7 @@ function normalizeDependencyResults(
   }));
 }
 
-function normalizeKafkaDeps(
+function normalizeMessagingDeps(
   deps: ResolvedDependency[],
 ): NormalizedDependency[] {
   return deps.map((d) => ({
@@ -69,17 +69,17 @@ function normalizeKafkaDeps(
 export async function processDependencies(
   deps: DependencyProcessorDeps,
 ): Promise<ProcessDependenciesResult> {
-  const [httpResult, databaseDeps, kafkaDeps, packageDeps] = await Promise.all([
+  const [httpResult, databaseDeps, messagingDeps, packageDeps] = await Promise.all([
     deps.resolveHttp(),
     deps.resolveDatabase(),
-    deps.resolveKafka(),
+    deps.resolveMessaging(),
     deps.resolvePackage(),
   ]);
 
   const allDependencies: NormalizedDependency[] = [
     ...normalizeHttpDeps(httpResult.resolved),
     ...normalizeDependencyResults(databaseDeps),
-    ...normalizeKafkaDeps(kafkaDeps),
+    ...normalizeMessagingDeps(messagingDeps),
     ...normalizeDependencyResults(packageDeps),
   ];
 

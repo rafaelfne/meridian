@@ -81,12 +81,12 @@ async function main() {
     skipDuplicates: true,
   });
 
-  // ── Kafka Topics ──────────────────────────────────────
-  await prisma.kafkaTopic.createMany({
+  // ── Message Topics ─────────────────────────────────────
+  await prisma.messageTopic.createMany({
     data: [
-      { name: "payments.completed", role: "PRODUCER", systemId: grifo.id },
-      { name: "invoices.created", role: "PRODUCER", systemId: grifo.id },
-      { name: "customers.updated", role: "CONSUMER", systemId: grifo.id },
+      { name: "payments.completed", role: "PRODUCER", broker: "KAFKA", systemId: grifo.id },
+      { name: "invoices.created", role: "PRODUCER", broker: "KAFKA", systemId: grifo.id },
+      { name: "customers.updated", role: "CONSUMER", broker: "KAFKA", systemId: grifo.id },
     ],
     skipDuplicates: true,
   });

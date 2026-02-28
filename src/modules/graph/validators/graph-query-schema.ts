@@ -3,6 +3,8 @@ import { z } from "zod/v4";
 const VALID_DEPENDENCY_TYPES = [
   "HTTP_API",
   "KAFKA_TOPIC",
+  "RABBITMQ_QUEUE",
+  "SQS_QUEUE",
   "SHARED_DATABASE",
   "CROSS_DATABASE_QUERY",
   "SHARED_PACKAGE",

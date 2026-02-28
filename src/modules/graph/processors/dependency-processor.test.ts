@@ -44,7 +44,7 @@ function buildDatabaseDep(
   };
 }
 
-function buildKafkaDep(
+function buildMessagingDep(
   overrides: Partial<ResolvedDependency> = {},
 ): ResolvedDependency {
   return {
@@ -74,7 +74,7 @@ function buildDeps(
   return {
     resolveHttp: vi.fn().mockResolvedValue(buildHttpResult()),
     resolveDatabase: vi.fn().mockResolvedValue([]),
-    resolveKafka: vi.fn().mockResolvedValue([]),
+    resolveMessaging: vi.fn().mockResolvedValue([]),
     resolvePackage: vi.fn().mockResolvedValue([]),
     persistDependencies: vi.fn().mockResolvedValue(undefined),
     ...overrides,
@@ -90,7 +90,7 @@ describe("processDependencies", () => {
           buildHttpResult({ resolved: [buildHttpDep()] }),
         ),
       resolveDatabase: vi.fn().mockResolvedValue([buildDatabaseDep()]),
-      resolveKafka: vi.fn().mockResolvedValue([buildKafkaDep()]),
+      resolveMessaging: vi.fn().mockResolvedValue([buildMessagingDep()]),
       resolvePackage: vi.fn().mockResolvedValue([buildPackageDep()]),
     });
 
@@ -99,7 +99,7 @@ describe("processDependencies", () => {
     expect(result.total).toBe(4);
     expect(deps.resolveHttp).toHaveBeenCalledTimes(1);
     expect(deps.resolveDatabase).toHaveBeenCalledTimes(1);
-    expect(deps.resolveKafka).toHaveBeenCalledTimes(1);
+    expect(deps.resolveMessaging).toHaveBeenCalledTimes(1);
     expect(deps.resolvePackage).toHaveBeenCalledTimes(1);
   });
 
@@ -121,7 +121,7 @@ describe("processDependencies", () => {
           targetId: "f",
         }),
       ]),
-      resolveKafka: vi.fn().mockResolvedValue([buildKafkaDep()]),
+      resolveMessaging: vi.fn().mockResolvedValue([buildMessagingDep()]),
       resolvePackage: vi.fn().mockResolvedValue([buildPackageDep()]),
     });
 
@@ -176,7 +176,7 @@ describe("processDependencies", () => {
           buildHttpResult({ resolved: [buildHttpDep()] }),
         ),
       resolveDatabase: vi.fn().mockResolvedValue([buildDatabaseDep()]),
-      resolveKafka: vi.fn().mockResolvedValue([buildKafkaDep()]),
+      resolveMessaging: vi.fn().mockResolvedValue([buildMessagingDep()]),
       resolvePackage: vi.fn().mockResolvedValue([buildPackageDep()]),
       persistDependencies,
     });

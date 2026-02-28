@@ -5,6 +5,7 @@ export type {
   Database,
   Integration,
   KafkaTopic,
+  MessageTopic,
   Package,
   ApiEndpoint,
   Risk,
