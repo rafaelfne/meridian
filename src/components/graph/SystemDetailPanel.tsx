@@ -52,6 +52,15 @@ const SEVERITY_ORDER: Record<string, number> = {
   LOW: 3,
 } as const;
 
+function isSafeUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === "https:" || parsed.protocol === "http:";
+  } catch {
+    return false;
+  }
+}
+
 function SeverityBadge({ severity }: { severity: string }) {
   const severityClass: string | undefined = {
     LOW: styles.severityLow,
@@ -197,7 +206,7 @@ export function SystemDetailPanel({
                     </span>
                   </div>
                 )}
-                {detail.repositoryUrl && (
+                {detail.repositoryUrl && isSafeUrl(detail.repositoryUrl) && (
                   <div
                     className={styles.metaItem}
                     style={{ gridColumn: "1 / -1" }}
