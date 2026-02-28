@@ -26,6 +26,7 @@ function createEdgeProps(overrides = {}) {
     style: { stroke: "#4f46e5", strokeWidth: 2 },
     data: { type: "HTTP_API", label: "http api" },
     ...overrides,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- React Flow EdgeProps requires internal fields we don't need in tests
   } as any;
 }
 

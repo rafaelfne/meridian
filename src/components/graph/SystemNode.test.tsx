@@ -22,6 +22,7 @@ function createNodeProps(overrides: Partial<GraphNodeData> = {}) {
     domainColor: "#4f46e5",
     ...overrides,
   };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- React Flow NodeProps requires internal fields we don't need in tests
   return { id: "node-1", data, type: "system", selected: false } as any;
 }
 
