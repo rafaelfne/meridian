@@ -39,13 +39,13 @@ vi.mock("radix-ui", () => {
       Root: ({ children, open, onOpenChange }: any) =>
         open
           ? React.createElement(
-              "div",
-              {
-                "data-testid": "sheet-root",
-                onClick: () => onOpenChange?.(false),
-              },
-              children,
-            )
+            "div",
+            {
+              "data-testid": "sheet-root",
+              onClick: () => onOpenChange?.(false),
+            },
+            children,
+          )
           : null,
       Portal: ({ children }: any) => children,
       Overlay: ({ children }: any) =>
@@ -81,13 +81,13 @@ vi.mock("radix-ui", () => {
             typeof children === "function"
               ? children({ value, onValueChange: setValue })
               : React.Children.map(children, (child: any) =>
-                  child
-                    ? React.cloneElement(child, {
-                        __tabsValue: value,
-                        __tabsOnChange: setValue,
-                      })
-                    : null,
-                ),
+                child
+                  ? React.cloneElement(child, {
+                    __tabsValue: value,
+                    __tabsOnChange: setValue,
+                  })
+                  : null,
+              ),
           ),
         );
       },
@@ -98,9 +98,9 @@ vi.mock("radix-ui", () => {
           React.Children.map(children, (child: any) =>
             child
               ? React.cloneElement(child, {
-                  __tabsValue,
-                  __tabsOnChange,
-                })
+                __tabsValue,
+                __tabsOnChange,
+              })
               : null,
           ),
         ),
@@ -167,6 +167,10 @@ vi.mock("lucide-react", () => {
     Package: icon("package"),
     AlertTriangle: icon("alert-triangle"),
     Highlighter: icon("highlighter"),
+    Copy: icon("copy"),
+    ArrowRight: icon("arrow-right"),
+    ArrowLeft: icon("arrow-left"),
+    Route: icon("route"),
     XIcon: icon("x"),
   };
 });
@@ -183,6 +187,7 @@ const mockSystemDetail: SystemDetail = {
   framework: "Next.js",
   frameworkVersion: "15.0.0",
   repositoryUrl: "https://github.com/org/auth-service",
+  layer: null,
   domain: { name: "Identity" },
   services: [
     { id: "svc-1", name: "Auth API", type: "API" as const },
@@ -242,11 +247,35 @@ const mockSystemDetail: SystemDetail = {
       severity: "MEDIUM" as const,
     },
   ],
+  apiEndpoints: [
+    {
+      id: "ep-1",
+      path: "/api/v1/auth/login",
+      method: "POST",
+      description: "Authenticate user",
+    },
+  ],
+  dependsOn: [
+    {
+      id: "dep-1",
+      type: "HTTP_API",
+      label: "User Query",
+      system: { id: "sys-2", name: "User Service", slug: "user-service" },
+    },
+  ],
+  dependedBy: [
+    {
+      id: "dep-2",
+      type: "HTTP_API",
+      label: "Auth Check",
+      system: { id: "sys-3", name: "API Gateway", slug: "api-gateway" },
+    },
+  ],
 };
 
 /* ── Helpers ───────────────────────────────────────────── */
 
-const noop = () => {};
+const noop = () => { };
 
 /**
  * Creates a deferred promise that tests can resolve/reject on demand.

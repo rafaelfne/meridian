@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import {
   ReactFlow,
   MiniMap,
@@ -13,12 +13,14 @@ import {
   type Viewport,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
+import { useTheme } from "next-themes";
 import type { GraphData } from "@/modules/graph/types";
 import { SystemNode } from "./SystemNode";
 import { DependencyEdge } from "./DependencyEdge";
 import { LayerLabelNode } from "./LayerLabelNode";
 import { DomainGroupNode } from "./DomainGroupNode";
 import { CollapsedDomainNode } from "./CollapsedDomainNode";
+import { GraphHoverContext } from "./GraphHoverContext";
 import styles from "./DependencyGraph.module.css";
 
 const nodeTypes = {
@@ -30,10 +32,12 @@ const nodeTypes = {
 const edgeTypes = { smoothstep: DependencyEdge };
 
 const DIMMED_OPACITY = 0.15;
+const LONG_PRESS_MS = 500;
 
 interface DependencyGraphProps {
   data: GraphData;
   onNodeClick?: (nodeId: string) => void;
+  onNodeLongPress?: (nodeId: string) => void;
   highlightedSystemId?: string | null;
   onViewportChange?: (viewport: Viewport) => void;
 }
@@ -41,11 +45,62 @@ interface DependencyGraphProps {
 export function DependencyGraph({
   data,
   onNodeClick,
+  onNodeLongPress,
   highlightedSystemId,
   onViewportChange,
 }: DependencyGraphProps) {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const isDark = mounted && resolvedTheme === "dark";
+
   const [nodes, setNodes, onNodesChange] = useNodesState(data.nodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(data.edges);
+
+  // Edge hover state
+  const [hoveredEdgeId, setHoveredEdgeId] = useState<string | null>(null);
+
+  const handleEdgeMouseEnter = useCallback(
+    (_event: React.MouseEvent, edge: { id: string }) => {
+      setHoveredEdgeId(edge.id);
+    },
+    [],
+  );
+
+  const handleEdgeMouseLeave = useCallback(() => {
+    setHoveredEdgeId(null);
+  }, []);
+
+  // Long-press detection
+  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const longPressTriggered = useRef(false);
+
+  const handleNodePointerDown = useCallback(
+    (nodeId: string) => {
+      longPressTriggered.current = false;
+      longPressTimer.current = setTimeout(() => {
+        longPressTriggered.current = true;
+        onNodeLongPress?.(nodeId);
+      }, LONG_PRESS_MS);
+    },
+    [onNodeLongPress],
+  );
+
+  const handleNodePointerUp = useCallback(() => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+  }, []);
+
+  const hoverContextValue = useMemo(
+    () => ({
+      hoveredEdgeId,
+      onNodePointerDown: onNodeLongPress ? handleNodePointerDown : undefined,
+      onNodePointerUp: onNodeLongPress ? handleNodePointerUp : undefined,
+    }),
+    [hoveredEdgeId, onNodeLongPress, handleNodePointerDown, handleNodePointerUp],
+  );
 
   // Sync nodes/edges when data changes (filtering) or highlighting changes
   useEffect(() => {
@@ -90,6 +145,10 @@ export function DependencyGraph({
 
   const handleNodeClick: NodeMouseHandler = useCallback(
     (_event, node) => {
+      if (longPressTriggered.current) {
+        longPressTriggered.current = false;
+        return;
+      }
       onNodeClick?.(node.id);
     },
     [onNodeClick],
@@ -113,24 +172,35 @@ export function DependencyGraph({
 
   return (
     <div className={styles.wrapper}>
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onNodeClick={handleNodeClick}
-        onMoveEnd={handleMoveEnd}
-        nodeTypes={nodeTypes}
-        edgeTypes={edgeTypes}
-        fitView
-        nodesDraggable
-        nodesConnectable={false}
-        edgesReconnectable={false}
-      >
-        <MiniMap />
-        <Controls />
-        <Background variant={BackgroundVariant.Dots} />
-      </ReactFlow>
+      <GraphHoverContext.Provider value={hoverContextValue}>
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onNodeClick={handleNodeClick}
+          onMoveEnd={handleMoveEnd}
+          onEdgeMouseEnter={handleEdgeMouseEnter}
+          onEdgeMouseLeave={handleEdgeMouseLeave}
+          nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
+          fitView
+          nodesDraggable
+          nodesConnectable={false}
+          edgesReconnectable={false}
+        >
+          <MiniMap
+            style={{ background: isDark ? "hsl(230 25% 12%)" : undefined }}
+            maskColor={isDark ? "rgba(0,0,0,0.7)" : undefined}
+          />
+          <Controls />
+          <Background
+            variant={BackgroundVariant.Dots}
+            color={isDark ? "rgba(255,255,255,0.08)" : undefined}
+            gap={20}
+          />
+        </ReactFlow>
+      </GraphHoverContext.Provider>
     </div>
   );
 }

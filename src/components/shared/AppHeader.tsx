@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LayoutDashboard, Network, Server, Upload } from "lucide-react";
 import clsx from "clsx";
+import { ThemeToggle } from "./ThemeToggle";
 import styles from "./AppHeader.module.css";
 
 const NAV_ITEMS = [
@@ -39,6 +40,9 @@ export function AppHeader() {
           );
         })}
       </nav>
+      <div className={styles.actions}>
+        <ThemeToggle />
+      </div>
     </header>
   );
 }

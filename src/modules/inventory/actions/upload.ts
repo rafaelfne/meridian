@@ -6,6 +6,7 @@ import type { Prisma } from "@/generated/prisma/client";
 import { InventoryUploadSchema } from "../validators/inventory-upload";
 import { processInventory } from "../services/process-inventory";
 import { processDependenciesAction } from "@/modules/graph/actions/process";
+import { saveGraphSnapshot } from "@/modules/graph/actions/save-snapshot";
 import type { SystemInventory } from "../types";
 
 export interface UploadInventoryResult {
@@ -125,6 +126,7 @@ export async function uploadInventory(
     revalidatePath("/graph");
 
     await processDependenciesAction();
+    await saveGraphSnapshot(upload.id);
 
     return {
       success: true,

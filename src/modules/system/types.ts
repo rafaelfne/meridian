@@ -48,6 +48,20 @@ export interface SystemDetailRisk {
   severity: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
 }
 
+export interface SystemDetailApiEndpoint {
+  id: string;
+  path: string;
+  method: string | null;
+  description: string | null;
+}
+
+export interface SystemDetailDependency {
+  id: string;
+  type: string;
+  label: string | null;
+  system: { id: string; name: string; slug: string };
+}
+
 export interface SystemDetail {
   id: string;
   name: string;
@@ -57,6 +71,7 @@ export interface SystemDetail {
   framework: string | null;
   frameworkVersion: string | null;
   repositoryUrl: string | null;
+  layer: string | null;
   domain: { name: string };
   services: SystemDetailService[];
   databases: SystemDetailDatabase[];
@@ -64,6 +79,9 @@ export interface SystemDetail {
   messageTopics: SystemDetailMessageTopic[];
   packages: SystemDetailPackage[];
   risks: SystemDetailRisk[];
+  apiEndpoints: SystemDetailApiEndpoint[];
+  dependsOn: SystemDetailDependency[];
+  dependedBy: SystemDetailDependency[];
 }
 
 export interface SystemListItem {

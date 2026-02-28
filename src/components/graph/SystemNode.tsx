@@ -3,15 +3,23 @@
 import { Handle, Position } from "@xyflow/react";
 import type { NodeProps } from "@xyflow/react";
 import type { GraphNodeData } from "@/modules/graph/types";
+import { useGraphHover } from "./GraphHoverContext";
 import styles from "./SystemNode.module.css";
 import clsx from "clsx";
 import { AlertTriangle } from "lucide-react";
 
 type SystemNodeProps = NodeProps & { data: GraphNodeData };
 
-export function SystemNode({ data, selected }: SystemNodeProps) {
+export function SystemNode({ id, data, selected }: SystemNodeProps) {
+  const { onNodePointerDown, onNodePointerUp } = useGraphHover();
+
   return (
-    <div className={clsx(styles.node, selected && styles.selected)}>
+    <div
+      className={clsx(styles.node, selected && styles.selected)}
+      onPointerDown={onNodePointerDown ? () => onNodePointerDown(id) : undefined}
+      onPointerUp={onNodePointerUp}
+      onPointerLeave={onNodePointerUp}
+    >
       <Handle type="target" position={Position.Left} />
 
       <div className={styles.header}>

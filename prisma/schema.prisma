@@ -251,6 +251,8 @@ model InventoryUpload {
   uploadedById String?
   createdAt    DateTime     @default(now())
   processedAt  DateTime?
+
+  snapshot     GraphSnapshot?
 }
 
 enum UploadStatus {
@@ -258,4 +260,15 @@ enum UploadStatus {
   PROCESSING
   COMPLETED
   FAILED
+}
+
+model GraphSnapshot {
+  id          String          @id @default(cuid())
+  uploadId    String          @unique
+  upload      InventoryUpload @relation(fields: [uploadId], references: [id], onDelete: Cascade)
+  nodesJson   Json
+  edgesJson   Json
+  systemCount Int
+  edgeCount   Int
+  createdAt   DateTime        @default(now())
 }

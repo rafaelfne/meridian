@@ -28,6 +28,7 @@ export async function getSystemDetailAction(
         framework: true,
         frameworkVersion: true,
         repositoryUrl: true,
+        layer: true,
         domain: { select: { name: true } },
         services: {
           select: { id: true, name: true, type: true },
@@ -64,6 +65,25 @@ export async function getSystemDetailAction(
             severity: true,
           },
         },
+        apiEndpoints: {
+          select: { id: true, path: true, method: true, description: true },
+        },
+        dependsOn: {
+          select: {
+            id: true,
+            type: true,
+            label: true,
+            target: { select: { id: true, name: true, slug: true } },
+          },
+        },
+        dependedBy: {
+          select: {
+            id: true,
+            type: true,
+            label: true,
+            source: { select: { id: true, name: true, slug: true } },
+          },
+        },
       },
     });
 
@@ -71,7 +91,24 @@ export async function getSystemDetailAction(
       return { success: false, error: "System not found" };
     }
 
-    return { success: true, data: system as SystemDetail };
+    // Map Prisma relation names to our type interface
+    const data: SystemDetail = {
+      ...system,
+      dependsOn: system.dependsOn.map((d) => ({
+        id: d.id,
+        type: d.type,
+        label: d.label,
+        system: d.target,
+      })),
+      dependedBy: system.dependedBy.map((d) => ({
+        id: d.id,
+        type: d.type,
+        label: d.label,
+        system: d.source,
+      })),
+    };
+
+    return { success: true, data };
   } catch (error) {
     console.error("Failed to fetch system detail:", error);
     return { success: false, error: "Failed to fetch system details" };

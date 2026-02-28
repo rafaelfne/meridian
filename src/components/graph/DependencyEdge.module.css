@@ -1,0 +1,12 @@
+.glowPath {
+  pointer-events: none;
+  filter: blur(3px);
+}
+
+.edgeLabel {
+  transition: transform 0.1s ease;
+}
+
+.edgeLabelHovered {
+  transform: scale(1.05);
+}

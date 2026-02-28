@@ -5,7 +5,7 @@ import { buildGraphData } from "@/modules/graph/services/build-graph-data";
 import { GraphPageClient } from "@/components/graph/GraphPageClient";
 
 export default async function GraphPage() {
-  const [systems, dependencies] = await Promise.all([
+  const [systems, dependencies, snapshots] = await Promise.all([
     prisma.system.findMany({
       orderBy: { name: "asc" },
       select: {
@@ -28,15 +28,33 @@ export default async function GraphPage() {
         label: true,
       },
     }),
+    prisma.graphSnapshot.findMany({
+      orderBy: { createdAt: "asc" },
+      select: {
+        id: true,
+        uploadId: true,
+        systemCount: true,
+        edgeCount: true,
+        createdAt: true,
+        upload: { select: { filename: true } },
+      },
+    }),
   ]);
 
   const graphData = buildGraphData(systems, dependencies);
+
+  // Serialize dates for client component
+  const serializedSnapshots = snapshots.map((s) => ({
+    ...s,
+    createdAt: s.createdAt.toISOString(),
+  }));
 
   return (
     <GraphPageClient
       data={graphData}
       systems={systems}
       dependencies={dependencies}
+      snapshots={serializedSnapshots}
     />
   );
 }

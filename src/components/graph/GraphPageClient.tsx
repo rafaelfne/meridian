@@ -24,27 +24,60 @@ import { GraphToolbar } from "./GraphToolbar";
 import { DependencyGraph } from "./DependencyGraph";
 import { SystemDetailPanel } from "./SystemDetailPanel";
 import { GraphCommandSearch } from "./GraphCommandSearch";
+import {
+  TimeMachineSlider,
+  type SnapshotMeta,
+} from "./TimeMachineSlider";
 
 interface GraphPageClientProps {
   data: GraphData;
   systems?: SystemWithCounts[];
   dependencies?: DependencyRecord[];
+  snapshots?: SnapshotMeta[];
 }
 
 function GraphPageClientInner({
   data,
   systems,
   dependencies,
+  snapshots = [],
 }: GraphPageClientProps) {
   const { filters } = useGraphFilters();
 
+  // Time Machine state
+  const [snapshotData, setSnapshotData] = useState<GraphData | null>(null);
+  const [isLoadingSnapshot, setIsLoadingSnapshot] = useState(false);
+
+  const handleSnapshotSelect = useCallback(
+    async (snapshotId: string | null) => {
+      if (!snapshotId) {
+        setSnapshotData(null);
+        return;
+      }
+      setIsLoadingSnapshot(true);
+      try {
+        const res = await fetch(`/api/graph/snapshots/${snapshotId}`);
+        const json = await res.json();
+        setSnapshotData(json as GraphData);
+      } finally {
+        setIsLoadingSnapshot(false);
+      }
+    },
+    [],
+  );
+
+  // Active data source: snapshot or live
+  const activeData = snapshotData ?? data;
+  const isViewingSnapshot = snapshotData !== null;
+
   // Compute layout based on mode
   const layoutData = useMemo(() => {
+    if (isViewingSnapshot) return activeData;
     if (filters.layoutMode === "layered" && systems && dependencies) {
       return buildLayeredGraphData(systems, dependencies);
     }
-    return data;
-  }, [filters.layoutMode, systems, dependencies, data]);
+    return activeData;
+  }, [filters.layoutMode, systems, dependencies, activeData, isViewingSnapshot]);
 
   // Derive available filter options from unfiltered data
   const availableDomains = useMemo(
@@ -77,6 +110,7 @@ function GraphPageClientInner({
 
   // Apply clustering transformations
   const displayData = useMemo(() => {
+    if (isViewingSnapshot) return filteredData;
     if (!filters.clustering) return filteredData;
 
     const clustered = buildClusteredGraphData(filteredData);
@@ -84,7 +118,7 @@ function GraphPageClientInner({
       return collapseDomainClusters(clustered);
     }
     return clustered;
-  }, [filteredData, filters.clustering, collapsed]);
+  }, [filteredData, filters.clustering, collapsed, isViewingSnapshot]);
 
   const visibleNodeIds = useMemo(
     () => new Set(displayData.nodes.map((n) => n.id)),
@@ -117,21 +151,34 @@ function GraphPageClientInner({
         <GraphToolbar
           availableDomains={availableDomains}
           availableLanguages={availableLanguages}
-          totalNodes={data.nodes.length}
-          totalEdges={data.edges.length}
+          totalNodes={activeData.nodes.length}
+          totalEdges={activeData.edges.length}
           filteredNodes={filteredData.nodes.length}
           filteredEdges={filteredData.edges.length}
         />
-        <DependencyGraph
-          data={displayData}
-          onNodeClick={handleNodeClick}
-          highlightedSystemId={highlightedSystemId}
-          onViewportChange={filters.clustering ? handleViewportChange : undefined}
-        />
+        <div className="relative flex flex-col flex-1 min-h-0">
+          <DependencyGraph
+            data={displayData}
+            onNodeClick={handleNodeClick}
+            onNodeLongPress={handleHighlightDependencies}
+            highlightedSystemId={highlightedSystemId}
+            onViewportChange={
+              !isViewingSnapshot && filters.clustering
+                ? handleViewportChange
+                : undefined
+            }
+          />
+          <TimeMachineSlider
+            snapshots={snapshots}
+            onSnapshotSelect={handleSnapshotSelect}
+            isLoading={isLoadingSnapshot}
+          />
+        </div>
         <SystemDetailPanel
           systemId={selectedNodeId}
           onClose={handleClosePanel}
           onHighlightDependencies={handleHighlightDependencies}
+          onNodeClick={handleNodeClick}
         />
         <GraphCommandSearch
           nodes={layoutData.nodes}
