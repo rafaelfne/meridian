@@ -115,7 +115,11 @@ describe("processDependencies", () => {
       ),
       resolveDatabase: vi.fn().mockResolvedValue([
         buildDatabaseDep({ type: "SHARED_DATABASE" }),
-        buildDatabaseDep({ type: "CROSS_DATABASE_QUERY", sourceId: "e", targetId: "f" }),
+        buildDatabaseDep({
+          type: "CROSS_DATABASE_QUERY",
+          sourceId: "e",
+          targetId: "f",
+        }),
       ]),
       resolveKafka: vi.fn().mockResolvedValue([buildKafkaDep()]),
       resolvePackage: vi.fn().mockResolvedValue([buildPackageDep()]),
