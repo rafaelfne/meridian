@@ -13,20 +13,25 @@ export interface UploadInventoryResult {
   errors?: string[];
 }
 
-const INTEGRATION_TYPE_MAP: Record<string, string> = {
-  HTTP_API: "HTTP_API",
-  DATABASE_DIRECT: "DATABASE_DIRECT",
-  GRPC: "GRPC",
-  FILE_TRANSFER: "FILE_TRANSFER",
-  OTHER: "OTHER",
-};
+type PrismaIntegrationType =
+  | "HTTP_API"
+  | "DATABASE_DIRECT"
+  | "GRPC"
+  | "FILE_TRANSFER"
+  | "OTHER";
 
-function mapIntegrationType(
-  type: string,
-): "HTTP_API" | "DATABASE_DIRECT" | "GRPC" | "GRAPHQL" | "SOAP" | "FILE_TRANSFER" | "OTHER" {
-  return (INTEGRATION_TYPE_MAP[type] ?? "OTHER") as ReturnType<
-    typeof mapIntegrationType
-  >;
+const VALID_INTEGRATION_TYPES = new Set<string>([
+  "HTTP_API",
+  "DATABASE_DIRECT",
+  "GRPC",
+  "FILE_TRANSFER",
+  "OTHER",
+]);
+
+function mapIntegrationType(type: string): PrismaIntegrationType {
+  return VALID_INTEGRATION_TYPES.has(type)
+    ? (type as PrismaIntegrationType)
+    : "OTHER";
 }
 
 function mapPackageScope(
@@ -143,8 +148,16 @@ function buildSystemData(domainId: string, system: SystemInventory) {
   };
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function createSystemChildren(tx: any, systemId: string, system: SystemInventory) {
+type TransactionClient = Omit<
+  typeof prisma,
+  "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends"
+>;
+
+async function createSystemChildren(
+  tx: TransactionClient,
+  systemId: string,
+  system: SystemInventory,
+) {
   const operations = [
     ...system.services.map((s) =>
       tx.service.create({
