@@ -170,8 +170,7 @@ export function GraphToolbar({
     filters.search.trim() !== "" ||
     !filters.showIsolated;
 
-  const depTypeOptions =
-    DEPENDENCY_TYPES.filter((t) => t !== undefined) as unknown as string[];
+  const depTypeOptions = [...DEPENDENCY_TYPES] as string[];
 
   return (
     <div className={styles.toolbar} role="toolbar" aria-label="Graph filters">
