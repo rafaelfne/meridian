@@ -1,0 +1,99 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.statValue {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--foreground);
+}
+
+.statLabel {
+  font-size: 0.8125rem;
+  color: var(--muted-foreground);
+  line-height: 1.4;
+}
+
+.chartSection {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1rem;
+}
+
+.barChart {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.barRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.barLabel {
+  flex-shrink: 0;
+  width: 7rem;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: var(--foreground);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.barTrack {
+  flex: 1;
+  height: 0.5rem;
+  border-radius: 9999px;
+  background-color: var(--muted);
+  overflow: hidden;
+}
+
+.barFill {
+  height: 100%;
+  border-radius: 9999px;
+  transition: width 0.3s ease;
+}
+
+.barCount {
+  flex-shrink: 0;
+  min-width: 1.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--muted-foreground);
+  text-align: right;
+}
+
+.listItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.listItem:last-child {
+  border-bottom: none;
+}
+
+.severity {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.emptyState {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 6rem;
+  color: var(--muted-foreground);
+  font-size: 0.875rem;
+}
