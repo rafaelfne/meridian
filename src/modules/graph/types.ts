@@ -80,7 +80,7 @@ export interface ResolveHttpDepsResult {
 // ── React Flow Graph Types ─────────────────────────────
 
 /** Data payload for a system node rendered in React Flow. */
-export interface GraphNodeData {
+export interface GraphNodeData extends Record<string, unknown> {
   label: string;
   domain: string;
   language: string | null;
@@ -91,7 +91,7 @@ export interface GraphNodeData {
 }
 
 /** Data payload for a dependency edge rendered in React Flow. */
-export interface GraphEdgeData {
+export interface GraphEdgeData extends Record<string, unknown> {
   type: string;
   label: string;
 }
