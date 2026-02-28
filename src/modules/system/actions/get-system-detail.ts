@@ -12,7 +12,7 @@ export interface GetSystemDetailResult {
 export async function getSystemDetailAction(
   systemId: string,
 ): Promise<GetSystemDetailResult> {
-  if (!systemId) {
+  if (!systemId || systemId.trim() === "") {
     return { success: false, error: "System ID is required" };
   }
 
