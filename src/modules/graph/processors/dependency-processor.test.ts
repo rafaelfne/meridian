@@ -241,7 +241,7 @@ describe("processDependencies", () => {
   it("normalizes DependencyResult label to null when undefined", async () => {
     const persistDependencies = vi.fn().mockResolvedValue(undefined);
     const dbDep = buildDatabaseDep();
-    delete (dbDep as Record<string, unknown>)["label"];
+    delete (dbDep as unknown as Record<string, unknown>)["label"];
 
     const deps = buildDeps({
       resolveDatabase: vi.fn().mockResolvedValue([dbDep]),

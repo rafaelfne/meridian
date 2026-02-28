@@ -2,7 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { DependencyType } from "@/generated/prisma";
+import { DependencyType } from "@/generated/prisma/enums";
+import type { Prisma } from "@/generated/prisma/client";
 import { resolveHttpDependencies } from "../services/resolve-http-deps";
 import { resolveDatabaseDeps } from "../services/resolve-database-deps";
 import { resolveKafkaDeps } from "../services/resolve-kafka-deps";
@@ -75,7 +76,9 @@ export async function processDependenciesAction(): Promise<ProcessDependenciesAc
                 targetId: d.targetId,
                 type: d.type as DependencyType,
                 label: d.label ?? null,
-                metadata: d.metadata ?? undefined,
+                ...(d.metadata != null && {
+                  metadata: d.metadata as Prisma.InputJsonValue,
+                }),
               })),
             });
           }
