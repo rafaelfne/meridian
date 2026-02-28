@@ -93,7 +93,7 @@ export async function getDashboardMetrics(
       ];
     });
 
-  // Recent risks (already filtered to HIGH/CRITICAL by the getter, take top 5)
+  // Recent risks: take top 5 (getter may return more or fewer)
   const recentRisks = risks.slice(0, 5).map((r) => ({
     id: r.id,
     title: r.title,
@@ -101,7 +101,7 @@ export async function getDashboardMetrics(
     systemName: r.system.name,
   }));
 
-  // Recent uploads (already sorted by the getter, take top 5)
+  // Recent uploads: take top 5 (getter may return more or fewer)
   const recentUploads = uploads.slice(0, 5).map((u) => ({
     id: u.id,
     filename: u.filename,

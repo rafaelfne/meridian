@@ -71,6 +71,7 @@ export default async function DashboardPage() {
       prisma.risk.findMany({
         where: { severity: { in: ["HIGH", "CRITICAL"] } },
         orderBy: { id: "desc" },
+        take: 5,
         include: { system: { select: { name: true } } },
       }),
     () =>
