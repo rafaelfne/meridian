@@ -161,7 +161,7 @@ export function UploadDropzone() {
             Upload Error
           </div>
           <ul className="list-disc list-inside space-y-0.5">
-            {result.errors!.map((err, i) => (
+            {result.errors?.map((err, i) => (
               <li key={i}>{err}</li>
             ))}
           </ul>
@@ -173,6 +173,7 @@ export function UploadDropzone() {
           <button
             type="button"
             className={styles.previewToggle}
+            aria-expanded={previewOpen}
             onClick={() => setPreviewOpen((o) => !o)}
           >
             {previewOpen ? "▼ Hide" : "▶ Show"} JSON Preview
