@@ -124,8 +124,8 @@ export async function processDependencies(
 
     for (let i = 0; i < group.systemIds.length; i++) {
       for (let j = i + 1; j < group.systemIds.length; j++) {
-        const idA = group.systemIds[i]!;
-        const idB = group.systemIds[j]!;
+        const idA = group.systemIds[i] as string;
+        const idB = group.systemIds[j] as string;
         const [sourceId, targetId] = idA < idB ? [idA, idB] : [idB, idA];
 
         addDep({

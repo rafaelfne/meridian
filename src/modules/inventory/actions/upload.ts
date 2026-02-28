@@ -126,8 +126,9 @@ export async function uploadInventory(
     // Process dependencies after inventory upload
     try {
       await processDependenciesAction();
-    } catch {
+    } catch (e) {
       // Dependency processing failure should not fail the upload
+      console.error("Failed to process dependencies after upload:", e);
     }
 
     return {
