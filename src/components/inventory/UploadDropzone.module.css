@@ -1,0 +1,100 @@
+/* Local success color — no --success token in the global theme yet */
+:root {
+  --dropzone-success: oklch(0.45 0.15 150);
+}
+
+.dark {
+  --dropzone-success: oklch(0.65 0.2 150);
+}
+
+.dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 2rem;
+  border: 2px dashed var(--border);
+  border-radius: var(--radius-lg);
+  background-color: var(--background);
+  color: var(--muted-foreground);
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.dropzone:hover {
+  border-color: var(--primary);
+  background-color: var(--accent);
+}
+
+.active {
+  border-color: var(--primary);
+  background-color: oklch(from var(--primary) l c h / 8%);
+}
+
+.error {
+  border-color: var(--destructive);
+  background-color: oklch(from var(--destructive) l c h / 8%);
+}
+
+.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.preview {
+  width: 100%;
+  max-height: 16rem;
+  overflow: auto;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  background-color: var(--muted);
+  color: var(--foreground);
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.previewToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.5rem;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--muted-foreground);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.previewToggle:hover {
+  color: var(--foreground);
+}
+
+.statusMessage {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.successMessage {
+  color: var(--dropzone-success);
+  background-color: oklch(from var(--dropzone-success) l c h / 8%);
+  border: 1px solid oklch(from var(--dropzone-success) l c h / 20%);
+}
+
+.errorMessage {
+  color: var(--destructive);
+  background-color: oklch(from var(--destructive) l c h / 8%);
+  border: 1px solid oklch(from var(--destructive) l c h / 20%);
+}

@@ -224,3 +224,10 @@ async function createSystemChildren(
 
   await Promise.all(operations);
 }
+
+export async function uploadInventoryAction(
+  _prevState: UploadInventoryResult,
+  formData: FormData,
+): Promise<UploadInventoryResult> {
+  return uploadInventory(formData);
+}
