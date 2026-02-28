@@ -6,6 +6,11 @@ import type {
   GraphEdge,
   GraphData,
 } from "../types";
+import {
+  DEPENDENCY_TYPE_CONFIG,
+  DEFAULT_EDGE_STYLE,
+  type DependencyTypeName,
+} from "../constants";
 
 const NODE_WIDTH = 250;
 const NODE_HEIGHT = 100;
@@ -44,23 +49,12 @@ function getDomainColor(domainName: string): string {
   return DOMAIN_COLORS[index] ?? DOMAIN_COLORS[0];
 }
 
-/** Style mapping for dependency types */
-const EDGE_STYLES: Record<string, { stroke: string; animated: boolean }> = {
-  HTTP_API: { stroke: "#4f46e5", animated: false },
-  KAFKA_TOPIC: { stroke: "#059669", animated: true },
-  RABBITMQ_QUEUE: { stroke: "#A855F7", animated: true },
-  SQS_QUEUE: { stroke: "#EAB308", animated: true },
-  SHARED_DATABASE: { stroke: "#d97706", animated: false },
-  CROSS_DATABASE_QUERY: { stroke: "#dc2626", animated: false },
-  SHARED_PACKAGE: { stroke: "#7c3aed", animated: false },
-  GRPC: { stroke: "#0891b2", animated: false },
-  FILE_DEPENDENCY: { stroke: "#6b7280", animated: false },
-};
-
-const DEFAULT_EDGE_STYLE = { stroke: "#94a3b8", animated: false };
-
 function getEdgeStyle(type: string): { stroke: string; animated: boolean } {
-  return EDGE_STYLES[type] ?? DEFAULT_EDGE_STYLE;
+  const config = DEPENDENCY_TYPE_CONFIG[type as DependencyTypeName];
+  if (config) {
+    return { stroke: config.color, animated: config.animated };
+  }
+  return { stroke: DEFAULT_EDGE_STYLE.color, animated: DEFAULT_EDGE_STYLE.animated };
 }
 
 function resolveEdgeLabel(type: string, label: string | null): string {
