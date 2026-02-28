@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ReactFlow,
   useNodesState,
@@ -20,6 +20,8 @@ import { SystemDetailPanel } from "@/components/graph/SystemDetailPanel";
 export default function GraphPage() {
   const [nodes, setNodes, onNodesChange] = useNodesState([] as Node[]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([] as Edge[]);
+  const edgesRef = useRef(edges);
+  edgesRef.current = edges;
   const [selectedSystemId, setSelectedSystemId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -77,7 +79,7 @@ export default function GraphPage() {
       setNodes((nds) =>
         nds.map((n) => {
           const isSelected = n.id === systemId;
-          const isNeighbor = edges.some(
+          const isNeighbor = edgesRef.current.some(
             (e) =>
               (e.source === systemId && e.target === n.id) ||
               (e.target === systemId && e.source === n.id),
@@ -92,7 +94,7 @@ export default function GraphPage() {
         }),
       );
     },
-    [edges, setEdges, setNodes],
+    [setEdges, setNodes],
   );
 
   if (loading) {
