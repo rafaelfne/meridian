@@ -1,132 +1,66 @@
-"use client";
+export const dynamic = "force-dynamic";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { prisma } from "@/lib/prisma";
+import { buildGraphData } from "@/modules/graph/services/build-graph-data";
+import { DependencyGraph } from "@/components/graph/DependencyGraph";
 import {
-  ReactFlow,
-  useNodesState,
-  useEdgesState,
-  Controls,
-  MiniMap,
-  Background,
-  BackgroundVariant,
-  type Node,
-  type Edge,
-  type NodeMouseHandler,
-} from "@xyflow/react";
-import "@xyflow/react/dist/style.css";
-import type { GraphData } from "@/modules/graph/types";
-import { SystemDetailPanel } from "@/components/graph/SystemDetailPanel";
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
-export default function GraphPage() {
-  const [nodes, setNodes, onNodesChange] = useNodesState([] as Node[]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState([] as Edge[]);
-  const edgesRef = useRef(edges);
-  edgesRef.current = edges;
-  const [selectedSystemId, setSelectedSystemId] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+export default async function GraphPage() {
+  const [systems, dependencies] = await Promise.all([
+    prisma.system.findMany({
+      orderBy: { name: "asc" },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        language: true,
+        framework: true,
+        domain: { select: { name: true } },
+        _count: { select: { services: true, risks: true } },
+      },
+    }),
+    prisma.dependency.findMany({
+      select: {
+        id: true,
+        sourceId: true,
+        targetId: true,
+        type: true,
+        label: true,
+      },
+    }),
+  ]);
 
-  useEffect(() => {
-    async function fetchGraph() {
-      try {
-        const res = await fetch("/api/graph");
-        const json = (await res.json()) as { data: GraphData };
-        setNodes(json.data.nodes as unknown as Node[]);
-        setEdges(json.data.edges as unknown as Edge[]);
-      } catch (err) {
-        console.error("Failed to fetch graph:", err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    void fetchGraph();
-  }, [setNodes, setEdges]);
-
-  const handleNodeClick: NodeMouseHandler = useCallback(
-    (_event, node) => {
-      setSelectedSystemId(node.id);
-    },
-    [],
-  );
-
-  const handleClosePanel = useCallback(() => {
-    setSelectedSystemId(null);
-    // Reset any highlighting
-    setEdges((eds) =>
-      eds.map((e) => ({
-        ...e,
-        style: { ...e.style, opacity: 1 },
-      })),
-    );
-    setNodes((nds) =>
-      nds.map((n) => ({
-        ...n,
-        style: { ...n.style, opacity: 1 },
-      })),
-    );
-  }, [setEdges, setNodes]);
-
-  const handleHighlightDependencies = useCallback(
-    (systemId: string) => {
-      setEdges((eds) =>
-        eds.map((e) => {
-          const isRelated = e.source === systemId || e.target === systemId;
-          return {
-            ...e,
-            style: { ...e.style, opacity: isRelated ? 1 : 0.15 },
-          };
-        }),
-      );
-      setNodes((nds) =>
-        nds.map((n) => {
-          const isSelected = n.id === systemId;
-          const isNeighbor = edgesRef.current.some(
-            (e) =>
-              (e.source === systemId && e.target === n.id) ||
-              (e.target === systemId && e.source === n.id),
-          );
-          return {
-            ...n,
-            style: {
-              ...n.style,
-              opacity: isSelected || isNeighbor ? 1 : 0.25,
-            },
-          };
-        }),
-      );
-    },
-    [setEdges, setNodes],
-  );
-
-  if (loading) {
-    return (
-      <div className="flex h-[calc(100vh-4rem)] items-center justify-center">
-        <p className="text-muted-foreground">Loading graph…</p>
-      </div>
-    );
-  }
+  const graphData = buildGraphData(systems, dependencies);
 
   return (
-    <div className="h-[calc(100vh-4rem)] w-full">
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onNodeClick={handleNodeClick}
-        fitView
-        minZoom={0.1}
-        maxZoom={2}
-      >
-        <Controls />
-        <MiniMap />
-        <Background variant={BackgroundVariant.Dots} />
-      </ReactFlow>
+    <div className="container mx-auto max-w-7xl space-y-8 py-8 px-4">
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">
+          Dependency Graph
+        </h1>
+        <p className="text-muted-foreground">
+          Visualize how your systems are connected through their dependencies.
+        </p>
+      </div>
 
-      <SystemDetailPanel
-        systemId={selectedSystemId}
-        onClose={handleClosePanel}
-        onHighlightDependencies={handleHighlightDependencies}
-      />
+      <Card>
+        <CardHeader>
+          <CardTitle>System Dependencies</CardTitle>
+          <CardDescription>
+            Interactive graph showing all systems and their dependency
+            relationships. Drag nodes to rearrange, scroll to zoom.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <DependencyGraph data={graphData} />
+        </CardContent>
+      </Card>
     </div>
   );
 }
