@@ -75,3 +75,67 @@ export interface ResolveHttpDepsResult {
   resolved: Dependency[];
   unresolved: UnresolvedIntegration[];
 }
+
+// ── React Flow Graph Types ─────────────────────────────
+
+/** Data payload for a system node rendered in React Flow. */
+export interface GraphNodeData {
+  label: string;
+  domain: string;
+  language: string | null;
+  framework: string | null;
+  servicesCount: number;
+  risksCount: number;
+  domainColor: string;
+}
+
+/** Data payload for a dependency edge rendered in React Flow. */
+export interface GraphEdgeData {
+  type: string;
+  label: string;
+}
+
+/** A React Flow node representing a system. */
+export interface GraphNode {
+  id: string;
+  type: string;
+  position: { x: number; y: number };
+  data: GraphNodeData;
+}
+
+/** A React Flow edge representing a dependency. */
+export interface GraphEdge {
+  id: string;
+  source: string;
+  target: string;
+  type: string;
+  animated: boolean;
+  style: { stroke: string; strokeWidth: number };
+  data: GraphEdgeData;
+}
+
+/** The full graph data response for the API. */
+export interface GraphData {
+  nodes: GraphNode[];
+  edges: GraphEdge[];
+}
+
+/** Raw system data as received from the data source (e.g., Prisma query). */
+export interface SystemWithCounts {
+  id: string;
+  name: string;
+  slug: string;
+  language: string | null;
+  framework: string | null;
+  domain: { name: string };
+  _count: { services: number; risks: number };
+}
+
+/** Raw dependency data as received from the data source. */
+export interface DependencyRecord {
+  id: string;
+  sourceId: string;
+  targetId: string;
+  type: string;
+  label: string | null;
+}
