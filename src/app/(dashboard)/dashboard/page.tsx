@@ -6,7 +6,6 @@ import {
   Server,
   ArrowRightLeft,
   AlertTriangle,
-  ArrowRight,
 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import {
@@ -113,20 +112,11 @@ export default async function DashboardPage() {
 
   return (
     <div className="container mx-auto max-w-7xl space-y-8 py-8 px-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
-          <p className="text-muted-foreground">
-            Overview of your systems landscape
-          </p>
-        </div>
-        <Link
-          href="/graph"
-          className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-        >
-          View Graph
-          <ArrowRight className="h-4 w-4" />
-        </Link>
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
+        <p className="text-muted-foreground">
+          Overview of your systems landscape
+        </p>
       </div>
 
       {/* Metric Cards */}

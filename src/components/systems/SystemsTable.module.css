@@ -14,10 +14,6 @@
   max-width: 20rem;
 }
 
-.domainSelect {
-  min-width: 12rem;
-}
-
 .sortButton {
   display: inline-flex;
   align-items: center;

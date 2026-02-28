@@ -1,8 +1,7 @@
 export const dynamic = "force-dynamic";
 
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, ExternalLink } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -95,25 +94,16 @@ export default async function SystemDetailPage({
 
   return (
     <div className="container mx-auto max-w-7xl space-y-8 py-8 px-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <div className="mb-1 flex items-center gap-3">
-            <h1 className="text-2xl font-bold tracking-tight">
-              {system.name}
-            </h1>
-            <Badge variant="outline">{system.domain.name}</Badge>
-          </div>
-          {system.purpose && (
-            <p className="text-muted-foreground">{system.purpose}</p>
-          )}
+      <div>
+        <div className="mb-1 flex items-center gap-3">
+          <h1 className="text-2xl font-bold tracking-tight">
+            {system.name}
+          </h1>
+          <Badge variant="outline">{system.domain.name}</Badge>
         </div>
-        <Link
-          href="/systems"
-          className="inline-flex items-center gap-2 rounded-md bg-secondary px-4 py-2 text-sm font-medium text-secondary-foreground transition-colors hover:bg-secondary/80"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to Systems
-        </Link>
+        {system.purpose && (
+          <p className="text-muted-foreground">{system.purpose}</p>
+        )}
       </div>
 
       {/* System Overview Card */}

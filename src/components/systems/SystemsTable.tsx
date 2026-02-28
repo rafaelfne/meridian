@@ -5,6 +5,13 @@ import Link from "next/link";
 import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Table,
   TableBody,
   TableCell,
@@ -27,7 +34,7 @@ interface SystemsTableProps {
 
 export function SystemsTable({ systems, domains }: SystemsTableProps) {
   const [search, setSearch] = useState("");
-  const [domainFilter, setDomainFilter] = useState("");
+  const [domainFilter, setDomainFilter] = useState("__all__");
   const [sortField, setSortField] = useState<SortField>("name");
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
 
@@ -52,7 +59,7 @@ export function SystemsTable({ systems, domains }: SystemsTableProps) {
     }
 
     // Apply domain filter
-    if (domainFilter) {
+    if (domainFilter && domainFilter !== "__all__") {
       result = result.filter((s) => s.domain.name === domainFilter);
     }
 
@@ -111,19 +118,22 @@ export function SystemsTable({ systems, domains }: SystemsTableProps) {
           className={styles.searchInput}
           aria-label="Search systems"
         />
-        <select
+        <Select
           value={domainFilter}
-          onChange={(e) => setDomainFilter(e.target.value)}
-          className={styles.domainSelect}
-          aria-label="Filter by domain"
+          onValueChange={setDomainFilter}
         >
-          <option value="">All domains</option>
-          {domains.map((d) => (
-            <option key={d.id} value={d.name}>
-              {d.name}
-            </option>
-          ))}
-        </select>
+          <SelectTrigger aria-label="Filter by domain">
+            <SelectValue placeholder="All domains" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="__all__">All domains</SelectItem>
+            {domains.map((d) => (
+              <SelectItem key={d.id} value={d.name}>
+                {d.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {filteredAndSorted.length > 0 ? (
@@ -206,7 +216,7 @@ export function SystemsTable({ systems, domains }: SystemsTableProps) {
         </Table>
       ) : (
         <div className={styles.emptyState}>
-          {search || domainFilter
+          {search || (domainFilter && domainFilter !== "__all__")
             ? "No systems match your filters"
             : "No systems found"}
         </div>

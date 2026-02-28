@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState, useCallback } from "react";
+import { useActionState, useState, useCallback, useTransition } from "react";
 import { useDropzone, type FileRejection } from "react-dropzone";
 import { InventoryUploadSchema } from "@/modules/inventory/validators/inventory-upload";
 import {
@@ -77,12 +77,14 @@ export function UploadDropzone() {
     [],
   );
 
+  const [, startTransition] = useTransition();
+
   const handleSubmit = useCallback(() => {
     if (!file) return;
     const formData = new FormData();
     formData.append("file", file);
-    dispatch(formData);
-  }, [file, dispatch]);
+    startTransition(() => dispatch(formData));
+  }, [file, dispatch, startTransition]);
 
   const isDisabled = isPending || result.success;
 

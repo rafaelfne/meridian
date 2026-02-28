@@ -2,14 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { prisma } from "@/lib/prisma";
 import { buildGraphData } from "@/modules/graph/services/build-graph-data";
-import { DependencyGraph } from "@/components/graph/DependencyGraph";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { GraphPageClient } from "@/components/graph/GraphPageClient";
 
 export default async function GraphPage() {
   const [systems, dependencies] = await Promise.all([
@@ -38,29 +31,5 @@ export default async function GraphPage() {
 
   const graphData = buildGraphData(systems, dependencies);
 
-  return (
-    <div className="container mx-auto max-w-7xl space-y-8 py-8 px-4">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">
-          Dependency Graph
-        </h1>
-        <p className="text-muted-foreground">
-          Visualize how your systems are connected through their dependencies.
-        </p>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>System Dependencies</CardTitle>
-          <CardDescription>
-            Interactive graph showing all systems and their dependency
-            relationships. Drag nodes to rearrange, scroll to zoom.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <DependencyGraph data={graphData} />
-        </CardContent>
-      </Card>
-    </div>
-  );
+  return <GraphPageClient data={graphData} />;
 }
