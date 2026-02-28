@@ -61,7 +61,7 @@ function getEdgeStyle(type: string): { stroke: string; animated: boolean } {
   return EDGE_STYLES[type] ?? DEFAULT_EDGE_STYLE;
 }
 
-function formatEdgeLabel(type: string, label: string | null): string {
+function resolveEdgeLabel(type: string, label: string | null): string {
   if (label) return label;
   return type.replace(/_/g, " ").toLowerCase();
 }
@@ -113,7 +113,7 @@ export function buildGraphData(
         style: { stroke: style.stroke, strokeWidth: 2 },
         data: {
           type: dep.type,
-          label: formatEdgeLabel(dep.type, dep.label),
+          label: resolveEdgeLabel(dep.type, dep.label),
         },
       };
     });
