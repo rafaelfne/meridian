@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { InventoryUploadSchema } from "../validators/inventory-upload";
 import { processInventory } from "../services/process-inventory";
+import { processDependenciesAction } from "@/modules/graph/actions/process";
 import type { SystemInventory } from "../types";
 
 export interface UploadInventoryResult {
@@ -121,6 +122,13 @@ export async function uploadInventory(
 
     revalidatePath("/dashboard");
     revalidatePath("/graph");
+
+    // Process dependencies after inventory upload
+    try {
+      await processDependenciesAction();
+    } catch {
+      // Dependency processing failure should not fail the upload
+    }
 
     return {
       success: true,
