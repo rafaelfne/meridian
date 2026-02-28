@@ -1,0 +1,92 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { prisma } from "@/lib/prisma";
+import { DependencyType } from "@/generated/prisma";
+import { resolveHttpDependencies } from "../services/resolve-http-deps";
+import { resolveDatabaseDeps } from "../services/resolve-database-deps";
+import { resolveKafkaDeps } from "../services/resolve-kafka-deps";
+import { resolvePackageDeps } from "../services/resolve-package-deps";
+import {
+  processDependencies,
+  type ProcessDependenciesResult,
+} from "../processors/dependency-processor";
+
+export interface ProcessDependenciesActionResult {
+  success: boolean;
+  data?: ProcessDependenciesResult;
+  error?: string;
+}
+
+export async function processDependenciesAction(): Promise<ProcessDependenciesActionResult> {
+  try {
+    const result = await processDependencies({
+      resolveHttp: () =>
+        resolveHttpDependencies(
+          () => prisma.integration.findMany(),
+          (slug) =>
+            prisma.system.findUnique({
+              where: { slug },
+              select: { id: true, slug: true, name: true },
+            }),
+        ),
+      resolveDatabase: () =>
+        resolveDatabaseDeps({
+          getAllDatabases: () =>
+            prisma.database.findMany({
+              select: { name: true, provider: true, systemId: true },
+            }),
+          getAllIntegrations: () =>
+            prisma.integration.findMany({
+              select: {
+                name: true,
+                type: true,
+                targetSystem: true,
+                systemId: true,
+              },
+            }),
+          getSystemBySlug: (slug) =>
+            prisma.system.findUnique({
+              where: { slug },
+              select: { id: true },
+            }),
+        }),
+      resolveKafka: () =>
+        resolveKafkaDeps({
+          getAllKafkaTopicsWithSystem: () =>
+            prisma.kafkaTopic.findMany({
+              select: { name: true, role: true, systemId: true },
+            }),
+        }),
+      resolvePackage: () =>
+        resolvePackageDeps({
+          getAllPackages: () =>
+            prisma.package.findMany({
+              select: { name: true, scope: true, systemId: true },
+            }),
+        }),
+      persistDependencies: (deps) =>
+        prisma.$transaction(async (tx) => {
+          await tx.dependency.deleteMany();
+          if (deps.length > 0) {
+            await tx.dependency.createMany({
+              data: deps.map((d) => ({
+                sourceId: d.sourceId,
+                targetId: d.targetId,
+                type: d.type as DependencyType,
+                label: d.label ?? null,
+                metadata: d.metadata ?? undefined,
+              })),
+            });
+          }
+        }),
+    });
+
+    revalidatePath("/graph");
+
+    return { success: true, data: result };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    return { success: false, error: message };
+  }
+}
