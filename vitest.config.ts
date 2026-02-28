@@ -22,6 +22,12 @@ export default defineConfig({
         "src/types/**",
         "src/generated/**",
       ],
+      thresholds: {
+        lines: 60,
+        branches: 50,
+        functions: 50,
+        statements: 60,
+      },
     },
   },
 });
