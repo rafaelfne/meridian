@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@/generated/prisma/client";
 import { InventoryUploadSchema } from "../validators/inventory-upload";
 import { processInventory } from "../services/process-inventory";
 import { processDependenciesAction } from "@/modules/graph/actions/process";
@@ -96,7 +97,7 @@ export async function uploadInventory(
             tx.service.deleteMany({ where: { systemId: upserted.id } }),
             tx.database.deleteMany({ where: { systemId: upserted.id } }),
             tx.integration.deleteMany({ where: { systemId: upserted.id } }),
-            tx.kafkaTopic.deleteMany({ where: { systemId: upserted.id } }),
+            tx.messageTopic.deleteMany({ where: { systemId: upserted.id } }),
             tx.package.deleteMany({ where: { systemId: upserted.id } }),
             tx.apiEndpoint.deleteMany({ where: { systemId: upserted.id } }),
             tx.risk.deleteMany({ where: { systemId: upserted.id } }),
@@ -188,9 +189,15 @@ async function createSystemChildren(
         },
       }),
     ),
-    ...system.kafkaTopics.map((k) =>
-      tx.kafkaTopic.create({
-        data: { name: k.name, role: k.role, systemId },
+    ...system.messageTopics.map((k) =>
+      tx.messageTopic.create({
+        data: {
+          name: k.name,
+          role: k.role,
+          broker: k.broker,
+          metadata: k.metadata ? (k.metadata as Prisma.InputJsonValue) : undefined,
+          systemId,
+        },
       }),
     ),
     ...system.packages.map((p) =>

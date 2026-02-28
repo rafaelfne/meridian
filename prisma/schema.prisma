@@ -87,7 +87,7 @@ model System {
   services         Service[]
   databases        Database[]
   integrations     Integration[]
-  kafkaTopics      KafkaTopic[]
+  messageTopics    MessageTopic[]
   packages         Package[]
   apiEndpoints     ApiEndpoint[]
   risks            Risk[]
@@ -144,12 +144,22 @@ enum IntegrationType {
   OTHER
 }
 
-model KafkaTopic {
-  id       String    @id @default(cuid())
+model MessageTopic {
+  id       String        @id @default(cuid())
   name     String
   role     TopicRole
+  broker   MessageBroker
+  metadata Json?
   systemId String
-  system   System    @relation(fields: [systemId], references: [id], onDelete: Cascade)
+  system   System        @relation(fields: [systemId], references: [id], onDelete: Cascade)
+}
+
+enum MessageBroker {
+  KAFKA
+  RABBITMQ
+  SQS
+  SNS
+  OTHER
 }
 
 enum TopicRole {
@@ -215,6 +225,8 @@ model Dependency {
 enum DependencyType {
   HTTP_API
   KAFKA_TOPIC
+  RABBITMQ_QUEUE
+  SQS_QUEUE
   SHARED_DATABASE
   CROSS_DATABASE_QUERY
   SHARED_PACKAGE

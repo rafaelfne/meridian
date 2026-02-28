@@ -6,7 +6,7 @@ import { DependencyType } from "@/generated/prisma/enums";
 import type { Prisma } from "@/generated/prisma/client";
 import { resolveHttpDependencies } from "../services/resolve-http-deps";
 import { resolveDatabaseDeps } from "../services/resolve-database-deps";
-import { resolveKafkaDeps } from "../services/resolve-kafka-deps";
+import { resolveMessagingDeps } from "../services/resolve-messaging-deps";
 import { resolvePackageDeps } from "../services/resolve-package-deps";
 import {
   processDependencies,
@@ -52,11 +52,11 @@ export async function processDependenciesAction(): Promise<ProcessDependenciesAc
               select: { id: true },
             }),
         }),
-      resolveKafka: () =>
-        resolveKafkaDeps({
-          getAllKafkaTopicsWithSystem: () =>
-            prisma.kafkaTopic.findMany({
-              select: { name: true, role: true, systemId: true },
+      resolveMessaging: () =>
+        resolveMessagingDeps({
+          getAllMessageTopicsWithSystem: () =>
+            prisma.messageTopic.findMany({
+              select: { name: true, role: true, broker: true, systemId: true },
             }),
         }),
       resolvePackage: () =>

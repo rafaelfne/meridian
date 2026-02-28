@@ -53,7 +53,7 @@ describe("InventoryUploadSchema", () => {
               description: "Payment processing",
             },
           ],
-          kafkaTopics: [{ name: "order-events", role: "PRODUCER" }],
+          messageTopics: [{ name: "order-events", role: "PRODUCER", broker: "KAFKA" }],
           packages: [
             { name: "lodash", version: "4.17.21", type: "OPEN_SOURCE" },
           ],
@@ -184,7 +184,7 @@ describe("InventoryUploadSchema", () => {
       expect(system.services).toEqual([]);
       expect(system.databases).toEqual([]);
       expect(system.integrations).toEqual([]);
-      expect(system.kafkaTopics).toEqual([]);
+      expect(system.messageTopics).toEqual([]);
       expect(system.packages).toEqual([]);
       expect(system.apiEndpoints).toEqual([]);
       expect(system.risks).toEqual([]);

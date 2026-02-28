@@ -10,7 +10,7 @@ vi.mock("@/lib/prisma", () => ({
     integration: { findMany: vi.fn() },
     system: { findUnique: vi.fn() },
     database: { findMany: vi.fn() },
-    kafkaTopic: { findMany: vi.fn() },
+    messageTopic: { findMany: vi.fn() },
     package: { findMany: vi.fn() },
     dependency: { deleteMany: vi.fn(), createMany: vi.fn() },
     $transaction: vi.fn(),
@@ -25,8 +25,8 @@ vi.mock("../services/resolve-database-deps", () => ({
   resolveDatabaseDeps: vi.fn(),
 }));
 
-vi.mock("../services/resolve-kafka-deps", () => ({
-  resolveKafkaDeps: vi.fn(),
+vi.mock("../services/resolve-messaging-deps", () => ({
+  resolveMessagingDeps: vi.fn(),
 }));
 
 vi.mock("../services/resolve-package-deps", () => ({
@@ -52,8 +52,8 @@ describe("processDependenciesAction", () => {
     const { resolveDatabaseDeps } = await import(
       "../services/resolve-database-deps"
     );
-    const { resolveKafkaDeps } = await import(
-      "../services/resolve-kafka-deps"
+    const { resolveMessagingDeps } = await import(
+      "../services/resolve-messaging-deps"
     );
     const { resolvePackageDeps } = await import(
       "../services/resolve-package-deps"
@@ -74,7 +74,7 @@ describe("processDependenciesAction", () => {
       unresolved: [],
     });
     vi.mocked(resolveDatabaseDeps).mockResolvedValue([]);
-    vi.mocked(resolveKafkaDeps).mockResolvedValue([]);
+    vi.mocked(resolveMessagingDeps).mockResolvedValue([]);
     vi.mocked(resolvePackageDeps).mockResolvedValue([]);
     vi.mocked(prisma.$transaction).mockImplementation(async (fn) => {
       if (typeof fn === "function") {
@@ -119,8 +119,8 @@ describe("processDependenciesAction", () => {
     const { resolveDatabaseDeps } = await import(
       "../services/resolve-database-deps"
     );
-    const { resolveKafkaDeps } = await import(
-      "../services/resolve-kafka-deps"
+    const { resolveMessagingDeps } = await import(
+      "../services/resolve-messaging-deps"
     );
     const { resolvePackageDeps } = await import(
       "../services/resolve-package-deps"
@@ -133,7 +133,7 @@ describe("processDependenciesAction", () => {
       unresolved: [],
     });
     vi.mocked(resolveDatabaseDeps).mockResolvedValue([]);
-    vi.mocked(resolveKafkaDeps).mockResolvedValue([]);
+    vi.mocked(resolveMessagingDeps).mockResolvedValue([]);
     vi.mocked(resolvePackageDeps).mockResolvedValue([]);
     vi.mocked(prisma.$transaction).mockImplementation(async (fn) => {
       if (typeof fn === "function") {

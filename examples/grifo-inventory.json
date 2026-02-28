@@ -19,9 +19,9 @@
         { "targetSystem": "grifo-core", "type": "HTTP_API", "description": "User profile data" },
         { "targetSystem": "grifo-notifications", "type": "HTTP_API", "description": "Send verification emails" }
       ],
-      "kafkaTopics": [
-        { "name": "user-events", "role": "PRODUCER" },
-        { "name": "audit-log", "role": "PRODUCER" }
+      "messageTopics": [
+        { "name": "user-events", "role": "PRODUCER", "broker": "KAFKA" },
+        { "name": "audit-log", "role": "PRODUCER", "broker": "KAFKA" }
       ],
       "packages": [
         { "name": "next-auth", "version": "5.0.0", "type": "OPEN_SOURCE" },
@@ -54,9 +54,9 @@
       "integrations": [
         { "targetSystem": "grifo-auth", "type": "HTTP_API", "description": "Authentication validation" }
       ],
-      "kafkaTopics": [
-        { "name": "user-events", "role": "CONSUMER" },
-        { "name": "domain-events", "role": "BOTH" }
+      "messageTopics": [
+        { "name": "user-events", "role": "CONSUMER", "broker": "KAFKA" },
+        { "name": "domain-events", "role": "BOTH", "broker": "KAFKA" }
       ],
       "packages": [
         { "name": "@nestjs/core", "version": "10.0.0", "type": "OPEN_SOURCE" },
@@ -89,9 +89,9 @@
       "integrations": [
         { "targetSystem": "grifo-auth", "type": "HTTP_API", "description": "Validate auth tokens" }
       ],
-      "kafkaTopics": [
-        { "name": "notification-requests", "role": "CONSUMER" },
-        { "name": "audit-log", "role": "CONSUMER" }
+      "messageTopics": [
+        { "name": "notification-requests", "role": "CONSUMER", "broker": "KAFKA" },
+        { "name": "audit-log", "role": "CONSUMER", "broker": "KAFKA" }
       ],
       "packages": [
         { "name": "spring-boot-starter-mail", "version": "3.2.0", "type": "OPEN_SOURCE" }
