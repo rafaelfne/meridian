@@ -11,8 +11,8 @@ const BROKER_TO_DEPENDENCY_TYPE = {
   KAFKA: "KAFKA_TOPIC",
   RABBITMQ: "RABBITMQ_QUEUE",
   SQS: "SQS_QUEUE",
-  SNS: "KAFKA_TOPIC",
-  OTHER: "KAFKA_TOPIC",
+  SNS: "KAFKA_TOPIC", // fallback — create SNS_TOPIC later if needed
+  OTHER: "KAFKA_TOPIC", // fallback — create dedicated type later if needed
 } as const;
 
 export async function resolveMessagingDeps(
@@ -52,7 +52,7 @@ export async function resolveMessagingDeps(
         results.push({
           sourceId: producer.systemId,
           targetId: consumer.systemId,
-          type: BROKER_TO_DEPENDENCY_TYPE[producer.broker] ?? "KAFKA_TOPIC",
+          type: BROKER_TO_DEPENDENCY_TYPE[producer.broker],
           label: `[${producer.broker}] ${topicName}`,
         });
       }

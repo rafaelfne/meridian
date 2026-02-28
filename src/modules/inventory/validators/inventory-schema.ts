@@ -94,6 +94,7 @@ export type SystemInventory = z.infer<typeof SystemInventorySchema>;
 export type Service = z.infer<typeof ServiceSchema>;
 export type Database = z.infer<typeof DatabaseSchema>;
 export type Integration = z.infer<typeof IntegrationSchema>;
+/** @deprecated Use MessageTopic instead. Kept for backward compatibility. */
 export type KafkaTopic = z.infer<typeof MessageTopicSchema>;
 export type MessageTopic = z.infer<typeof MessageTopicSchema>;
 export type Package = z.infer<typeof PackageSchema>;
