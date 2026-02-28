@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { processDependencies } from "../processors/dependency-processor";
+import type { DependencyType } from "@/generated/prisma/client";
 
 export async function processDependenciesAction() {
   const result = await processDependencies({
@@ -27,7 +28,12 @@ export async function processDependenciesAction() {
       await prisma.$transaction(async (tx) => {
         await tx.dependency.deleteMany();
         if (deps.length > 0) {
-          await tx.dependency.createMany({ data: deps });
+          await tx.dependency.createMany({
+            data: deps.map((d) => ({
+              ...d,
+              type: d.type as DependencyType,
+            })),
+          });
         }
       });
     },
