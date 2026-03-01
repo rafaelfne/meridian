@@ -56,7 +56,7 @@ describe("UploadDropzone", () => {
   });
 
   it("renders the dropzone with idle state", () => {
-    render(<UploadDropzone />);
+    render(<UploadDropzone workspaceId="ws-test-id" workspaceSlug="test-ws" />);
     expect(
       screen.getByText(/drag & drop a json inventory file/i),
     ).toBeInTheDocument();
@@ -66,7 +66,7 @@ describe("UploadDropzone", () => {
   });
 
   it("shows validation error for invalid JSON structure", async () => {
-    render(<UploadDropzone />);
+    render(<UploadDropzone workspaceId="ws-test-id" workspaceSlug="test-ws" />);
     await act(async () => {
       capturedOnDrop([createJsonFile({ invalid: "data" })], []);
     });
@@ -78,7 +78,7 @@ describe("UploadDropzone", () => {
   });
 
   it("shows preview and submit button for valid JSON", async () => {
-    render(<UploadDropzone />);
+    render(<UploadDropzone workspaceId="ws-test-id" workspaceSlug="test-ws" />);
     const file = createJsonFile({
       systems: [{ name: "Auth Service", slug: "auth-service" }],
     });
@@ -100,7 +100,7 @@ describe("UploadDropzone", () => {
   });
 
   it("toggles JSON preview when clicking the toggle button", async () => {
-    render(<UploadDropzone />);
+    render(<UploadDropzone workspaceId="ws-test-id" workspaceSlug="test-ws" />);
 
     await act(async () => {
       capturedOnDrop(
@@ -127,7 +127,7 @@ describe("UploadDropzone", () => {
   });
 
   it("shows validation error when systems array is empty", async () => {
-    render(<UploadDropzone />);
+    render(<UploadDropzone workspaceId="ws-test-id" workspaceSlug="test-ws" />);
     await act(async () => {
       capturedOnDrop([createJsonFile({ systems: [] })], []);
     });
@@ -138,7 +138,7 @@ describe("UploadDropzone", () => {
   });
 
   it("shows validation error for malformed JSON text", async () => {
-    render(<UploadDropzone />);
+    render(<UploadDropzone workspaceId="ws-test-id" workspaceSlug="test-ws" />);
     const blob = new Blob(["not valid json {{{"], {
       type: "application/json",
     });
@@ -155,7 +155,7 @@ describe("UploadDropzone", () => {
   });
 
   it("shows rejection error for invalid file type", async () => {
-    render(<UploadDropzone />);
+    render(<UploadDropzone workspaceId="ws-test-id" workspaceSlug="test-ws" />);
     act(() => {
       capturedOnDrop([], [
         {
@@ -174,7 +174,7 @@ describe("UploadDropzone", () => {
   });
 
   it("shows rejection error for oversized file", async () => {
-    render(<UploadDropzone />);
+    render(<UploadDropzone workspaceId="ws-test-id" workspaceSlug="test-ws" />);
     act(() => {
       capturedOnDrop([], [
         {

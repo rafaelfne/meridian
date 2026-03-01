@@ -1,6 +1,8 @@
 export const dynamic = "force-dynamic";
 
 import { prisma } from "@/lib/prisma";
+import { requireWorkspaceAccess } from "@/lib/workspace-context";
+import { UploadDropzone } from "@/components/inventory/UploadDropzone";
 import {
   Table,
   TableBody,
@@ -28,8 +30,16 @@ const STATUS_VARIANT: Record<
   FAILED: "destructive",
 };
 
-export default async function UploadPage() {
+export default async function UploadPage({
+  params,
+}: {
+  params: Promise<{ workspaceSlug: string }>;
+}) {
+  const { workspaceSlug } = await params;
+  const ctx = await requireWorkspaceAccess(workspaceSlug, "EDITOR");
+
   const recentUploads = await prisma.inventoryUpload.findMany({
+    where: { workspaceId: ctx.workspaceId },
     orderBy: { createdAt: "desc" },
     take: 10,
   });
@@ -53,9 +63,7 @@ export default async function UploadPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground text-sm">
-            Uploads have moved to workspace-scoped pages. Please navigate to a workspace to upload.
-          </p>
+          <UploadDropzone workspaceId={ctx.workspaceId} workspaceSlug={workspaceSlug} />
         </CardContent>
       </Card>
 

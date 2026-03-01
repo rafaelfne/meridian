@@ -8,31 +8,35 @@ import { ThemeToggle } from "./ThemeToggle";
 import { UserMenu } from "./UserMenu";
 import styles from "./AppHeader.module.css";
 
-const NAV_ITEMS = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/graph", label: "Graph", icon: Network },
-  { href: "/systems", label: "Systems", icon: Server },
-  { href: "/upload", label: "Upload", icon: Upload },
+const NAV_SUFFIXES = [
+  { suffix: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { suffix: "/graph", label: "Graph", icon: Network },
+  { suffix: "/systems", label: "Systems", icon: Server },
+  { suffix: "/upload", label: "Upload", icon: Upload },
 ] as const;
 
-export function AppHeader() {
+export function AppHeader({ workspaceSlug }: { workspaceSlug?: string }) {
   const pathname = usePathname();
+
+  const prefix = workspaceSlug ? `/w/${workspaceSlug}` : "";
+  const brandHref = workspaceSlug ? `/w/${workspaceSlug}/dashboard` : "/workspaces";
 
   return (
     <header className={styles.header}>
-      <Link href="/dashboard" className={styles.brand}>
+      <Link href={brandHref} className={styles.brand}>
         Domain Mapper
       </Link>
       <nav className={styles.nav}>
-        {NAV_ITEMS.map((item) => {
+        {NAV_SUFFIXES.map((item) => {
+          const href = `${prefix}${item.suffix}`;
           const isActive =
-            item.href === "/dashboard"
-              ? pathname === "/dashboard"
-              : pathname.startsWith(item.href);
+            item.suffix === "/dashboard"
+              ? pathname === href
+              : pathname.startsWith(href);
           return (
             <Link
-              key={item.href}
-              href={item.href}
+              key={item.suffix}
+              href={href}
               className={clsx(styles.navLink, isActive && styles.navLinkActive)}
             >
               <item.icon className="size-4" />
