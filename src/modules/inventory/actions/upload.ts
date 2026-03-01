@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/auth";
 import type { Prisma } from "@/generated/prisma/client";
 import { InventoryUploadSchema } from "../validators/inventory-upload";
 import { processInventory } from "../services/process-inventory";
@@ -55,6 +56,29 @@ export async function uploadInventory(
       return { success: false, errors: ["No file provided"] };
     }
 
+    const workspaceId = formData.get("workspaceId");
+    if (!workspaceId || typeof workspaceId !== "string") {
+      return { success: false, errors: ["No workspaceId provided"] };
+    }
+
+    const session = await auth();
+    if (!session?.user?.id) {
+      return { success: false, errors: ["Authentication required"] };
+    }
+
+    const membership = await prisma.workspaceMember.findUnique({
+      where: {
+        userId_workspaceId: {
+          userId: session.user.id,
+          workspaceId,
+        },
+      },
+    });
+
+    if (!membership || membership.role === "VIEWER") {
+      return { success: false, errors: ["Insufficient workspace permissions"] };
+    }
+
     let rawJson: unknown;
     try {
       const text = await file.text();
@@ -76,14 +100,15 @@ export async function uploadInventory(
         filename: file.name,
         status: "PROCESSING",
         rawPayload: rawJson as object,
+        workspaceId,
       },
     });
 
     const result = await processInventory(validation.data.systems, {
       upsertDomain: (name) =>
         prisma.domain.upsert({
-          where: { name },
-          create: { name },
+          where: { workspaceId_name: { workspaceId, name } },
+          create: { name, workspaceId },
           update: {},
         }),
       processSystem: (domainId, system) =>

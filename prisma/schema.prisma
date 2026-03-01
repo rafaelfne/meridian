@@ -17,8 +17,9 @@ model User {
   emailVerified DateTime?
   image         String?
   password      String?
-  accounts      Account[]
-  sessions      Session[]
+  accounts          Account[]
+  sessions          Session[]
+  workspaceMembers  WorkspaceMember[]
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 }
@@ -57,6 +58,41 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
+// ── Workspace Models ────────────────────────────────────
+
+enum WorkspaceRole {
+  OWNER
+  EDITOR
+  VIEWER
+}
+
+model Workspace {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  members          WorkspaceMember[]
+  domains          Domain[]
+  inventoryUploads InventoryUpload[]
+}
+
+model WorkspaceMember {
+  id          String        @id @default(cuid())
+  userId      String
+  workspaceId String
+  role        WorkspaceRole @default(VIEWER)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, workspaceId])
+}
+
 // ── Domain Models ───────────────────────────────────────
 
 enum SystemLayer {
@@ -66,13 +102,17 @@ enum SystemLayer {
 }
 
 model Domain {
-  id          String   @id @default(cuid())
-  name        String   @unique
+  id          String    @id @default(cuid())
+  name        String
   description String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  workspaceId String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   systems     System[]
+
+  @@unique([workspaceId, name])
 }
 
 model System {
@@ -249,9 +289,11 @@ model InventoryUpload {
   errors       Json?
   rawPayload   Json
   uploadedById String?
+  workspaceId  String
   createdAt    DateTime     @default(now())
   processedAt  DateTime?
 
+  workspace    Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   snapshot     GraphSnapshot?
 }
 
