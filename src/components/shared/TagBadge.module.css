@@ -1,0 +1,185 @@
+/* ── Shared tag badge ─────────────────────────────────── */
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  padding: 0.125rem 0.5rem;
+  border-radius: var(--radius-sm, 0.25rem);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  line-height: 1.4;
+}
+
+/* ── Service type ─────────────────────────────────────── */
+
+.svcApi {
+  color: var(--tag-svc-api);
+  background-color: oklch(from var(--tag-svc-api) l c h / 12%);
+}
+
+.svcWorker {
+  color: var(--tag-svc-worker);
+  background-color: oklch(from var(--tag-svc-worker) l c h / 12%);
+}
+
+.svcCron {
+  color: var(--tag-svc-cron);
+  background-color: oklch(from var(--tag-svc-cron) l c h / 12%);
+}
+
+.svcBg {
+  color: var(--tag-svc-bg);
+  background-color: oklch(from var(--tag-svc-bg) l c h / 12%);
+}
+
+/* ── Integration type ─────────────────────────────────── */
+
+.intgHttpApi {
+  color: var(--tag-intg-http-api);
+  background-color: oklch(from var(--tag-intg-http-api) l c h / 12%);
+}
+
+.intgDatabase {
+  color: var(--tag-intg-database);
+  background-color: oklch(from var(--tag-intg-database) l c h / 12%);
+}
+
+.intgGrpc {
+  color: var(--tag-intg-grpc);
+  background-color: oklch(from var(--tag-intg-grpc) l c h / 12%);
+}
+
+.intgGraphql {
+  color: var(--tag-intg-graphql);
+  background-color: oklch(from var(--tag-intg-graphql) l c h / 12%);
+}
+
+.intgSoap {
+  color: var(--tag-intg-soap);
+  background-color: oklch(from var(--tag-intg-soap) l c h / 12%);
+}
+
+.intgFile {
+  color: var(--tag-intg-file);
+  background-color: oklch(from var(--tag-intg-file) l c h / 12%);
+}
+
+.intgOther {
+  color: var(--tag-intg-other);
+  background-color: oklch(from var(--tag-intg-other) l c h / 12%);
+}
+
+/* ── Message broker ───────────────────────────────────── */
+
+.brokerKafka {
+  color: var(--tag-broker-kafka);
+  background-color: oklch(from var(--tag-broker-kafka) l c h / 12%);
+}
+
+.brokerRabbitmq {
+  color: var(--tag-broker-rabbitmq);
+  background-color: oklch(from var(--tag-broker-rabbitmq) l c h / 12%);
+}
+
+.brokerSqs {
+  color: var(--tag-broker-sqs);
+  background-color: oklch(from var(--tag-broker-sqs) l c h / 12%);
+}
+
+.brokerSns {
+  color: var(--tag-broker-sns);
+  background-color: oklch(from var(--tag-broker-sns) l c h / 12%);
+}
+
+.brokerOther {
+  color: var(--tag-broker-other);
+  background-color: oklch(from var(--tag-broker-other) l c h / 12%);
+}
+
+/* ── Topic role ───────────────────────────────────────── */
+
+.roleConsumer {
+  color: var(--tag-role-consumer);
+  background-color: oklch(from var(--tag-role-consumer) l c h / 12%);
+}
+
+.roleProducer {
+  color: var(--tag-role-producer);
+  background-color: oklch(from var(--tag-role-producer) l c h / 12%);
+}
+
+.roleBoth {
+  color: var(--tag-role-both);
+  background-color: oklch(from var(--tag-role-both) l c h / 12%);
+}
+
+/* ── Package scope ────────────────────────────────────── */
+
+.scopeInternal {
+  color: var(--tag-scope-internal);
+  background-color: oklch(from var(--tag-scope-internal) l c h / 12%);
+}
+
+.scopeOpenSource {
+  color: var(--tag-scope-opensource);
+  background-color: oklch(from var(--tag-scope-opensource) l c h / 12%);
+}
+
+.scopeTest {
+  color: var(--tag-scope-test);
+  background-color: oklch(from var(--tag-scope-test) l c h / 12%);
+}
+
+/* ── Severity ─────────────────────────────────────────── */
+
+.severityLow {
+  color: var(--tag-severity-low);
+  background-color: oklch(from var(--tag-severity-low) l c h / 12%);
+}
+
+.severityMedium {
+  color: var(--tag-severity-medium);
+  background-color: oklch(from var(--tag-severity-medium) l c h / 12%);
+}
+
+.severityHigh {
+  color: var(--tag-severity-high);
+  background-color: oklch(from var(--tag-severity-high) l c h / 12%);
+}
+
+.severityCritical {
+  color: var(--tag-severity-critical);
+  background-color: oklch(from var(--tag-severity-critical) l c h / 12%);
+}
+
+/* ── HTTP method ──────────────────────────────────────── */
+
+.methodGet {
+  color: var(--tag-method-get);
+  background-color: oklch(from var(--tag-method-get) l c h / 12%);
+}
+
+.methodPost {
+  color: var(--tag-method-post);
+  background-color: oklch(from var(--tag-method-post) l c h / 12%);
+}
+
+.methodPut {
+  color: var(--tag-method-put);
+  background-color: oklch(from var(--tag-method-put) l c h / 12%);
+}
+
+.methodPatch {
+  color: var(--tag-method-patch);
+  background-color: oklch(from var(--tag-method-patch) l c h / 12%);
+}
+
+.methodDelete {
+  color: var(--tag-method-delete);
+  background-color: oklch(from var(--tag-method-delete) l c h / 12%);
+}

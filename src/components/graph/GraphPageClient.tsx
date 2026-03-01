@@ -159,7 +159,7 @@ function GraphPageClientInner({
         return pos ? { ...node, position: pos } : node;
       }),
     };
-     
+
   }, [displayData, layoutKey, isViewingSnapshot]);
 
   const handleNodePositionsChange = useCallback(
@@ -273,6 +273,7 @@ function GraphPageClientInner({
           onClose={handleClosePanel}
           onHighlightDependencies={handleHighlightDependencies}
           onNodeClick={handleNodeClick}
+          workspaceSlug={workspaceSlug}
         />
         <GraphCommandSearch
           nodes={layoutData.nodes}

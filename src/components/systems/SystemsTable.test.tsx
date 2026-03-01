@@ -51,7 +51,7 @@ function createSystem(overrides: Partial<SystemListItem> = {}): SystemListItem {
     language: "TypeScript",
     framework: "NestJS",
     domain: { id: "d1", name: "Identity" },
-    _count: { services: 2, databases: 1, integrations: 3 },
+    _count: { services: 2, databases: 1, integrations: 3, documents: 0 },
     ...overrides,
   };
 }
@@ -65,7 +65,7 @@ const mockSystems: SystemListItem[] = [
     language: "Java",
     framework: "Spring Boot",
     domain: { id: "d2", name: "Payments" },
-    _count: { services: 1, databases: 2, integrations: 1 },
+    _count: { services: 1, databases: 2, integrations: 1, documents: 1 },
   }),
   createSystem({
     id: "s3",
@@ -74,7 +74,7 @@ const mockSystems: SystemListItem[] = [
     language: "Go",
     framework: null,
     domain: { id: "d2", name: "Payments" },
-    _count: { services: 0, databases: 1, integrations: 0 },
+    _count: { services: 0, databases: 1, integrations: 0, documents: 0 },
   }),
 ];
 
@@ -84,20 +84,20 @@ describe("SystemsTable", () => {
   });
 
   it("renders all systems", () => {
-    render(<SystemsTable systems={mockSystems} domains={mockDomains} />);
+    render(<SystemsTable systems={mockSystems} domains={mockDomains} workspaceSlug="test-ws" />);
     expect(screen.getByText("Auth Service")).toBeInTheDocument();
     expect(screen.getByText("Payment Gateway")).toBeInTheDocument();
     expect(screen.getByText("Billing Engine")).toBeInTheDocument();
   });
 
   it("renders system name as link to detail page", () => {
-    render(<SystemsTable systems={mockSystems} domains={mockDomains} />);
+    render(<SystemsTable systems={mockSystems} domains={mockDomains} workspaceSlug="test-ws" />);
     const link = screen.getByText("Auth Service").closest("a");
-    expect(link).toHaveAttribute("href", "/systems/auth-service");
+    expect(link).toHaveAttribute("href", "/w/test-ws/systems/auth-service");
   });
 
   it("renders domain badges", () => {
-    render(<SystemsTable systems={mockSystems} domains={mockDomains} />);
+    render(<SystemsTable systems={mockSystems} domains={mockDomains} workspaceSlug="test-ws" />);
     // Each domain badge in the table + 1 option in the dropdown
     expect(screen.getAllByText("Identity").length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText("Payments").length).toBeGreaterThanOrEqual(2);
@@ -105,7 +105,7 @@ describe("SystemsTable", () => {
 
   it("renders counts correctly", () => {
     render(
-      <SystemsTable systems={[mockSystems[0]!]} domains={mockDomains} />,
+      <SystemsTable systems={[mockSystems[0]!]} domains={mockDomains} workspaceSlug="test-ws" />,
     );
     expect(screen.getByText("2")).toBeInTheDocument(); // services
     expect(screen.getByText("1")).toBeInTheDocument(); // databases
@@ -114,17 +114,17 @@ describe("SystemsTable", () => {
 
   it("renders dash for null language", () => {
     const systems = [createSystem({ language: null })];
-    render(<SystemsTable systems={systems} domains={mockDomains} />);
+    render(<SystemsTable systems={systems} domains={mockDomains} workspaceSlug="test-ws" />);
     expect(screen.getByText("—")).toBeInTheDocument();
   });
 
   it("shows empty state when no systems", () => {
-    render(<SystemsTable systems={[]} domains={mockDomains} />);
+    render(<SystemsTable systems={[]} domains={mockDomains} workspaceSlug="test-ws" />);
     expect(screen.getByText("No systems found")).toBeInTheDocument();
   });
 
   it("filters systems by search input", () => {
-    render(<SystemsTable systems={mockSystems} domains={mockDomains} />);
+    render(<SystemsTable systems={mockSystems} domains={mockDomains} workspaceSlug="test-ws" />);
 
     const searchInput = screen.getByLabelText("Search systems");
     fireEvent.change(searchInput, { target: { value: "auth" } });
@@ -135,7 +135,7 @@ describe("SystemsTable", () => {
   });
 
   it("shows filter empty state when no matches", () => {
-    render(<SystemsTable systems={mockSystems} domains={mockDomains} />);
+    render(<SystemsTable systems={mockSystems} domains={mockDomains} workspaceSlug="test-ws" />);
 
     const searchInput = screen.getByLabelText("Search systems");
     fireEvent.change(searchInput, { target: { value: "nonexistent" } });
@@ -146,7 +146,7 @@ describe("SystemsTable", () => {
   });
 
   it("filters systems by domain", () => {
-    render(<SystemsTable systems={mockSystems} domains={mockDomains} />);
+    render(<SystemsTable systems={mockSystems} domains={mockDomains} workspaceSlug="test-ws" />);
 
     const domainSelect = screen.getByLabelText("Filter by domain");
     fireEvent.change(domainSelect, { target: { value: "Payments" } });
@@ -157,7 +157,7 @@ describe("SystemsTable", () => {
   });
 
   it("renders sort buttons for sortable columns", () => {
-    render(<SystemsTable systems={mockSystems} domains={mockDomains} />);
+    render(<SystemsTable systems={mockSystems} domains={mockDomains} workspaceSlug="test-ws" />);
     expect(screen.getByLabelText("Sort by name")).toBeInTheDocument();
     expect(screen.getByLabelText("Sort by domain")).toBeInTheDocument();
     expect(screen.getByLabelText("Sort by language")).toBeInTheDocument();
@@ -165,7 +165,7 @@ describe("SystemsTable", () => {
   });
 
   it("sorts systems by name descending on click", () => {
-    render(<SystemsTable systems={mockSystems} domains={mockDomains} />);
+    render(<SystemsTable systems={mockSystems} domains={mockDomains} workspaceSlug="test-ws" />);
 
     // Default is name ascending, click once more to switch to descending
     fireEvent.click(screen.getByLabelText("Sort by name"));
@@ -178,7 +178,7 @@ describe("SystemsTable", () => {
   });
 
   it("sorts systems by domain on click", () => {
-    render(<SystemsTable systems={mockSystems} domains={mockDomains} />);
+    render(<SystemsTable systems={mockSystems} domains={mockDomains} workspaceSlug="test-ws" />);
 
     fireEvent.click(screen.getByLabelText("Sort by domain"));
 
@@ -188,7 +188,7 @@ describe("SystemsTable", () => {
   });
 
   it("renders domain options in the filter dropdown", () => {
-    render(<SystemsTable systems={mockSystems} domains={mockDomains} />);
+    render(<SystemsTable systems={mockSystems} domains={mockDomains} workspaceSlug="test-ws" />);
     const options = screen.getAllByRole("option");
     expect(options).toHaveLength(3); // "All domains" + 2 domains
     expect(options[0]).toHaveTextContent("All domains");

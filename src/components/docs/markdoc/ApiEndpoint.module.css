@@ -1,0 +1,55 @@
+.endpoint {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  background: var(--meridian-bg-elevated);
+  border: 1px solid var(--meridian-border);
+  margin: 1rem 0;
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+}
+
+.method {
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  color: var(--meridian-bg);
+}
+
+.path {
+  font-weight: 500;
+  color: var(--meridian-text-primary);
+}
+
+.description {
+  color: var(--meridian-text-muted);
+  font-family: var(--font-body);
+  margin-left: auto;
+  font-size: 0.8125rem;
+}
+
+/* Method colors */
+.get {
+  background: oklch(0.696 0.17 162.48);
+}
+
+.post {
+  background: oklch(0.488 0.243 264.376);
+}
+
+.put {
+  background: oklch(0.828 0.189 84.429);
+}
+
+.delete {
+  background: oklch(0.704 0.191 22.216);
+}
+
+.patch {
+  background: oklch(0.627 0.265 303.9);
+}

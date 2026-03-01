@@ -58,3 +58,18 @@
   color: var(--muted-foreground);
   font-size: 0.875rem;
 }
+
+.docsLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.15s ease;
+}
+
+.docsLink:hover {
+  color: var(--foreground);
+  text-decoration: underline;
+}

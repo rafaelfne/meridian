@@ -95,5 +95,6 @@ export interface SystemListItem {
     services: number;
     databases: number;
     integrations: number;
+    documents: number;
   };
 }

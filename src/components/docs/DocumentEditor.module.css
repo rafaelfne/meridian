@@ -1,0 +1,320 @@
+.editor {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto 1fr;
+  gap: 0;
+  height: calc(100vh - 4rem);
+  max-height: calc(100vh - 4rem);
+}
+
+.toolbar {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--meridian-border);
+  background: var(--meridian-bg);
+}
+
+.titleInput {
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 600;
+  background: transparent;
+  border: 1px solid var(--meridian-border);
+  border-radius: var(--radius-md);
+  padding: 0.5rem 0.75rem;
+  color: var(--meridian-text-primary);
+  min-width: 200px;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.titleInput:focus {
+  border-color: var(--meridian-accent);
+}
+
+.slugInput {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  background: transparent;
+  border: 1px solid var(--meridian-border);
+  border-radius: var(--radius-md);
+  padding: 0.5rem 0.75rem;
+  color: var(--meridian-text-secondary);
+  min-width: 160px;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.slugInput:focus {
+  border-color: var(--meridian-accent);
+}
+
+.slugInputError {
+  border-color: oklch(0.704 0.191 22.216);
+}
+
+.slugInputError:focus {
+  border-color: oklch(0.704 0.191 22.216);
+}
+
+.slugGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.slugError {
+  font-size: 0.75rem;
+  color: oklch(0.704 0.191 22.216);
+  font-weight: 500;
+}
+
+.saveButton {
+  margin-left: auto;
+  padding: 0.5rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  background: var(--meridian-accent);
+  color: var(--meridian-bg);
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background-color 0.15s ease, opacity 0.15s ease;
+}
+
+.saveButton:hover {
+  background: var(--meridian-accent-hover);
+}
+
+.saveButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sourcePane {
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--meridian-border);
+  overflow: hidden;
+}
+
+.paneHeader {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--meridian-text-muted);
+  background: var(--meridian-bg-elevated);
+  border-bottom: 1px solid var(--meridian-border);
+}
+
+.textarea {
+  flex: 1;
+  resize: none;
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  line-height: 1.6;
+  padding: 1rem 1.25rem;
+  background: var(--meridian-bg);
+  color: var(--meridian-text-primary);
+  border: none;
+  outline: none;
+  overflow-y: auto;
+}
+
+.textarea::placeholder {
+  color: var(--meridian-text-muted);
+}
+
+.previewPane {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.previewContent {
+  flex: 1;
+  padding: 1.5rem;
+  overflow-y: auto;
+  font-family: var(--font-body);
+  color: var(--meridian-text-primary);
+  line-height: 1.75;
+}
+
+/* ── Preview prose styles (mirrors MarkdocRenderer) ── */
+.previewContent h1 {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 700;
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+  letter-spacing: -0.025em;
+  color: var(--meridian-text-primary);
+}
+
+.previewContent h2 {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--meridian-border);
+  letter-spacing: -0.015em;
+}
+
+.previewContent h3 {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 1.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.previewContent h4 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.previewContent p {
+  margin-bottom: 1.25rem;
+}
+
+.previewContent a {
+  color: var(--meridian-accent);
+  text-decoration: none;
+}
+
+.previewContent a:hover {
+  color: var(--meridian-accent-hover);
+  text-decoration: underline;
+}
+
+.previewContent ul,
+.previewContent ol {
+  margin-bottom: 1.25rem;
+  padding-left: 1.5rem;
+}
+
+.previewContent li {
+  margin-bottom: 0.375rem;
+}
+
+.previewContent ul li {
+  list-style-type: disc;
+}
+
+.previewContent ol li {
+  list-style-type: decimal;
+}
+
+.previewContent code {
+  font-family: var(--font-mono);
+  font-size: 0.875em;
+  padding: 0.125rem 0.375rem;
+  background: var(--meridian-accent-muted);
+  border-radius: var(--radius-sm);
+  color: var(--meridian-text-primary);
+}
+
+.previewContent pre {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  line-height: 1.6;
+  background: var(--meridian-bg-elevated);
+  border: 1px solid var(--meridian-border);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.25rem;
+  margin: 1.5rem 0;
+  overflow-x: auto;
+}
+
+.previewContent pre code {
+  padding: 0;
+  background: none;
+  border-radius: 0;
+  color: var(--meridian-text-primary);
+  font-size: inherit;
+}
+
+.previewContent blockquote {
+  border-left: 3px solid var(--meridian-accent-muted);
+  padding-left: 1rem;
+  margin: 1.5rem 0;
+  color: var(--meridian-text-secondary);
+  font-style: italic;
+}
+
+.previewContent table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  font-size: 0.875rem;
+}
+
+.previewContent th {
+  text-align: left;
+  padding: 0.75rem;
+  border-bottom: 2px solid var(--meridian-border);
+  font-weight: 600;
+  color: var(--meridian-text-primary);
+}
+
+.previewContent td {
+  padding: 0.75rem;
+  border-bottom: 1px solid var(--meridian-border-subtle);
+  color: var(--meridian-text-secondary);
+}
+
+.previewContent tr:hover td {
+  background: var(--meridian-bg-elevated);
+}
+
+.previewContent hr {
+  border: none;
+  border-top: 1px solid var(--meridian-border);
+  margin: 2rem 0;
+}
+
+.previewContent strong {
+  font-weight: 600;
+  color: var(--meridian-text-primary);
+}
+
+.previewContent em {
+  font-style: italic;
+}
+
+.previewContent img {
+  max-width: 100%;
+  border-radius: var(--radius-md);
+  margin: 1.5rem 0;
+}
+
+.errors {
+  padding: 0.75rem 1rem;
+  background: oklch(0.704 0.191 22.216 / 10%);
+  border-bottom: 1px solid oklch(0.704 0.191 22.216 / 30%);
+  font-size: 0.8125rem;
+  color: oklch(0.704 0.191 22.216);
+}
+
+.errorItem {
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.fieldError {
+  font-size: 0.8125rem;
+  color: oklch(0.704 0.191 22.216);
+  margin-top: 0.25rem;
+}

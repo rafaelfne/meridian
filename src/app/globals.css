@@ -47,8 +47,26 @@
   --radius-4xl: calc(var(--radius) + 16px);
 }
 
-/* Meridian design tokens */
+/* Meridian design tokens — Light */
 :root {
+  --meridian-bg: #ffffff;
+  --meridian-bg-elevated: #f4f4f5;
+  --meridian-bg-subtle: #e4e4e7;
+  --meridian-text-primary: #18181b;
+  --meridian-text-secondary: #52525b;
+  --meridian-text-muted: #a1a1aa;
+  --meridian-accent: #0891b2;
+  --meridian-accent-hover: #0e7490;
+  --meridian-accent-muted: rgba(8, 145, 178, 0.12);
+  --meridian-border: #e4e4e7;
+  --meridian-border-subtle: #f4f4f5;
+  --font-display: var(--font-geist-mono), "JetBrains Mono", "Fira Code", "SF Mono", monospace;
+  --font-body: var(--font-geist-sans), "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", monospace;
+}
+
+/* Meridian design tokens — Dark */
+.dark {
   --meridian-bg: #09090b;
   --meridian-bg-elevated: #18181b;
   --meridian-bg-subtle: #27272a;
@@ -60,9 +78,6 @@
   --meridian-accent-muted: rgba(6, 182, 212, 0.15);
   --meridian-border: #27272a;
   --meridian-border-subtle: #1c1c1f;
-  --font-display: var(--font-geist-mono), "JetBrains Mono", "Fira Code", "SF Mono", monospace;
-  --font-body: var(--font-geist-sans), "Inter", system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", "Fira Code", monospace;
 }
 
 :root {
@@ -116,6 +131,53 @@
   --glass-bg: oklch(1 0 0 / 70%);
   --glass-border: oklch(0 0 0 / 8%);
   --glass-blur: 12px;
+
+  /* ── Tag color tokens (light) ────────────────────────── */
+
+  /* Service types */
+  --tag-svc-api: oklch(0.6 0.19 260);
+  --tag-svc-worker: oklch(0.7 0.18 80);
+  --tag-svc-cron: oklch(0.6 0.2 300);
+  --tag-svc-bg: oklch(0.55 0.04 260);
+
+  /* Integration types */
+  --tag-intg-http-api: oklch(0.6 0.19 260);
+  --tag-intg-database: oklch(0.65 0.22 50);
+  --tag-intg-grpc: oklch(0.6 0.2 300);
+  --tag-intg-graphql: oklch(0.6 0.22 330);
+  --tag-intg-soap: oklch(0.7 0.18 80);
+  --tag-intg-file: oklch(0.65 0.2 150);
+  --tag-intg-other: oklch(0.55 0.04 260);
+
+  /* Message brokers */
+  --tag-broker-kafka: oklch(0.65 0.2 150);
+  --tag-broker-rabbitmq: oklch(0.65 0.22 50);
+  --tag-broker-sqs: oklch(0.6 0.2 300);
+  --tag-broker-sns: oklch(0.6 0.22 330);
+  --tag-broker-other: oklch(0.55 0.04 260);
+
+  /* Topic roles */
+  --tag-role-consumer: oklch(0.6 0.19 260);
+  --tag-role-producer: oklch(0.65 0.2 150);
+  --tag-role-both: oklch(0.7 0.18 80);
+
+  /* Package scopes */
+  --tag-scope-internal: oklch(0.6 0.19 260);
+  --tag-scope-opensource: oklch(0.65 0.2 150);
+  --tag-scope-test: oklch(0.7 0.18 80);
+
+  /* Severity */
+  --tag-severity-low: oklch(0.65 0.18 145);
+  --tag-severity-medium: oklch(0.75 0.18 85);
+  --tag-severity-high: oklch(0.65 0.22 50);
+  --tag-severity-critical: oklch(0.55 0.25 27);
+
+  /* HTTP methods */
+  --tag-method-get: oklch(0.65 0.2 150);
+  --tag-method-post: oklch(0.6 0.19 260);
+  --tag-method-put: oklch(0.7 0.18 80);
+  --tag-method-patch: oklch(0.65 0.15 185);
+  --tag-method-delete: oklch(0.6 0.22 27);
 }
 
 .dark {
@@ -155,6 +217,53 @@
   --glass-bg: oklch(0.15 0.03 265 / 60%);
   --glass-border: oklch(1 0 0 / 10%);
   --glass-blur: 16px;
+
+  /* ── Tag color tokens (dark) ─────────────────────────── */
+
+  /* Service types */
+  --tag-svc-api: oklch(0.7 0.19 260);
+  --tag-svc-worker: oklch(0.78 0.18 80);
+  --tag-svc-cron: oklch(0.7 0.2 300);
+  --tag-svc-bg: oklch(0.65 0.04 260);
+
+  /* Integration types */
+  --tag-intg-http-api: oklch(0.7 0.19 260);
+  --tag-intg-database: oklch(0.7 0.24 50);
+  --tag-intg-grpc: oklch(0.7 0.2 300);
+  --tag-intg-graphql: oklch(0.7 0.22 330);
+  --tag-intg-soap: oklch(0.78 0.18 80);
+  --tag-intg-file: oklch(0.72 0.2 150);
+  --tag-intg-other: oklch(0.65 0.04 260);
+
+  /* Message brokers */
+  --tag-broker-kafka: oklch(0.72 0.2 150);
+  --tag-broker-rabbitmq: oklch(0.7 0.24 50);
+  --tag-broker-sqs: oklch(0.7 0.2 300);
+  --tag-broker-sns: oklch(0.7 0.22 330);
+  --tag-broker-other: oklch(0.65 0.04 260);
+
+  /* Topic roles */
+  --tag-role-consumer: oklch(0.7 0.19 260);
+  --tag-role-producer: oklch(0.72 0.2 150);
+  --tag-role-both: oklch(0.78 0.18 80);
+
+  /* Package scopes */
+  --tag-scope-internal: oklch(0.7 0.19 260);
+  --tag-scope-opensource: oklch(0.72 0.2 150);
+  --tag-scope-test: oklch(0.78 0.18 80);
+
+  /* Severity */
+  --tag-severity-low: oklch(0.7 0.2 145);
+  --tag-severity-medium: oklch(0.8 0.2 85);
+  --tag-severity-high: oklch(0.7 0.24 50);
+  --tag-severity-critical: oklch(0.65 0.27 27);
+
+  /* HTTP methods */
+  --tag-method-get: oklch(0.72 0.2 150);
+  --tag-method-post: oklch(0.7 0.19 260);
+  --tag-method-put: oklch(0.78 0.18 80);
+  --tag-method-patch: oklch(0.72 0.15 185);
+  --tag-method-delete: oklch(0.7 0.22 27);
 }
 
 @layer base {

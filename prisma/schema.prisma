@@ -20,6 +20,8 @@ model User {
   accounts          Account[]
   sessions          Session[]
   workspaceMembers  WorkspaceMember[]
+  documents         Document[]
+  documentRevisions DocumentRevision[]
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 }
@@ -140,6 +142,7 @@ model System {
   risks            Risk[]
   dependsOn        Dependency[] @relation("DependencySource")
   dependedBy       Dependency[] @relation("DependencyTarget")
+  documents        Document[]
 
   @@unique([domainId, name])
 }
@@ -313,4 +316,34 @@ model GraphSnapshot {
   systemCount Int
   edgeCount   Int
   createdAt   DateTime        @default(now())
+}
+
+// ── Documentation Models ────────────────────────────────
+
+model Document {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String
+  content     String   @db.Text
+  systemId    String
+  system      System   @relation(fields: [systemId], references: [id], onDelete: Cascade)
+  authorId    String
+  author      User     @relation(fields: [authorId], references: [id])
+  publishedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  revisions   DocumentRevision[]
+
+  @@unique([systemId, slug])
+}
+
+model DocumentRevision {
+  id         String   @id @default(cuid())
+  content    String   @db.Text
+  documentId String
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  authorId   String
+  author     User     @relation(fields: [authorId], references: [id])
+  createdAt  DateTime @default(now())
 }

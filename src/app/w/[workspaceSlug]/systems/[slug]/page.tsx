@@ -1,10 +1,12 @@
 export const dynamic = "force-dynamic";
 
 import { notFound } from "next/navigation";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, FileText, Plus } from "lucide-react";
+import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { requireWorkspaceAccess } from "@/lib/workspace-context";
 import { Badge } from "@/components/ui/badge";
+import { TagBadge } from "@/components/shared/TagBadge";
 import {
   Card,
   CardContent,
@@ -21,15 +23,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-const SEVERITY_VARIANT: Record<
-  string,
-  "default" | "secondary" | "destructive" | "outline"
-> = {
-  CRITICAL: "destructive",
-  HIGH: "destructive",
-  MEDIUM: "secondary",
-  LOW: "outline",
-};
+
 
 export default async function SystemDetailPage({
   params,
@@ -93,6 +87,20 @@ export default async function SystemDetailPage({
   if (!system || system.domain.workspaceId !== ctx.workspaceId) {
     notFound();
   }
+
+  const documents = await prisma.document.findMany({
+    where: { systemId: system.id },
+    select: {
+      id: true,
+      title: true,
+      slug: true,
+      updatedAt: true,
+      author: { select: { name: true } },
+    },
+    orderBy: { updatedAt: "desc" },
+  });
+
+  const canEdit = ctx.role === "EDITOR" || ctx.role === "OWNER";
 
   return (
     <div className="container mx-auto max-w-7xl space-y-8 py-8 px-4">
@@ -180,7 +188,7 @@ export default async function SystemDetailPage({
                       {service.name}
                     </TableCell>
                     <TableCell>
-                      <Badge variant="secondary">{service.type}</Badge>
+                      <TagBadge category="service-type" value={service.type} />
                     </TableCell>
                   </TableRow>
                 ))}
@@ -247,9 +255,7 @@ export default async function SystemDetailPage({
                       {integration.name}
                     </TableCell>
                     <TableCell>
-                      <Badge variant="secondary">
-                        {integration.type.replace(/_/g, " ")}
-                      </Badge>
+                      <TagBadge category="integration-type" value={integration.type} />
                     </TableCell>
                     <TableCell>{integration.targetSystem ?? "—"}</TableCell>
                   </TableRow>
@@ -282,9 +288,11 @@ export default async function SystemDetailPage({
                   <TableRow key={topic.id}>
                     <TableCell className="font-medium">{topic.name}</TableCell>
                     <TableCell>
-                      <Badge variant="secondary">{topic.broker}</Badge>
+                      <TagBadge category="broker" value={topic.broker} />
                     </TableCell>
-                    <TableCell>{topic.role}</TableCell>
+                    <TableCell>
+                      <TagBadge category="topic-role" value={topic.role} />
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -313,11 +321,7 @@ export default async function SystemDetailPage({
                   <TableRow key={risk.id}>
                     <TableCell className="font-medium">{risk.title}</TableCell>
                     <TableCell>
-                      <Badge
-                        variant={SEVERITY_VARIANT[risk.severity] ?? "outline"}
-                      >
-                        {risk.severity}
-                      </Badge>
+                      <TagBadge category="severity" value={risk.severity} />
                     </TableCell>
                     <TableCell>{risk.description ?? "—"}</TableCell>
                   </TableRow>
@@ -349,7 +353,7 @@ export default async function SystemDetailPage({
                     <TableCell className="font-medium">{pkg.name}</TableCell>
                     <TableCell>{pkg.version ?? "—"}</TableCell>
                     <TableCell>
-                      <Badge variant="secondary">{pkg.scope}</Badge>
+                      <TagBadge category="package-scope" value={pkg.scope} />
                     </TableCell>
                   </TableRow>
                 ))}
@@ -358,6 +362,56 @@ export default async function SystemDetailPage({
           </CardContent>
         </Card>
       )}
+
+      {/* Documentation */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Documentation</CardTitle>
+              <CardDescription>
+                {documents.length} document(s)
+              </CardDescription>
+            </div>
+            {canEdit && (
+              <Link
+                href={`/w/${workspaceSlug}/systems/${slug}/docs/new`}
+                className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+              >
+                <Plus size={14} />
+                New Document
+              </Link>
+            )}
+          </div>
+        </CardHeader>
+        {documents.length > 0 && (
+          <CardContent>
+            <div className="space-y-2">
+              {documents.map((doc) => (
+                <Link
+                  key={doc.id}
+                  href={`/w/${workspaceSlug}/systems/${slug}/docs/${doc.slug}`}
+                  className="flex items-center gap-3 rounded-md p-3 hover:bg-muted transition-colors"
+                >
+                  <FileText size={16} className="text-muted-foreground flex-shrink-0" />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium truncate">{doc.title}</p>
+                    <p className="text-xs text-muted-foreground">
+                      Updated{" "}
+                      {doc.updatedAt.toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
+                      {doc.author.name && ` by ${doc.author.name}`}
+                    </p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </CardContent>
+        )}
+      </Card>
     </div>
   );
 }

@@ -1,0 +1,18 @@
+.ref {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: var(--meridian-accent);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.15s ease;
+}
+
+.ref:hover {
+  color: var(--meridian-accent-hover);
+  text-decoration: underline;
+}
+
+.icon {
+  flex-shrink: 0;
+}

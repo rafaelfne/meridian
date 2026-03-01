@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import Link from "next/link";
 import {
   Sheet,
   SheetContent,
@@ -31,6 +32,7 @@ import {
   ArrowRight,
   ArrowLeft,
   Route,
+  FileText,
 } from "lucide-react";
 import clsx from "clsx";
 import styles from "./SystemDetailPanel.module.css";
@@ -44,6 +46,7 @@ interface SystemDetailPanelProps {
   onClose: () => void;
   onHighlightDependencies?: (systemId: string) => void;
   onNodeClick?: (nodeId: string) => void;
+  workspaceSlug: string;
 }
 
 /* ────────────────────────────────────────────────────────── */
@@ -176,6 +179,7 @@ export function SystemDetailPanel({
   onClose,
   onHighlightDependencies,
   onNodeClick,
+  workspaceSlug,
 }: SystemDetailPanelProps) {
   const [detail, setDetail] = useState<SystemDetail | null>(null);
   const [loading, setLoading] = useState(false);
@@ -324,6 +328,13 @@ export function SystemDetailPanel({
                     <Highlighter className="size-3.5" />
                   </button>
                 )}
+                <Link
+                  href={`/w/${workspaceSlug}/systems/${detail.slug}`}
+                  className={styles.quickAction}
+                  title="View documentation"
+                >
+                  <FileText className="size-3.5" />
+                </Link>
               </div>
             </SheetHeader>
 
@@ -633,18 +644,30 @@ export function SystemDetailPanel({
             </div>
 
             {/* Footer actions */}
-            {onHighlightDependencies && (
-              <SheetFooter className={styles.actions}>
+            <SheetFooter className={styles.actions}>
+              <div className="flex w-full gap-2">
+                {onHighlightDependencies && (
+                  <Button
+                    variant="outline"
+                    className="flex-1 gap-2"
+                    onClick={handleHighlight}
+                  >
+                    <Highlighter className="size-4" />
+                    Highlight dependencies
+                  </Button>
+                )}
                 <Button
                   variant="outline"
-                  className="w-full gap-2"
-                  onClick={handleHighlight}
+                  className="flex-1 gap-2"
+                  asChild
                 >
-                  <Highlighter className="size-4" />
-                  Highlight dependencies
+                  <Link href={`/w/${workspaceSlug}/systems/${detail.slug}`}>
+                    <Server className="size-4" />
+                    View system page
+                  </Link>
                 </Button>
-              </SheetFooter>
-            )}
+              </div>
+            </SheetFooter>
           </>
         )}
       </SheetContent>

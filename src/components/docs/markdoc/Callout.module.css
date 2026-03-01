@@ -1,0 +1,59 @@
+.callout {
+  border-left: 4px solid;
+  border-radius: var(--radius-md);
+  padding: 1rem 1.25rem;
+  margin: 1.5rem 0;
+  background: var(--meridian-bg-elevated);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+}
+
+.body {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--meridian-text-secondary);
+}
+
+.body p {
+  margin: 0;
+}
+
+/* Type variants */
+.note {
+  border-color: var(--meridian-accent);
+}
+
+.note .header {
+  color: var(--meridian-accent);
+}
+
+.warning {
+  border-color: oklch(0.828 0.189 84.429);
+}
+
+.warning .header {
+  color: oklch(0.828 0.189 84.429);
+}
+
+.error {
+  border-color: oklch(0.704 0.191 22.216);
+}
+
+.error .header {
+  color: oklch(0.704 0.191 22.216);
+}
+
+.check {
+  border-color: oklch(0.696 0.17 162.48);
+}
+
+.check .header {
+  color: oklch(0.696 0.17 162.48);
+}

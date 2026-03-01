@@ -171,6 +171,7 @@ vi.mock("lucide-react", () => {
     ArrowRight: icon("arrow-right"),
     ArrowLeft: icon("arrow-left"),
     Route: icon("route"),
+    FileText: icon("file-text"),
     XIcon: icon("x"),
   };
 });
@@ -305,7 +306,7 @@ describe("SystemDetailPanel", () => {
   /* ─── 1. Does not render when systemId is null ──────── */
   it("does not render when systemId is null", () => {
     render(
-      <SystemDetailPanel systemId={null} onClose={noop} />,
+      <SystemDetailPanel systemId={null} onClose={noop} workspaceSlug="test-ws" />,
     );
 
     expect(screen.queryByTestId("sheet-root")).not.toBeInTheDocument();
@@ -320,7 +321,7 @@ describe("SystemDetailPanel", () => {
     mockGetSystemDetail.mockReturnValue(deferred.promise);
 
     render(
-      <SystemDetailPanel systemId="sys-1" onClose={noop} />,
+      <SystemDetailPanel systemId="sys-1" onClose={noop} workspaceSlug="test-ws" />,
     );
 
     await waitFor(() => {
@@ -342,7 +343,7 @@ describe("SystemDetailPanel", () => {
     });
 
     render(
-      <SystemDetailPanel systemId="sys-1" onClose={noop} />,
+      <SystemDetailPanel systemId="sys-1" onClose={noop} workspaceSlug="test-ws" />,
     );
 
     await waitFor(() => {
@@ -363,7 +364,7 @@ describe("SystemDetailPanel", () => {
     });
 
     render(
-      <SystemDetailPanel systemId="sys-1" onClose={noop} />,
+      <SystemDetailPanel systemId="sys-1" onClose={noop} workspaceSlug="test-ws" />,
     );
 
     // System name appears in header title
@@ -399,7 +400,7 @@ describe("SystemDetailPanel", () => {
     });
 
     render(
-      <SystemDetailPanel systemId="sys-1" onClose={noop} />,
+      <SystemDetailPanel systemId="sys-1" onClose={noop} workspaceSlug="test-ws" />,
     );
 
     await waitFor(() => {
@@ -428,7 +429,7 @@ describe("SystemDetailPanel", () => {
     });
 
     render(
-      <SystemDetailPanel systemId="sys-1" onClose={noop} />,
+      <SystemDetailPanel systemId="sys-1" onClose={noop} workspaceSlug="test-ws" />,
     );
 
     await waitFor(() => {
@@ -483,7 +484,7 @@ describe("SystemDetailPanel", () => {
     });
 
     render(
-      <SystemDetailPanel systemId="sys-1" onClose={noop} />,
+      <SystemDetailPanel systemId="sys-1" onClose={noop} workspaceSlug="test-ws" />,
     );
 
     await waitFor(() => {
@@ -545,6 +546,7 @@ describe("SystemDetailPanel", () => {
         systemId="sys-1"
         onClose={noop}
         onHighlightDependencies={handleHighlight}
+        workspaceSlug="test-ws"
       />,
     );
 
@@ -575,6 +577,7 @@ describe("SystemDetailPanel", () => {
       <SystemDetailPanel
         systemId="sys-1"
         onClose={handleClose}
+        workspaceSlug="test-ws"
       />,
     );
 

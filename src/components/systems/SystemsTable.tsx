@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { ArrowUpDown, ArrowUp, ArrowDown, FileText } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -30,9 +30,10 @@ type SortDirection = "asc" | "desc";
 interface SystemsTableProps {
   systems: SystemListItem[];
   domains: { id: string; name: string }[];
+  workspaceSlug: string;
 }
 
-export function SystemsTable({ systems, domains }: SystemsTableProps) {
+export function SystemsTable({ systems, domains, workspaceSlug }: SystemsTableProps) {
   const [search, setSearch] = useState("");
   const [domainFilter, setDomainFilter] = useState("__all__");
   const [sortField, setSortField] = useState<SortField>("name");
@@ -183,6 +184,7 @@ export function SystemsTable({ systems, domains }: SystemsTableProps) {
               <TableHead className="text-right">Services</TableHead>
               <TableHead className="text-right">Databases</TableHead>
               <TableHead className="text-right">Integrations</TableHead>
+              <TableHead className="text-right">Docs</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -190,7 +192,7 @@ export function SystemsTable({ systems, domains }: SystemsTableProps) {
               <TableRow key={system.id}>
                 <TableCell>
                   <Link
-                    href={`/systems/${system.slug}`}
+                    href={`/w/${workspaceSlug}/systems/${system.slug}`}
                     className={styles.systemLink}
                   >
                     {system.name}
@@ -209,6 +211,20 @@ export function SystemsTable({ systems, domains }: SystemsTableProps) {
                 </TableCell>
                 <TableCell className="text-right">
                   {system._count.integrations}
+                </TableCell>
+                <TableCell className="text-right">
+                  {system._count.documents > 0 ? (
+                    <Link
+                      href={`/w/${workspaceSlug}/systems/${system.slug}`}
+                      className={styles.docsLink}
+                      title={`${system._count.documents} document${system._count.documents === 1 ? "" : "s"}`}
+                    >
+                      <FileText className="size-3.5" />
+                      {system._count.documents}
+                    </Link>
+                  ) : (
+                    <span className="text-muted-foreground">0</span>
+                  )}
                 </TableCell>
               </TableRow>
             ))}

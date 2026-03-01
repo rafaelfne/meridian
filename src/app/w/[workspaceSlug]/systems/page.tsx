@@ -29,6 +29,7 @@ export default async function SystemsPage({
             services: true,
             databases: true,
             integrations: true,
+            documents: true,
           },
         },
       },
@@ -49,7 +50,7 @@ export default async function SystemsPage({
         </p>
       </div>
 
-      <SystemsTable systems={systems} domains={domains} />
+      <SystemsTable systems={systems} domains={domains} workspaceSlug={workspaceSlug} />
     </div>
   );
 }

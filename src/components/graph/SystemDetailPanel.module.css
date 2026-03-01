@@ -1,56 +1,5 @@
 /* ── Local tokens ─────────────────────────────────────── */
-
-:root {
-  --severity-low: oklch(0.65 0.18 145);
-  --severity-medium: oklch(0.75 0.18 85);
-  --severity-high: oklch(0.65 0.22 50);
-  --severity-critical: oklch(0.55 0.25 27);
-
-  --svc-api: oklch(0.6 0.19 260);
-  --svc-worker: oklch(0.7 0.18 80);
-  --svc-cron: oklch(0.6 0.2 300);
-  --svc-bg: oklch(0.55 0.04 260);
-
-  --method-get: oklch(0.65 0.2 150);
-  --method-post: oklch(0.6 0.19 260);
-  --method-put: oklch(0.7 0.18 80);
-  --method-patch: oklch(0.65 0.15 185);
-  --method-delete: oklch(0.6 0.22 27);
-
-  --scope-internal: oklch(0.6 0.19 260);
-  --scope-opensource: oklch(0.65 0.2 150);
-  --scope-test: oklch(0.7 0.18 80);
-
-  --role-consumer: oklch(0.6 0.19 260);
-  --role-producer: oklch(0.65 0.2 150);
-  --role-both: oklch(0.7 0.18 80);
-}
-
-.dark {
-  --severity-low: oklch(0.7 0.2 145);
-  --severity-medium: oklch(0.8 0.2 85);
-  --severity-high: oklch(0.7 0.24 50);
-  --severity-critical: oklch(0.65 0.27 27);
-
-  --svc-api: oklch(0.7 0.19 260);
-  --svc-worker: oklch(0.78 0.18 80);
-  --svc-cron: oklch(0.7 0.2 300);
-  --svc-bg: oklch(0.65 0.04 260);
-
-  --method-get: oklch(0.72 0.2 150);
-  --method-post: oklch(0.7 0.19 260);
-  --method-put: oklch(0.78 0.18 80);
-  --method-patch: oklch(0.72 0.15 185);
-  --method-delete: oklch(0.7 0.22 27);
-
-  --scope-internal: oklch(0.7 0.19 260);
-  --scope-opensource: oklch(0.72 0.2 150);
-  --scope-test: oklch(0.78 0.18 80);
-
-  --role-consumer: oklch(0.7 0.19 260);
-  --role-producer: oklch(0.72 0.2 150);
-  --role-both: oklch(0.78 0.18 80);
-}
+/* Color tokens live in globals.css as --tag-* variables  */
 
 /* ── Panel body ───────────────────────────────────────── */
 
@@ -332,23 +281,23 @@
 }
 
 .typeApi {
-  color: var(--svc-api);
-  background-color: oklch(from var(--svc-api) l c h / 12%);
+  color: var(--tag-svc-api);
+  background-color: oklch(from var(--tag-svc-api) l c h / 12%);
 }
 
 .typeWorker {
-  color: var(--svc-worker);
-  background-color: oklch(from var(--svc-worker) l c h / 12%);
+  color: var(--tag-svc-worker);
+  background-color: oklch(from var(--tag-svc-worker) l c h / 12%);
 }
 
 .typeCron {
-  color: var(--svc-cron);
-  background-color: oklch(from var(--svc-cron) l c h / 12%);
+  color: var(--tag-svc-cron);
+  background-color: oklch(from var(--tag-svc-cron) l c h / 12%);
 }
 
 .typeBg {
-  color: var(--svc-bg);
-  background-color: oklch(from var(--svc-bg) l c h / 12%);
+  color: var(--tag-svc-bg);
+  background-color: oklch(from var(--tag-svc-bg) l c h / 12%);
 }
 
 /* ── HTTP method tags ─────────────────────────────────── */
@@ -367,88 +316,88 @@
 }
 
 .methodGet {
-  color: var(--method-get);
-  background-color: oklch(from var(--method-get) l c h / 12%);
+  color: var(--tag-method-get);
+  background-color: oklch(from var(--tag-method-get) l c h / 12%);
 }
 
 .methodPost {
-  color: var(--method-post);
-  background-color: oklch(from var(--method-post) l c h / 12%);
+  color: var(--tag-method-post);
+  background-color: oklch(from var(--tag-method-post) l c h / 12%);
 }
 
 .methodPut {
-  color: var(--method-put);
-  background-color: oklch(from var(--method-put) l c h / 12%);
+  color: var(--tag-method-put);
+  background-color: oklch(from var(--tag-method-put) l c h / 12%);
 }
 
 .methodPatch {
-  color: var(--method-patch);
-  background-color: oklch(from var(--method-patch) l c h / 12%);
+  color: var(--tag-method-patch);
+  background-color: oklch(from var(--tag-method-patch) l c h / 12%);
 }
 
 .methodDelete {
-  color: var(--method-delete);
-  background-color: oklch(from var(--method-delete) l c h / 12%);
+  color: var(--tag-method-delete);
+  background-color: oklch(from var(--tag-method-delete) l c h / 12%);
 }
 
 /* ── Package scope tags ───────────────────────────────── */
 
 .scopeInternal {
-  color: var(--scope-internal);
-  background-color: oklch(from var(--scope-internal) l c h / 12%);
+  color: var(--tag-scope-internal);
+  background-color: oklch(from var(--tag-scope-internal) l c h / 12%);
 }
 
 .scopeOpenSource {
-  color: var(--scope-opensource);
-  background-color: oklch(from var(--scope-opensource) l c h / 12%);
+  color: var(--tag-scope-opensource);
+  background-color: oklch(from var(--tag-scope-opensource) l c h / 12%);
 }
 
 .scopeTest {
-  color: var(--scope-test);
-  background-color: oklch(from var(--scope-test) l c h / 12%);
+  color: var(--tag-scope-test);
+  background-color: oklch(from var(--tag-scope-test) l c h / 12%);
 }
 
 /* ── Message topic role tags ──────────────────────────── */
 
 .roleConsumer {
-  color: var(--role-consumer);
-  background-color: oklch(from var(--role-consumer) l c h / 12%);
+  color: var(--tag-role-consumer);
+  background-color: oklch(from var(--tag-role-consumer) l c h / 12%);
 }
 
 .roleProducer {
-  color: var(--role-producer);
-  background-color: oklch(from var(--role-producer) l c h / 12%);
+  color: var(--tag-role-producer);
+  background-color: oklch(from var(--tag-role-producer) l c h / 12%);
 }
 
 .roleBoth {
-  color: var(--role-both);
-  background-color: oklch(from var(--role-both) l c h / 12%);
+  color: var(--tag-role-both);
+  background-color: oklch(from var(--tag-role-both) l c h / 12%);
 }
 
 /* ── Severity badge variants ──────────────────────────── */
 
 .severityLow {
-  color: var(--severity-low);
-  border-color: oklch(from var(--severity-low) l c h / 40%);
-  background-color: oklch(from var(--severity-low) l c h / 10%);
+  color: var(--tag-severity-low);
+  border-color: oklch(from var(--tag-severity-low) l c h / 40%);
+  background-color: oklch(from var(--tag-severity-low) l c h / 10%);
 }
 
 .severityMedium {
-  color: var(--severity-medium);
-  border-color: oklch(from var(--severity-medium) l c h / 40%);
-  background-color: oklch(from var(--severity-medium) l c h / 10%);
+  color: var(--tag-severity-medium);
+  border-color: oklch(from var(--tag-severity-medium) l c h / 40%);
+  background-color: oklch(from var(--tag-severity-medium) l c h / 10%);
 }
 
 .severityHigh {
-  color: var(--severity-high);
-  border-color: oklch(from var(--severity-high) l c h / 40%);
-  background-color: oklch(from var(--severity-high) l c h / 10%);
+  color: var(--tag-severity-high);
+  border-color: oklch(from var(--tag-severity-high) l c h / 40%);
+  background-color: oklch(from var(--tag-severity-high) l c h / 10%);
 }
 
 .severityCritical {
-  color: var(--severity-critical);
-  border-color: oklch(from var(--severity-critical) l c h / 40%);
-  background-color: oklch(from var(--severity-critical) l c h / 10%);
+  color: var(--tag-severity-critical);
+  border-color: oklch(from var(--tag-severity-critical) l c h / 40%);
+  background-color: oklch(from var(--tag-severity-critical) l c h / 10%);
 }
 
 /* ── API endpoint row ─────────────────────────────────── */
