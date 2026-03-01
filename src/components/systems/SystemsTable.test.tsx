@@ -9,19 +9,19 @@ import type { SystemListItem } from "@/modules/system/types";
 vi.mock("@/components/ui/select", () => {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const React = require("react");
-  const Ctx = React.createContext<any>({});
+  const SelectContext = React.createContext<any>({});
 
   return {
     Select: ({ children, value, onValueChange }: any) =>
       React.createElement(
-        Ctx.Provider,
+        SelectContext.Provider,
         { value: { val: value, onChange: onValueChange } },
         children,
       ),
     SelectTrigger: () => null,
     SelectValue: () => null,
     SelectContent: ({ children }: any) => {
-      const { val, onChange } = React.useContext(Ctx);
+      const { val, onChange } = React.useContext(SelectContext);
       return React.createElement(
         "select",
         {

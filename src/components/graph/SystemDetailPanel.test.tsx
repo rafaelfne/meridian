@@ -552,6 +552,7 @@ describe("SystemDetailPanel", () => {
       expect(screen.getByText("Auth Service")).toBeInTheDocument();
     });
 
+    // Pick the footer button (last) to avoid ambiguity with header quick-action
     const highlightButtons = screen.getAllByRole("button", {
       name: /highlight dependencies/i,
     });
