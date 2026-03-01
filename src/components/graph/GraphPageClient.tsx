@@ -38,6 +38,19 @@ interface GraphPageClientProps {
   workspaceSlug: string;
 }
 
+const POSITIONS_STORAGE_KEY = "meridian_layout_positions";
+const EDGE_OFFSETS_STORAGE_KEY = "meridian_layout_edge_offsets";
+
+function readFromStorage<T extends object>(key: string): T {
+  if (typeof window === "undefined") return {} as T;
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? (JSON.parse(raw) as T) : ({} as T);
+  } catch {
+    return {} as T;
+  }
+}
+
 function GraphPageClientInner({
   data,
   systems,
@@ -46,6 +59,14 @@ function GraphPageClientInner({
   workspaceSlug,
 }: GraphPageClientProps) {
   const { filters } = useGraphFilters();
+
+  // Persistent layout positions and edge offsets keyed by layoutKey
+  const savedPositionsRef = useRef<
+    Record<string, Record<string, { x: number; y: number }>>
+  >(readFromStorage(POSITIONS_STORAGE_KEY));
+  const savedEdgeOffsetsRef = useRef<Record<string, Record<string, number>>>(
+    readFromStorage(EDGE_OFFSETS_STORAGE_KEY),
+  );
 
   // Time Machine state
   const [snapshotData, setSnapshotData] = useState<GraphData | null>(null);
@@ -72,6 +93,9 @@ function GraphPageClientInner({
   // Active data source: snapshot or live
   const activeData = snapshotData ?? data;
   const isViewingSnapshot = snapshotData !== null;
+
+  // Key that identifies the current layout mode for position persistence
+  const layoutKey = `${workspaceSlug}_${filters.layoutMode}_${filters.clustering ? "c" : "p"}`;
 
   // Compute layout based on mode
   const layoutData = useMemo(() => {
@@ -123,6 +147,51 @@ function GraphPageClientInner({
     return clustered;
   }, [filteredData, filters.clustering, collapsed, isViewingSnapshot]);
 
+  // Apply saved positions so user drag adjustments survive layout mode switches
+  const displayDataWithPositions = useMemo(() => {
+    if (isViewingSnapshot) return displayData;
+    const saved = savedPositionsRef.current[layoutKey];
+    if (!saved) return displayData;
+    return {
+      ...displayData,
+      nodes: displayData.nodes.map((node) => {
+        const pos = saved[node.id];
+        return pos ? { ...node, position: pos } : node;
+      }),
+    };
+     
+  }, [displayData, layoutKey, isViewingSnapshot]);
+
+  const handleNodePositionsChange = useCallback(
+    (positions: Record<string, { x: number; y: number }>) => {
+      savedPositionsRef.current[layoutKey] = positions;
+      try {
+        localStorage.setItem(
+          POSITIONS_STORAGE_KEY,
+          JSON.stringify(savedPositionsRef.current),
+        );
+      } catch {
+        // storage quota exceeded — ignore
+      }
+    },
+    [layoutKey],
+  );
+
+  const handleEdgeOffsetsChange = useCallback(
+    (offsets: Record<string, number>) => {
+      savedEdgeOffsetsRef.current[layoutKey] = offsets;
+      try {
+        localStorage.setItem(
+          EDGE_OFFSETS_STORAGE_KEY,
+          JSON.stringify(savedEdgeOffsetsRef.current),
+        );
+      } catch {
+        // ignore
+      }
+    },
+    [layoutKey],
+  );
+
   const visibleNodeIds = useMemo(
     () => new Set(displayData.nodes.map((n) => n.id)),
     [displayData.nodes],
@@ -164,7 +233,7 @@ function GraphPageClientInner({
         />
         <div className="relative flex flex-col flex-1 min-h-0">
           <DependencyGraph
-            data={displayData}
+            data={displayDataWithPositions}
             onNodeClick={handleNodeClick}
             onHighlight={handleHighlightDependencies}
             highlightedSystemId={highlightedSystemId}
@@ -173,6 +242,17 @@ function GraphPageClientInner({
               !isViewingSnapshot && filters.clustering
                 ? handleViewportChange
                 : undefined
+            }
+            initialEdgeOffsets={
+              isViewingSnapshot
+                ? undefined
+                : savedEdgeOffsetsRef.current[layoutKey]
+            }
+            onNodePositionsChange={
+              isViewingSnapshot ? undefined : handleNodePositionsChange
+            }
+            onEdgeOffsetsChange={
+              isViewingSnapshot ? undefined : handleEdgeOffsetsChange
             }
           />
           <TimeMachineSlider

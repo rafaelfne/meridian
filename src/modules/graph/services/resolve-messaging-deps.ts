@@ -53,7 +53,7 @@ export async function resolveMessagingDeps(
           sourceId: producer.systemId,
           targetId: consumer.systemId,
           type: BROKER_TO_DEPENDENCY_TYPE[producer.broker],
-          label: `[${producer.broker}] ${topicName}`,
+          label: topicName,
         });
       }
     }

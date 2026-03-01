@@ -17,8 +17,8 @@ import { inferLayers } from "./infer-layers";
 
 const NODE_WIDTH = 250;
 const NODE_HEIGHT = 100;
-const HORIZONTAL_SEP = 80;
-const VERTICAL_SEP = 50;
+const HORIZONTAL_SEP = 180;
+const VERTICAL_SEP = 100;
 const LAYER_GAP = 120;
 const LAYER_LABEL_HEIGHT = 40;
 
@@ -88,7 +88,7 @@ export function buildLayeredGraphData(
   }
 
   // Build edges
-  const edges: GraphEdge[] = dependencies
+  const rawEdges: GraphEdge[] = dependencies
     .filter((dep) => systemIds.has(dep.sourceId) && systemIds.has(dep.targetId))
     .map((dep) => {
       const style = getEdgeStyle(dep.type);
@@ -106,6 +106,9 @@ export function buildLayeredGraphData(
         },
       };
     });
+
+  // Compute parallel offsets for edges sharing the same node pair
+  const edges = assignParallelOffsets(rawEdges);
 
   // Layout each layer independently and stack vertically
   const allNodes: GraphNode[] = [];
@@ -194,4 +197,43 @@ export function buildLayeredGraphData(
   }
 
   return { nodes: allNodes, edges };
+}
+
+/**
+ * For edges sharing the same source–target pair, assign a vertical offset
+ * so they fan out instead of stacking on top of each other.
+ */
+const PARALLEL_EDGE_GAP = 25;
+
+function assignParallelOffsets(edges: GraphEdge[]): GraphEdge[] {
+  const groups = new Map<string, GraphEdge[]>();
+
+  for (const edge of edges) {
+    const key = [edge.source, edge.target].sort().join("|");
+    let group = groups.get(key);
+    if (!group) {
+      group = [];
+      groups.set(key, group);
+    }
+    group.push(edge);
+  }
+
+  const result: GraphEdge[] = [];
+
+  for (const group of groups.values()) {
+    if (group.length === 1) {
+      result.push(group[0]);
+      continue;
+    }
+
+    group.forEach((edge, i) => {
+      const offset = (i - (group.length - 1) / 2) * PARALLEL_EDGE_GAP;
+      result.push({
+        ...edge,
+        data: { ...edge.data, parallelOffset: offset },
+      });
+    });
+  }
+
+  return result;
 }

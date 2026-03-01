@@ -14,8 +14,8 @@ import {
 
 const NODE_WIDTH = 250;
 const NODE_HEIGHT = 100;
-const HORIZONTAL_SEP = 80;
-const VERTICAL_SEP = 50;
+const HORIZONTAL_SEP = 180;
+const VERTICAL_SEP = 100;
 
 /**
  * Deterministic color palette for domain names.
@@ -97,7 +97,7 @@ export function buildGraphData(
   }));
 
   // Build edges (only include edges where both source and target exist in the filtered systems)
-  const edges: GraphEdge[] = dependencies
+  const rawEdges: GraphEdge[] = dependencies
     .filter((dep) => systemIds.has(dep.sourceId) && systemIds.has(dep.targetId))
     .map((dep) => {
       const style = getEdgeStyle(dep.type);
@@ -115,6 +115,9 @@ export function buildGraphData(
         },
       };
     });
+
+  // Compute parallel offsets for edges sharing the same node pair
+  const edges = assignParallelOffsets(rawEdges);
 
   // Calculate layout with dagre
   const graph = new dagre.graphlib.Graph();
@@ -153,4 +156,44 @@ export function buildGraphData(
   });
 
   return { nodes: layoutNodes, edges };
+}
+
+/**
+ * For edges sharing the same source–target pair, assign a vertical offset
+ * so they fan out instead of stacking on top of each other.
+ */
+const PARALLEL_EDGE_GAP = 25;
+
+function assignParallelOffsets(edges: GraphEdge[]): GraphEdge[] {
+  const groups = new Map<string, GraphEdge[]>();
+
+  for (const edge of edges) {
+    // Normalize key so A→B and B→A are the same group
+    const key = [edge.source, edge.target].sort().join("|");
+    let group = groups.get(key);
+    if (!group) {
+      group = [];
+      groups.set(key, group);
+    }
+    group.push(edge);
+  }
+
+  const result: GraphEdge[] = [];
+
+  for (const group of groups.values()) {
+    if (group.length === 1) {
+      result.push(group[0]);
+      continue;
+    }
+
+    group.forEach((edge, i) => {
+      const offset = (i - (group.length - 1) / 2) * PARALLEL_EDGE_GAP;
+      result.push({
+        ...edge,
+        data: { ...edge.data, parallelOffset: offset },
+      });
+    });
+  }
+
+  return result;
 }

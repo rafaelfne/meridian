@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import {
   ReactFlow,
   MiniMap,
@@ -9,6 +9,7 @@ import {
   BackgroundVariant,
   useNodesState,
   useEdgesState,
+  useReactFlow,
   type NodeMouseHandler,
   type Viewport,
 } from "@xyflow/react";
@@ -40,6 +41,9 @@ interface DependencyGraphProps {
   highlightedSystemId?: string | null;
   focusedNodeId?: string | null;
   onViewportChange?: (viewport: Viewport) => void;
+  initialEdgeOffsets?: Record<string, number>;
+  onNodePositionsChange?: (positions: Record<string, { x: number; y: number }>) => void;
+  onEdgeOffsetsChange?: (offsets: Record<string, number>) => void;
 }
 
 export function DependencyGraph({
@@ -49,7 +53,11 @@ export function DependencyGraph({
   highlightedSystemId,
   focusedNodeId,
   onViewportChange,
+  initialEdgeOffsets,
+  onNodePositionsChange,
+  onEdgeOffsetsChange,
 }: DependencyGraphProps) {
+  const { getNodes } = useReactFlow();
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
@@ -60,6 +68,35 @@ export function DependencyGraph({
 
   const [nodes, setNodes, onNodesChange] = useNodesState(data.nodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(data.edges);
+
+  // Per-edge Y offset state (for drag-to-move edge paths)
+  const [edgeOffsets, setEdgeOffsets] = useState<Record<string, number>>(
+    initialEdgeOffsets ?? {},
+  );
+
+  // Sync edgeOffsets when the initial offsets change (layout mode switch)
+  useEffect(() => {
+    setEdgeOffsets(initialEdgeOffsets ?? {});
+  }, [initialEdgeOffsets]);
+
+  const setEdgeOffset = useCallback((edgeId: string, offset: number) => {
+    setEdgeOffsets((prev) => ({ ...prev, [edgeId]: offset }));
+  }, []);
+
+  // Notify parent of offset changes (debounced so we don't hammer on every mouse move)
+  const edgeOffsetsPersistRef = useRef(onEdgeOffsetsChange);
+  edgeOffsetsPersistRef.current = onEdgeOffsetsChange;
+  const persistTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    if (!edgeOffsetsPersistRef.current) return;
+    if (persistTimeoutRef.current) clearTimeout(persistTimeoutRef.current);
+    persistTimeoutRef.current = setTimeout(() => {
+      edgeOffsetsPersistRef.current?.(edgeOffsets);
+    }, 400);
+    return () => {
+      if (persistTimeoutRef.current) clearTimeout(persistTimeoutRef.current);
+    };
+  }, [edgeOffsets]);
 
   // Edge hover state
   const [hoveredEdgeId, setHoveredEdgeId] = useState<string | null>(null);
@@ -81,8 +118,10 @@ export function DependencyGraph({
       highlightedSystemId,
       focusedNodeId,
       onHighlight,
+      edgeOffsets,
+      setEdgeOffset,
     }),
-    [hoveredEdgeId, highlightedSystemId, focusedNodeId, onHighlight],
+    [hoveredEdgeId, highlightedSystemId, focusedNodeId, onHighlight, edgeOffsets, setEdgeOffset],
   );
 
   // Sync nodes/edges when data changes (filtering) or highlighting changes
@@ -112,13 +151,17 @@ export function DependencyGraph({
       );
 
       setEdges(
-        data.edges.map((edge) => ({
-          ...edge,
-          style: {
-            ...edge.style,
-            opacity: connectedEdgeIds.has(edge.id) ? 1 : DIMMED_OPACITY,
-          },
-        })),
+        data.edges.map((edge) => {
+          const isConnected = connectedEdgeIds.has(edge.id);
+          return {
+            ...edge,
+            style: {
+              ...edge.style,
+              opacity: isConnected ? 1 : DIMMED_OPACITY,
+              strokeWidth: isConnected ? 3.5 : (edge.style.strokeWidth ?? 2),
+            },
+          };
+        }),
       );
     } else {
       setNodes(data.nodes);
@@ -132,6 +175,15 @@ export function DependencyGraph({
     },
     [onNodeClick],
   );
+
+  const handleNodeDragStop = useCallback(() => {
+    if (!onNodePositionsChange) return;
+    const positions: Record<string, { x: number; y: number }> = {};
+    for (const n of getNodes()) {
+      positions[n.id] = n.position;
+    }
+    onNodePositionsChange(positions);
+  }, [getNodes, onNodePositionsChange]);
 
   const handleMoveEnd = useCallback(
     (_event: MouseEvent | TouchEvent | null, viewport: Viewport) => {
@@ -159,6 +211,7 @@ export function DependencyGraph({
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onNodeClick={handleNodeClick}
+          onNodeDragStop={handleNodeDragStop}
           onMoveEnd={handleMoveEnd}
           onEdgeMouseEnter={handleEdgeMouseEnter}
           onEdgeMouseLeave={handleEdgeMouseLeave}

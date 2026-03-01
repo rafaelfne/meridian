@@ -32,7 +32,7 @@ describe("resolveMessagingDeps", () => {
         sourceId: "sys-a",
         targetId: "sys-b",
         type: "KAFKA_TOPIC",
-        label: "[KAFKA] orders",
+        label: "orders",
       },
     ]);
   });
@@ -60,13 +60,13 @@ describe("resolveMessagingDeps", () => {
       sourceId: "sys-a",
       targetId: "sys-b",
       type: "KAFKA_TOPIC",
-      label: "[KAFKA] events",
+      label: "events",
     });
     expect(result).toContainEqual({
       sourceId: "sys-c",
       targetId: "sys-a",
       type: "KAFKA_TOPIC",
-      label: "[KAFKA] events",
+      label: "events",
     });
   });
 
@@ -82,13 +82,13 @@ describe("resolveMessagingDeps", () => {
       sourceId: "sys-a",
       targetId: "sys-b",
       type: "KAFKA_TOPIC",
-      label: "[KAFKA] sync",
+      label: "sync",
     });
     expect(result).toContainEqual({
       sourceId: "sys-b",
       targetId: "sys-a",
       type: "KAFKA_TOPIC",
-      label: "[KAFKA] sync",
+      label: "sync",
     });
     expect(result).toHaveLength(2);
   });
@@ -138,19 +138,19 @@ describe("resolveMessagingDeps", () => {
       sourceId: "sys-a",
       targetId: "sys-b",
       type: "KAFKA_TOPIC",
-      label: "[KAFKA] orders",
+      label: "orders",
     });
     expect(result).toContainEqual({
       sourceId: "sys-a",
       targetId: "sys-c",
       type: "KAFKA_TOPIC",
-      label: "[KAFKA] orders",
+      label: "orders",
     });
     expect(result).toContainEqual({
       sourceId: "sys-b",
       targetId: "sys-a",
       type: "KAFKA_TOPIC",
-      label: "[KAFKA] payments",
+      label: "payments",
     });
     expect(result).toHaveLength(3);
   });
@@ -169,12 +169,12 @@ describe("resolveMessagingDeps", () => {
         sourceId: "sys-a",
         targetId: "sys-b",
         type: "KAFKA_TOPIC",
-        label: "[KAFKA] events",
+        label: "events",
       },
     ]);
   });
 
-  it("includes broker prefix in label", async () => {
+  it("uses topic name as label without broker prefix", async () => {
     const topics: MessageTopicWithSystem[] = [
       { name: "my.custom.topic-name", role: "PRODUCER", broker: "KAFKA", systemId: "sys-a" },
       { name: "my.custom.topic-name", role: "CONSUMER", broker: "KAFKA", systemId: "sys-b" },
@@ -182,7 +182,7 @@ describe("resolveMessagingDeps", () => {
 
     const result = await resolveMessagingDeps(buildDeps(topics));
 
-    expect(result[0]?.label).toBe("[KAFKA] my.custom.topic-name");
+    expect(result[0]?.label).toBe("my.custom.topic-name");
   });
 
   it("maps RABBITMQ broker to RABBITMQ_QUEUE dependency type", async () => {
@@ -198,7 +198,7 @@ describe("resolveMessagingDeps", () => {
         sourceId: "sys-a",
         targetId: "sys-b",
         type: "RABBITMQ_QUEUE",
-        label: "[RABBITMQ] brokertools",
+        label: "brokertools",
       },
     ]);
   });
@@ -216,7 +216,7 @@ describe("resolveMessagingDeps", () => {
         sourceId: "sys-a",
         targetId: "sys-b",
         type: "SQS_QUEUE",
-        label: "[SQS] logging-queue",
+        label: "logging-queue",
       },
     ]);
   });
@@ -246,13 +246,13 @@ describe("resolveMessagingDeps", () => {
       sourceId: "sys-a",
       targetId: "sys-b",
       type: "KAFKA_TOPIC",
-      label: "[KAFKA] orders",
+      label: "orders",
     });
     expect(result).toContainEqual({
       sourceId: "sys-c",
       targetId: "sys-b",
       type: "RABBITMQ_QUEUE",
-      label: "[RABBITMQ] brokertools",
+      label: "brokertools",
     });
   });
 

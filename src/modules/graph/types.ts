@@ -101,6 +101,8 @@ export interface GraphEdgeData extends Record<string, unknown> {
   showParticles?: boolean;
   particleSpeed?: number;
   particleCount?: number;
+  /** Vertical offset (px) to separate parallel edges sharing the same node pair. */
+  parallelOffset?: number;
 }
 
 /** A React Flow node representing a system. */
