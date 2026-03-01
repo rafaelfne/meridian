@@ -121,6 +121,12 @@ export interface GraphEdge {
   type: string;
   animated: boolean;
   style: { stroke: string; strokeWidth: number };
+  markerEnd?: {
+    type: "arrow" | "arrowclosed";
+    color?: string;
+    width?: number;
+    height?: number;
+  };
   data: GraphEdgeData;
 }
 

@@ -99,6 +99,12 @@ export function buildLayeredGraphData(
         type: "smoothstep",
         animated: style.animated,
         style: { stroke: style.stroke, strokeWidth: 2 },
+        markerEnd: {
+          type: "arrowclosed",
+          color: style.stroke,
+          width: 20,
+          height: 20,
+        },
         data: {
           type: dep.type,
           label: resolveEdgeLabel(dep.type, dep.label),
