@@ -56,18 +56,6 @@ function buildMessagingDep(
   };
 }
 
-function buildPackageDep(
-  overrides: Partial<DependencyResult> = {},
-): DependencyResult {
-  return {
-    sourceId: "src-4",
-    targetId: "tgt-4",
-    type: "SHARED_PACKAGE",
-    label: "shared-utils",
-    ...overrides,
-  };
-}
-
 function buildDeps(
   overrides: Partial<DependencyProcessorDeps> = {},
 ): DependencyProcessorDeps {
@@ -75,7 +63,6 @@ function buildDeps(
     resolveHttp: vi.fn().mockResolvedValue(buildHttpResult()),
     resolveDatabase: vi.fn().mockResolvedValue([]),
     resolveMessaging: vi.fn().mockResolvedValue([]),
-    resolvePackage: vi.fn().mockResolvedValue([]),
     persistDependencies: vi.fn().mockResolvedValue(undefined),
     ...overrides,
   };
@@ -91,16 +78,14 @@ describe("processDependencies", () => {
         ),
       resolveDatabase: vi.fn().mockResolvedValue([buildDatabaseDep()]),
       resolveMessaging: vi.fn().mockResolvedValue([buildMessagingDep()]),
-      resolvePackage: vi.fn().mockResolvedValue([buildPackageDep()]),
     });
 
     const result = await processDependencies(deps);
 
-    expect(result.total).toBe(4);
+    expect(result.total).toBe(3);
     expect(deps.resolveHttp).toHaveBeenCalledTimes(1);
     expect(deps.resolveDatabase).toHaveBeenCalledTimes(1);
     expect(deps.resolveMessaging).toHaveBeenCalledTimes(1);
-    expect(deps.resolvePackage).toHaveBeenCalledTimes(1);
   });
 
   it("counts dependencies by type correctly", async () => {
@@ -122,18 +107,16 @@ describe("processDependencies", () => {
         }),
       ]),
       resolveMessaging: vi.fn().mockResolvedValue([buildMessagingDep()]),
-      resolvePackage: vi.fn().mockResolvedValue([buildPackageDep()]),
     });
 
     const result = await processDependencies(deps);
 
-    expect(result.total).toBe(6);
+    expect(result.total).toBe(5);
     expect(result.byType).toEqual({
       HTTP_API: 2,
       SHARED_DATABASE: 1,
       CROSS_DATABASE_QUERY: 1,
       KAFKA_TOPIC: 1,
-      SHARED_PACKAGE: 1,
     });
   });
 
@@ -177,7 +160,6 @@ describe("processDependencies", () => {
         ),
       resolveDatabase: vi.fn().mockResolvedValue([buildDatabaseDep()]),
       resolveMessaging: vi.fn().mockResolvedValue([buildMessagingDep()]),
-      resolvePackage: vi.fn().mockResolvedValue([buildPackageDep()]),
       persistDependencies,
     });
 
@@ -187,12 +169,11 @@ describe("processDependencies", () => {
 
     const persisted = persistDependencies.mock
       .calls[0]![0] as NormalizedDependency[];
-    expect(persisted).toHaveLength(4);
+    expect(persisted).toHaveLength(3);
     expect(persisted.map((d) => d.type)).toEqual([
       "HTTP_API",
       "SHARED_DATABASE",
       "KAFKA_TOPIC",
-      "SHARED_PACKAGE",
     ]);
   });
 

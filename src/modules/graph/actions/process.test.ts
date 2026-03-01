@@ -29,10 +29,6 @@ vi.mock("../services/resolve-messaging-deps", () => ({
   resolveMessagingDeps: vi.fn(),
 }));
 
-vi.mock("../services/resolve-package-deps", () => ({
-  resolvePackageDeps: vi.fn(),
-}));
-
 vi.mock("../processors/dependency-processor", async () => {
   const actual = await vi.importActual<
     typeof import("../processors/dependency-processor")
@@ -55,9 +51,6 @@ describe("processDependenciesAction", () => {
     const { resolveMessagingDeps } = await import(
       "../services/resolve-messaging-deps"
     );
-    const { resolvePackageDeps } = await import(
-      "../services/resolve-package-deps"
-    );
     const { prisma } = await import("@/lib/prisma");
     const { revalidatePath } = await import("next/cache");
 
@@ -75,7 +68,6 @@ describe("processDependenciesAction", () => {
     });
     vi.mocked(resolveDatabaseDeps).mockResolvedValue([]);
     vi.mocked(resolveMessagingDeps).mockResolvedValue([]);
-    vi.mocked(resolvePackageDeps).mockResolvedValue([]);
     vi.mocked(prisma.$transaction).mockImplementation(async (fn) => {
       if (typeof fn === "function") {
         return fn(prisma as never);
@@ -122,9 +114,6 @@ describe("processDependenciesAction", () => {
     const { resolveMessagingDeps } = await import(
       "../services/resolve-messaging-deps"
     );
-    const { resolvePackageDeps } = await import(
-      "../services/resolve-package-deps"
-    );
     const { prisma } = await import("@/lib/prisma");
     const { revalidatePath } = await import("next/cache");
 
@@ -134,7 +123,6 @@ describe("processDependenciesAction", () => {
     });
     vi.mocked(resolveDatabaseDeps).mockResolvedValue([]);
     vi.mocked(resolveMessagingDeps).mockResolvedValue([]);
-    vi.mocked(resolvePackageDeps).mockResolvedValue([]);
     vi.mocked(prisma.$transaction).mockImplementation(async (fn) => {
       if (typeof fn === "function") {
         return fn(prisma as never);

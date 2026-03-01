@@ -24,7 +24,6 @@ export interface DependencyProcessorDeps {
   resolveHttp: () => Promise<ResolveHttpDepsResult>;
   resolveDatabase: () => Promise<DependencyResult[]>;
   resolveMessaging: () => Promise<ResolvedDependency[]>;
-  resolvePackage: () => Promise<DependencyResult[]>;
   persistDependencies: (deps: NormalizedDependency[]) => Promise<void>;
 }
 
@@ -69,18 +68,16 @@ function normalizeMessagingDeps(
 export async function processDependencies(
   deps: DependencyProcessorDeps,
 ): Promise<ProcessDependenciesResult> {
-  const [httpResult, databaseDeps, messagingDeps, packageDeps] = await Promise.all([
+  const [httpResult, databaseDeps, messagingDeps] = await Promise.all([
     deps.resolveHttp(),
     deps.resolveDatabase(),
     deps.resolveMessaging(),
-    deps.resolvePackage(),
   ]);
 
   const allDependencies: NormalizedDependency[] = [
     ...normalizeHttpDeps(httpResult.resolved),
     ...normalizeDependencyResults(databaseDeps),
     ...normalizeMessagingDeps(messagingDeps),
-    ...normalizeDependencyResults(packageDeps),
   ];
 
   await deps.persistDependencies(allDependencies);
