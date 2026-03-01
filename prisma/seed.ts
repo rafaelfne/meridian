@@ -17,6 +17,36 @@ async function main() {
   await prisma.service.deleteMany();
   await prisma.system.deleteMany();
   await prisma.domain.deleteMany();
+  await prisma.workspaceMember.deleteMany();
+  await prisma.workspace.deleteMany();
+
+  // ══════════════════════════════════════════════════════
+  //  WORKSPACE
+  // ══════════════════════════════════════════════════════
+
+  console.log("Creating default workspace...");
+
+  // Find or create seed user for workspace ownership
+  let seedUser = await prisma.user.findFirst({ orderBy: { createdAt: "asc" } });
+  if (!seedUser) {
+    seedUser = await prisma.user.create({
+      data: {
+        name: "Seed User",
+        email: "seed@example.com",
+      },
+    });
+  }
+
+  const workspace = await prisma.workspace.create({
+    data: {
+      name: "Default Workspace",
+      slug: "default",
+      description: "Default workspace for development",
+      members: {
+        create: { userId: seedUser.id, role: "OWNER" },
+      },
+    },
+  });
 
   // ══════════════════════════════════════════════════════
   //  DOMAINS
@@ -25,22 +55,22 @@ async function main() {
   console.log("Creating domains...");
 
   const trading = await prisma.domain.create({
-    data: { name: "Trading", description: "Core trading and order execution systems" },
+    data: { name: "Trading", description: "Core trading and order execution systems", workspaceId: workspace.id },
   });
   const onboarding = await prisma.domain.create({
-    data: { name: "Onboarding", description: "Customer acquisition, KYC and account management" },
+    data: { name: "Onboarding", description: "Customer acquisition, KYC and account management", workspaceId: workspace.id },
   });
   const marketData = await prisma.domain.create({
-    data: { name: "Market Data", description: "Real-time and historical market data distribution" },
+    data: { name: "Market Data", description: "Real-time and historical market data distribution", workspaceId: workspace.id },
   });
   const settlement = await prisma.domain.create({
-    data: { name: "Settlement", description: "Post-trade settlement, custody and transfers" },
+    data: { name: "Settlement", description: "Post-trade settlement, custody and transfers", workspaceId: workspace.id },
   });
   const riskCompliance = await prisma.domain.create({
-    data: { name: "Risk & Compliance", description: "Risk management, regulatory compliance and audit" },
+    data: { name: "Risk & Compliance", description: "Risk management, regulatory compliance and audit", workspaceId: workspace.id },
   });
   const platform = await prisma.domain.create({
-    data: { name: "Platform", description: "Shared infrastructure and cross-cutting services" },
+    data: { name: "Platform", description: "Shared infrastructure and cross-cutting services", workspaceId: workspace.id },
   });
 
   // ══════════════════════════════════════════════════════
@@ -706,6 +736,7 @@ async function main() {
       filename: "corretora-inventory-2026-02.json",
       status: "COMPLETED",
       systemsCount: 20,
+      workspaceId: workspace.id,
       rawPayload: {
         systems: [
           "oms", "trading-engine", "position-manager", "algo-trading",

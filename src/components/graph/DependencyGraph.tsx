@@ -52,7 +52,10 @@ export function DependencyGraph({
 }: DependencyGraphProps) {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  useEffect(() => {
+    const id = setTimeout(() => setMounted(true), 0);
+    return () => clearTimeout(id);
+  }, []);
   const isDark = mounted && resolvedTheme === "dark";
 
   const [nodes, setNodes, onNodesChange] = useNodesState(data.nodes);

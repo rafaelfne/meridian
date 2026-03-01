@@ -7,13 +7,15 @@ export const authConfig = {
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
-      const isOnDashboard =
+      const isProtected =
         nextUrl.pathname.startsWith("/dashboard") ||
         nextUrl.pathname.startsWith("/upload") ||
         nextUrl.pathname.startsWith("/graph") ||
-        nextUrl.pathname.startsWith("/systems");
+        nextUrl.pathname.startsWith("/systems") ||
+        nextUrl.pathname.startsWith("/w/") ||
+        nextUrl.pathname.startsWith("/workspaces");
 
-      if (isOnDashboard) {
+      if (isProtected) {
         return isLoggedIn;
       }
 

@@ -17,7 +17,13 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
 const initialState: UploadInventoryResult = { success: false };
 
-export function UploadDropzone() {
+export function UploadDropzone({
+  workspaceId,
+  workspaceSlug,
+}: {
+  workspaceId: string;
+  workspaceSlug: string;
+}) {
   const [file, setFile] = useState<File | null>(null);
   const [jsonPreview, setJsonPreview] = useState("");
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
@@ -83,8 +89,9 @@ export function UploadDropzone() {
     if (!file) return;
     const formData = new FormData();
     formData.append("file", file);
+    formData.append("workspaceId", workspaceId);
     startTransition(() => dispatch(formData));
-  }, [file, dispatch, startTransition]);
+  }, [file, dispatch, startTransition, workspaceId]);
 
   const isDisabled = isPending || result.success;
 
@@ -207,7 +214,7 @@ export function UploadDropzone() {
             </p>
           )}
           <Link
-            href="/graph"
+            href={`/w/${workspaceSlug}/graph`}
             className="mt-2 inline-block underline font-medium"
           >
             View dependency graph →
