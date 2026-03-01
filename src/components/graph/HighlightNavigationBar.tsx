@@ -51,10 +51,13 @@ export function HighlightNavigationBar({
 
   // Reset index when highlighted system changes
   useEffect(() => {
-    setCurrentIndex(0);
-    if (!highlightedSystemId) {
-      onFocusNode?.(null);
-    }
+    const id = setTimeout(() => {
+      setCurrentIndex(0);
+      if (!highlightedSystemId) {
+        onFocusNode?.(null);
+      }
+    }, 0);
+    return () => clearTimeout(id);
   }, [highlightedSystemId, onFocusNode]);
 
   // Navigate viewport to node
