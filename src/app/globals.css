@@ -47,6 +47,24 @@
   --radius-4xl: calc(var(--radius) + 16px);
 }
 
+/* Meridian design tokens */
+:root {
+  --meridian-bg: #09090b;
+  --meridian-bg-elevated: #18181b;
+  --meridian-bg-subtle: #27272a;
+  --meridian-text-primary: #fafafa;
+  --meridian-text-secondary: #a1a1aa;
+  --meridian-text-muted: #52525b;
+  --meridian-accent: #06b6d4;
+  --meridian-accent-hover: #22d3ee;
+  --meridian-accent-muted: rgba(6, 182, 212, 0.15);
+  --meridian-border: #27272a;
+  --meridian-border-subtle: #1c1c1f;
+  --font-display: var(--font-geist-mono), "JetBrains Mono", "Fira Code", "SF Mono", monospace;
+  --font-body: var(--font-geist-sans), "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", monospace;
+}
+
 :root {
   --radius: 0.625rem;
 
