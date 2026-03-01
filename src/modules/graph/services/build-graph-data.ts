@@ -14,8 +14,8 @@ import {
 
 const NODE_WIDTH = 250;
 const NODE_HEIGHT = 100;
-const HORIZONTAL_SEP = 320;
-const VERTICAL_SEP = 180;
+const HORIZONTAL_SEP = 256;
+const VERTICAL_SEP = 144;
 
 /**
  * Deterministic color palette for domain names.

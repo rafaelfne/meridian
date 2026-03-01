@@ -17,9 +17,9 @@ import { inferLayers } from "./infer-layers";
 
 const NODE_WIDTH = 250;
 const NODE_HEIGHT = 100;
-const HORIZONTAL_SEP = 320;
-const VERTICAL_SEP = 180;
-const LAYER_GAP = 200;
+const HORIZONTAL_SEP = 256;
+const VERTICAL_SEP = 144;
+const LAYER_GAP = 160;
 const LAYER_LABEL_HEIGHT = 40;
 
 /**
