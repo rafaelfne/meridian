@@ -1,7 +1,19 @@
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 1rem;
+}
+
+@media (max-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .statValue {
@@ -11,16 +23,28 @@
   color: var(--foreground);
 }
 
-.statLabel {
-  font-size: 0.8125rem;
-  color: var(--muted-foreground);
-  line-height: 1.4;
-}
-
 .chartSection {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(2, 1fr);
   gap: 1rem;
+}
+
+@media (max-width: 768px) {
+  .chartSection {
+    grid-template-columns: 1fr;
+  }
+}
+
+.twoCol {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+@media (max-width: 768px) {
+  .twoCol {
+    grid-template-columns: 1fr;
+  }
 }
 
 .barChart {
@@ -67,26 +91,6 @@
   font-weight: 600;
   color: var(--muted-foreground);
   text-align: right;
-}
-
-.listItem {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  padding: 0.5rem 0;
-  border-bottom: 1px solid var(--border);
-}
-
-.listItem:last-child {
-  border-bottom: none;
-}
-
-.severity {
-  font-size: 0.6875rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
 }
 
 .emptyState {

@@ -214,84 +214,92 @@ export default async function DashboardPage({
         </Card>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Top Connected Systems</CardTitle>
-          <CardDescription>
-            Systems with the most dependency connections
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {metrics.topConnectedSystems.length > 0 ? (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>System</TableHead>
-                  <TableHead className="text-right">Connections</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {metrics.topConnectedSystems.map((system) => (
-                  <TableRow key={system.id}>
-                    <TableCell className="font-medium">
-                      <Link
-                        href={`/w/${workspaceSlug}/systems/${system.slug}`}
-                        className="hover:underline"
-                      >
-                        {system.name}
-                      </Link>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {system.connectionCount}
-                    </TableCell>
+      <div className={styles.twoCol}>
+        <Card>
+          <CardHeader>
+            <CardTitle>Top Connected Systems</CardTitle>
+            <CardDescription>
+              Systems with the most dependency connections
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {metrics.topConnectedSystems.length > 0 ? (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>System</TableHead>
+                    <TableHead className="text-right">Connections</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          ) : (
-            <div className={styles.emptyState}>No connected systems</div>
-          )}
-        </CardContent>
-      </Card>
+                </TableHeader>
+                <TableBody>
+                  {metrics.topConnectedSystems.map((system) => (
+                    <TableRow key={system.id}>
+                      <TableCell className="font-medium">
+                        <Link
+                          href={`/w/${workspaceSlug}/systems/${system.slug}`}
+                          className="hover:underline"
+                        >
+                          {system.name}
+                        </Link>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {system.connectionCount}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            ) : (
+              <div className={styles.emptyState}>No connected systems</div>
+            )}
+          </CardContent>
+        </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Risks</CardTitle>
-          <CardDescription>Latest HIGH and CRITICAL severity</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {metrics.recentRisks.length > 0 ? (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Risk</TableHead>
-                  <TableHead>System</TableHead>
-                  <TableHead>Severity</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {metrics.recentRisks.map((risk) => (
-                  <TableRow key={risk.id}>
-                    <TableCell className="font-medium">{risk.title}</TableCell>
-                    <TableCell>{risk.systemName}</TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={SEVERITY_VARIANT[risk.severity] ?? "outline"}
-                      >
-                        {risk.severity}
-                      </Badge>
-                    </TableCell>
+        <Card>
+          <CardHeader>
+            <CardTitle>Recent Risks</CardTitle>
+            <CardDescription>
+              Latest HIGH and CRITICAL severity
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {metrics.recentRisks.length > 0 ? (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Risk</TableHead>
+                    <TableHead>System</TableHead>
+                    <TableHead>Severity</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          ) : (
-            <div className={styles.emptyState}>
-              No high-severity risks found
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                </TableHeader>
+                <TableBody>
+                  {metrics.recentRisks.map((risk) => (
+                    <TableRow key={risk.id}>
+                      <TableCell className="font-medium">
+                        {risk.title}
+                      </TableCell>
+                      <TableCell>{risk.systemName}</TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={
+                            SEVERITY_VARIANT[risk.severity] ?? "outline"
+                          }
+                        >
+                          {risk.severity}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            ) : (
+              <div className={styles.emptyState}>
+                No high-severity risks found
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
 
       <Card>
         <CardHeader>

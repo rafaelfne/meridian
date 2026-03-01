@@ -35,6 +35,7 @@ interface GraphPageClientProps {
   systems?: SystemWithCounts[];
   dependencies?: DependencyRecord[];
   snapshots?: SnapshotMeta[];
+  workspaceSlug: string;
 }
 
 function GraphPageClientInner({
@@ -42,6 +43,7 @@ function GraphPageClientInner({
   systems,
   dependencies,
   snapshots = [],
+  workspaceSlug,
 }: GraphPageClientProps) {
   const { filters } = useGraphFilters();
 
@@ -57,14 +59,14 @@ function GraphPageClientInner({
       }
       setIsLoadingSnapshot(true);
       try {
-        const res = await fetch(`/api/graph/snapshots/${snapshotId}`);
+        const res = await fetch(`/api/w/${workspaceSlug}/graph/snapshots/${snapshotId}`);
         const json = await res.json();
         setSnapshotData(json as GraphData);
       } finally {
         setIsLoadingSnapshot(false);
       }
     },
-    [],
+    [workspaceSlug],
   );
 
   // Active data source: snapshot or live

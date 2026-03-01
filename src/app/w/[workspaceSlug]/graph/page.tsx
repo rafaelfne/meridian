@@ -65,6 +65,7 @@ export default async function GraphPage({
       systems={systems}
       dependencies={dependencies}
       snapshots={serializedSnapshots}
+      workspaceSlug={workspaceSlug}
     />
   );
 }

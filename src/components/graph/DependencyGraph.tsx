@@ -168,15 +168,13 @@ export function DependencyGraph({
           nodesConnectable={false}
           edgesReconnectable={false}
         >
-          <MiniMap
-            style={{ background: isDark ? "hsl(230 25% 12%)" : undefined }}
-            maskColor={isDark ? "rgba(0,0,0,0.7)" : undefined}
-          />
+          <MiniMap pannable zoomable />
           <Controls />
           <Background
             variant={BackgroundVariant.Dots}
-            color={isDark ? "rgba(255,255,255,0.08)" : undefined}
+            color={isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.15)"}
             gap={20}
+            size={1.5}
           />
         </ReactFlow>
       </GraphHoverContext.Provider>

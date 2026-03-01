@@ -4,8 +4,8 @@
   height: 3.5rem;
   padding: 0 1.5rem;
   border-bottom: 1px solid var(--border);
-  background-color: var(--background);
-  gap: 2rem;
+  background-color: var(--card);
+  gap: 0.5rem;
   flex-shrink: 0;
 }
 
@@ -18,10 +18,17 @@
   white-space: nowrap;
 }
 
+.separator {
+  color: var(--muted-foreground);
+  font-size: 0.875rem;
+  user-select: none;
+}
+
 .nav {
   display: flex;
   align-items: center;
   gap: 0.25rem;
+  margin-left: 1rem;
 }
 
 .navLink {

@@ -1,7 +1,7 @@
 import { SessionProvider } from "@/components/shared/SessionProvider";
 import { AppHeader } from "@/components/shared/AppHeader";
 
-export default function DashboardLayout({
+export default function WorkspacesLayout({
   children,
 }: {
   children: React.ReactNode;

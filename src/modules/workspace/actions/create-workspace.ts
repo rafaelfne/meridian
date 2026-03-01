@@ -13,7 +13,7 @@ export async function createWorkspace(formData: FormData) {
   const raw = {
     name: formData.get("name"),
     slug: formData.get("slug"),
-    description: formData.get("description"),
+    description: formData.get("description") || undefined,
   };
 
   const parsed = CreateWorkspaceSchema.safeParse(raw);
@@ -26,6 +26,17 @@ export async function createWorkspace(formData: FormData) {
   });
   if (existing) {
     return { success: false as const, error: { slug: ["This slug is already taken"] } };
+  }
+
+  const userExists = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { id: true },
+  });
+  if (!userExists) {
+    return {
+      success: false as const,
+      error: { name: ["Session expired. Please sign out and sign in again."] },
+    };
   }
 
   const workspace = await prisma.$transaction(async (tx) => {

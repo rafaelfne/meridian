@@ -8,10 +8,6 @@ export const authConfig = {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
       const isProtected =
-        nextUrl.pathname.startsWith("/dashboard") ||
-        nextUrl.pathname.startsWith("/upload") ||
-        nextUrl.pathname.startsWith("/graph") ||
-        nextUrl.pathname.startsWith("/systems") ||
         nextUrl.pathname.startsWith("/w/") ||
         nextUrl.pathname.startsWith("/workspaces");
 

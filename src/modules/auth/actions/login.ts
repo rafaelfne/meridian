@@ -18,7 +18,7 @@ export async function loginWithCredentials(
     await signIn("credentials", {
       email,
       password,
-      redirectTo: "/dashboard",
+      redirectTo: "/workspaces",
     });
     return {};
   } catch (error) {
@@ -35,5 +35,5 @@ export async function loginWithCredentials(
 }
 
 export async function loginWithGitHub() {
-  await signIn("github", { redirectTo: "/dashboard" });
+  await signIn("github", { redirectTo: "/workspaces" });
 }
