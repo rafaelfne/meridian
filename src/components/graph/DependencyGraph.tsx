@@ -74,10 +74,12 @@ export function DependencyGraph({
     initialEdgeOffsets ?? {},
   );
 
-  // Sync edgeOffsets when the initial offsets change (layout mode switch)
-  useEffect(() => {
+  // When the layout mode switches the parent passes new initial offsets — reset
+  const [prevInitial, setPrevInitial] = useState(initialEdgeOffsets);
+  if (prevInitial !== initialEdgeOffsets) {
+    setPrevInitial(initialEdgeOffsets);
     setEdgeOffsets(initialEdgeOffsets ?? {});
-  }, [initialEdgeOffsets]);
+  }
 
   const setEdgeOffset = useCallback((edgeId: string, offset: number) => {
     setEdgeOffsets((prev) => ({ ...prev, [edgeId]: offset }));
@@ -85,7 +87,9 @@ export function DependencyGraph({
 
   // Notify parent of offset changes (debounced so we don't hammer on every mouse move)
   const edgeOffsetsPersistRef = useRef(onEdgeOffsetsChange);
-  edgeOffsetsPersistRef.current = onEdgeOffsetsChange;
+  useEffect(() => {
+    edgeOffsetsPersistRef.current = onEdgeOffsetsChange;
+  }, [onEdgeOffsetsChange]);
   const persistTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
     if (!edgeOffsetsPersistRef.current) return;

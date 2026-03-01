@@ -14,6 +14,11 @@ vi.mock("@xyflow/react", () => ({
   BackgroundVariant: { Dots: "dots" },
   useNodesState: (initial: unknown[]) => [initial, vi.fn(), vi.fn()],
   useEdgesState: (initial: unknown[]) => [initial, vi.fn(), vi.fn()],
+  useReactFlow: () => ({ getNodes: () => [] }),
+}));
+
+vi.mock("next-themes", () => ({
+  useTheme: () => ({ resolvedTheme: "light" }),
 }));
 
 function createGraphData(overrides: Partial<GraphData> = {}): GraphData {

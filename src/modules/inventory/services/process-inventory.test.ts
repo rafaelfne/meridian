@@ -158,14 +158,16 @@ describe("processInventory", () => {
     expect(result.errors[0]).toContain("string error");
   });
 
-  it("propagates domain upsert failure", async () => {
+  it("collects domain upsert failure as error", async () => {
     const deps = buildDeps({
       upsertDomain: vi.fn().mockRejectedValue(new Error("domain error")),
     });
 
-    await expect(
-      processInventory([buildSystem()], deps),
-    ).rejects.toThrow("domain error");
+    const result = await processInventory([buildSystem()], deps);
+
+    expect(result.systemsProcessed).toBe(0);
+    expect(result.errors).toHaveLength(1);
+    expect(result.errors[0]).toContain("domain error");
   });
 
   it("returns empty results for an empty systems array", async () => {
@@ -175,7 +177,7 @@ describe("processInventory", () => {
 
     expect(result.systemsProcessed).toBe(0);
     expect(result.errors).toEqual([]);
-    expect(deps.upsertDomain).toHaveBeenCalledTimes(1);
+    expect(deps.upsertDomain).not.toHaveBeenCalled();
     expect(deps.processSystem).not.toHaveBeenCalled();
   });
 

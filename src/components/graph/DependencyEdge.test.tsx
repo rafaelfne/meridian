@@ -10,6 +10,15 @@ vi.mock("@xyflow/react", () => ({
   ),
   getSmoothStepPath: () => ["M0,0 L100,100", 50, 50],
   Position: { Left: "left", Right: "right", Top: "top", Bottom: "bottom" },
+  useReactFlow: () => ({ getViewport: () => ({ zoom: 1 }) }),
+}));
+
+vi.mock("./GraphHoverContext", () => ({
+  useGraphHover: () => ({
+    hoveredEdgeId: null,
+    edgeOffsets: {},
+    setEdgeOffset: vi.fn(),
+  }),
 }));
 
 function createEdgeProps(overrides = {}) {
@@ -26,7 +35,7 @@ function createEdgeProps(overrides = {}) {
     style: { stroke: "#4f46e5", strokeWidth: 2 },
     data: { type: "HTTP_API", label: "http api" },
     ...overrides,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- React Flow EdgeProps requires internal fields we don't need in tests
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- React Flow EdgeProps requires internal fields we don't need in tests
   } as any;
 }
 

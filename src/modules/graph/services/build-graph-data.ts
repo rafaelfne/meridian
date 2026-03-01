@@ -182,7 +182,7 @@ function assignParallelOffsets(edges: GraphEdge[]): GraphEdge[] {
 
   for (const group of groups.values()) {
     if (group.length === 1) {
-      result.push(group[0]);
+      result.push(group[0]!);
       continue;
     }
 

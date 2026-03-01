@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useReactFlow } from "@xyflow/react";
-import { Network } from "lucide-react";
 import {
   CommandDialog,
   CommandInput,
