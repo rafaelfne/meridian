@@ -64,7 +64,7 @@ ALTER TABLE "InventoryUpload" ADD CONSTRAINT "InventoryUpload_workspaceId_fkey" 
 -- Assign all existing users as OWNER of the default workspace
 INSERT INTO "WorkspaceMember" ("id", "userId", "workspaceId", "role", "createdAt", "updatedAt")
 SELECT
-    gen_random_uuid()::text,
+    concat('cm', substr(md5(random()::text || "id"), 1, 23)),
     "id",
     'default-workspace-id',
     'OWNER'::"WorkspaceRole",
