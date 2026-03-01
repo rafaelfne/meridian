@@ -9,7 +9,7 @@ import type { SystemListItem } from "@/modules/system/types";
 vi.mock("@/components/ui/select", () => {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const React = require("react");
-  const SelectContext = React.createContext<any>({});
+  const SelectContext = React.createContext({});
 
   return {
     Select: ({ children, value, onValueChange }: any) =>
