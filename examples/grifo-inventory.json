@@ -3,101 +3,237 @@
     {
       "name": "Grifo Auth",
       "slug": "grifo-auth",
+      "domainName": "Identity & Access",
       "purpose": "Authentication and authorization service for the Grifo platform",
       "language": "TypeScript",
       "framework": "Next.js",
       "frameworkVersion": "15.0.0",
       "repositoryUrl": "https://github.com/grifo/grifo-auth",
       "services": [
-        { "name": "auth-api", "type": "API", "port": 3000, "path": "/api/auth" },
-        { "name": "token-worker", "type": "WORKER" }
+        {
+          "name": "auth-api",
+          "type": "API",
+          "port": 3000,
+          "path": "/api/auth"
+        },
+        {
+          "name": "token-worker",
+          "type": "WORKER"
+        }
       ],
       "databases": [
-        { "name": "auth-db", "provider": "PostgreSQL", "version": "16", "orm": "Prisma" }
+        {
+          "name": "auth-db",
+          "provider": "PostgreSQL",
+          "version": "16",
+          "orm": "Prisma"
+        }
       ],
       "integrations": [
-        { "targetSystem": "grifo-core", "type": "HTTP_API", "description": "User profile data" },
-        { "targetSystem": "grifo-notifications", "type": "HTTP_API", "description": "Send verification emails" }
+        {
+          "targetSystem": "grifo-core",
+          "type": "HTTP_API",
+          "description": "User profile data"
+        },
+        {
+          "targetSystem": "grifo-notifications",
+          "type": "HTTP_API",
+          "description": "Send verification emails"
+        }
       ],
       "messageTopics": [
-        { "name": "user-events", "role": "PRODUCER", "broker": "KAFKA" },
-        { "name": "audit-log", "role": "PRODUCER", "broker": "KAFKA" }
+        {
+          "name": "user-events",
+          "role": "PRODUCER",
+          "broker": "KAFKA"
+        },
+        {
+          "name": "audit-log",
+          "role": "PRODUCER",
+          "broker": "KAFKA"
+        }
       ],
       "packages": [
-        { "name": "next-auth", "version": "5.0.0", "type": "OPEN_SOURCE" },
-        { "name": "@grifo/shared-types", "version": "1.2.0", "type": "INTERNAL" }
+        {
+          "name": "next-auth",
+          "version": "5.0.0",
+          "type": "OPEN_SOURCE"
+        },
+        {
+          "name": "@grifo/shared-types",
+          "version": "1.2.0",
+          "type": "INTERNAL"
+        }
       ],
       "apiEndpoints": [
-        { "path": "/api/auth/login", "method": "POST", "description": "User login" },
-        { "path": "/api/auth/register", "method": "POST", "description": "User registration" },
-        { "path": "/api/auth/me", "method": "GET", "description": "Get current user" }
+        {
+          "path": "/api/auth/login",
+          "method": "POST",
+          "description": "User login"
+        },
+        {
+          "path": "/api/auth/register",
+          "method": "POST",
+          "description": "User registration"
+        },
+        {
+          "path": "/api/auth/me",
+          "method": "GET",
+          "description": "Get current user"
+        }
       ],
       "risks": [
-        { "title": "Single point of failure", "description": "No redundancy for auth service", "severity": "HIGH" }
+        {
+          "title": "Single point of failure",
+          "description": "No redundancy for auth service",
+          "severity": "HIGH"
+        }
       ]
     },
     {
       "name": "Grifo Core",
       "slug": "grifo-core",
+      "domainName": "Platform",
       "purpose": "Core business logic and domain management",
       "language": "TypeScript",
       "framework": "NestJS",
       "frameworkVersion": "10.0.0",
       "repositoryUrl": "https://github.com/grifo/grifo-core",
       "services": [
-        { "name": "core-api", "type": "API", "port": 3001, "path": "/api" },
-        { "name": "domain-sync", "type": "CRONJOB" }
+        {
+          "name": "core-api",
+          "type": "API",
+          "port": 3001,
+          "path": "/api"
+        },
+        {
+          "name": "domain-sync",
+          "type": "CRONJOB"
+        }
       ],
       "databases": [
-        { "name": "core-db", "provider": "PostgreSQL", "version": "16", "orm": "TypeORM" }
+        {
+          "name": "core-db",
+          "provider": "PostgreSQL",
+          "version": "16",
+          "orm": "TypeORM"
+        }
       ],
       "integrations": [
-        { "targetSystem": "grifo-auth", "type": "HTTP_API", "description": "Authentication validation" }
+        {
+          "targetSystem": "grifo-auth",
+          "type": "HTTP_API",
+          "description": "Authentication validation"
+        }
       ],
       "messageTopics": [
-        { "name": "user-events", "role": "CONSUMER", "broker": "KAFKA" },
-        { "name": "domain-events", "role": "BOTH", "broker": "KAFKA" }
+        {
+          "name": "user-events",
+          "role": "CONSUMER",
+          "broker": "KAFKA"
+        },
+        {
+          "name": "domain-events",
+          "role": "BOTH",
+          "broker": "KAFKA"
+        }
       ],
       "packages": [
-        { "name": "@nestjs/core", "version": "10.0.0", "type": "OPEN_SOURCE" },
-        { "name": "@grifo/shared-types", "version": "1.2.0", "type": "INTERNAL" }
+        {
+          "name": "@nestjs/core",
+          "version": "10.0.0",
+          "type": "OPEN_SOURCE"
+        },
+        {
+          "name": "@grifo/shared-types",
+          "version": "1.2.0",
+          "type": "INTERNAL"
+        }
       ],
       "apiEndpoints": [
-        { "path": "/api/domains", "method": "GET", "description": "List domains" },
-        { "path": "/api/domains/:id", "method": "GET", "description": "Get domain details" },
-        { "path": "/api/systems", "method": "GET", "description": "List systems" }
+        {
+          "path": "/api/domains",
+          "method": "GET",
+          "description": "List domains"
+        },
+        {
+          "path": "/api/domains/:id",
+          "method": "GET",
+          "description": "Get domain details"
+        },
+        {
+          "path": "/api/systems",
+          "method": "GET",
+          "description": "List systems"
+        }
       ],
       "risks": [
-        { "title": "Database coupling", "description": "Direct database queries from other services", "severity": "MEDIUM" }
+        {
+          "title": "Database coupling",
+          "description": "Direct database queries from other services",
+          "severity": "MEDIUM"
+        }
       ]
     },
     {
       "name": "Grifo Notifications",
       "slug": "grifo-notifications",
+      "domainName": "Platform",
       "purpose": "Email and push notification delivery service",
       "language": "Java",
       "framework": "Spring Boot",
       "frameworkVersion": "3.2.0",
       "repositoryUrl": "https://github.com/grifo/grifo-notifications",
       "services": [
-        { "name": "notification-api", "type": "API", "port": 8080 },
-        { "name": "email-worker", "type": "BACKGROUND_SERVICE" }
+        {
+          "name": "notification-api",
+          "type": "API",
+          "port": 8080
+        },
+        {
+          "name": "email-worker",
+          "type": "BACKGROUND_SERVICE"
+        }
       ],
       "databases": [
-        { "name": "notifications-db", "provider": "MongoDB", "version": "7.0" }
+        {
+          "name": "notifications-db",
+          "provider": "MongoDB",
+          "version": "7.0"
+        }
       ],
       "integrations": [
-        { "targetSystem": "grifo-auth", "type": "HTTP_API", "description": "Validate auth tokens" }
+        {
+          "targetSystem": "grifo-auth",
+          "type": "HTTP_API",
+          "description": "Validate auth tokens"
+        }
       ],
       "messageTopics": [
-        { "name": "notification-requests", "role": "CONSUMER", "broker": "KAFKA" },
-        { "name": "audit-log", "role": "CONSUMER", "broker": "KAFKA" }
+        {
+          "name": "notification-requests",
+          "role": "CONSUMER",
+          "broker": "KAFKA"
+        },
+        {
+          "name": "audit-log",
+          "role": "CONSUMER",
+          "broker": "KAFKA"
+        }
       ],
       "packages": [
-        { "name": "spring-boot-starter-mail", "version": "3.2.0", "type": "OPEN_SOURCE" }
+        {
+          "name": "spring-boot-starter-mail",
+          "version": "3.2.0",
+          "type": "OPEN_SOURCE"
+        }
       ],
       "apiEndpoints": [
-        { "path": "/api/notifications/send", "method": "POST", "description": "Send notification" }
+        {
+          "path": "/api/notifications/send",
+          "method": "POST",
+          "description": "Send notification"
+        }
       ],
       "risks": []
     }

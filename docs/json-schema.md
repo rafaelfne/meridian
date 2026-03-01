@@ -22,22 +22,23 @@ The upload payload is a single JSON object with a `systems` array:
 
 Each entry in the `systems` array describes one software system.
 
-| Field              | Type             | Required | Description                                                   |
-| ------------------ | ---------------- | -------- | ------------------------------------------------------------- |
-| `name`             | `string`         | ✅        | Human-readable system name (min 1 char).                      |
-| `slug`             | `string`         | ✅        | URL-safe identifier. Must match `^[a-z0-9]+(?:-[a-z0-9]+)*$`. |
-| `purpose`          | `string`         | —        | Brief description of the system's role.                       |
-| `language`         | `string`         | —        | Primary programming language (e.g., `"TypeScript"`, `"C#"`).  |
-| `framework`        | `string`         | —        | Framework name (e.g., `"Next.js"`, `".NET"`).                 |
-| `frameworkVersion` | `string`         | —        | Framework version.                                            |
-| `repositoryUrl`    | `string` (URL)   | —        | Must be a valid URL if provided.                              |
-| `services`         | `Service[]`      | —        | Defaults to `[]`.                                             |
-| `databases`        | `Database[]`     | —        | Defaults to `[]`.                                             |
-| `integrations`     | `Integration[]`  | —        | Defaults to `[]`.                                             |
-| `messageTopics`    | `MessageTopic[]` | —        | Defaults to `[]`.                                             |
-| `packages`         | `Package[]`      | —        | Defaults to `[]`.                                             |
-| `apiEndpoints`     | `ApiEndpoint[]`  | —        | Defaults to `[]`.                                             |
-| `risks`            | `Risk[]`         | —        | Defaults to `[]`.                                             |
+| Field              | Type             | Required | Description                                                                                |
+| ------------------ | ---------------- | -------- | ------------------------------------------------------------------------------------------ |
+| `name`             | `string`         | ✅        | Human-readable system name (min 1 char).                                                   |
+| `slug`             | `string`         | ✅        | URL-safe identifier. Must match `^[a-z0-9]+(?:-[a-z0-9]+)*$`.                              |
+| `domainName`       | `string`         | —        | Domain to assign the system to. Auto-created if it doesn't exist. Defaults to `"Default"`. |
+| `purpose`          | `string`         | —        | Brief description of the system's role.                                                    |
+| `language`         | `string`         | —        | Primary programming language (e.g., `"TypeScript"`, `"C#"`).                               |
+| `framework`        | `string`         | —        | Framework name (e.g., `"Next.js"`, `".NET"`).                                              |
+| `frameworkVersion` | `string`         | —        | Framework version.                                                                         |
+| `repositoryUrl`    | `string` (URL)   | —        | Must be a valid URL if provided.                                                           |
+| `services`         | `Service[]`      | —        | Defaults to `[]`.                                                                          |
+| `databases`        | `Database[]`     | —        | Defaults to `[]`.                                                                          |
+| `integrations`     | `Integration[]`  | —        | Defaults to `[]`.                                                                          |
+| `messageTopics`    | `MessageTopic[]` | —        | Defaults to `[]`.                                                                          |
+| `packages`         | `Package[]`      | —        | Defaults to `[]`.                                                                          |
+| `apiEndpoints`     | `ApiEndpoint[]`  | —        | Defaults to `[]`.                                                                          |
+| `risks`            | `Risk[]`         | —        | Defaults to `[]`.                                                                          |
 
 ---
 
@@ -146,6 +147,7 @@ A known risk or concern for the system.
     {
       "name": "Auth Service",
       "slug": "auth-service",
+      "domainName": "Platform",
       "purpose": "Handles authentication",
       "language": "TypeScript",
       "framework": "Next.js",

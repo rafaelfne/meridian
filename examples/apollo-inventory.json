@@ -3,18 +3,37 @@
     {
       "name": "Apollo",
       "slug": "apollo",
+      "domainName": "Fund Operations",
       "purpose": "Fund distribution integration — orders, positions, quotas, and reconciliation with Inoa vendor",
       "language": "C#",
       "framework": ".NET",
       "frameworkVersion": "8.0",
       "repositoryUrl": "https://github.com/warrenbrasil/apollo",
       "services": [
-        { "name": "Warren.Apollo.Api", "type": "API" },
-        { "name": "Warren.Apollo.Consumers", "type": "WORKER" },
-        { "name": "Warren.Apollo.ConsumersVendor", "type": "WORKER" },
-        { "name": "Warren.Apollo.ConsumerProcessPositions", "type": "WORKER" },
-        { "name": "Warren.Apollo.ConsumerProcessOrders", "type": "WORKER" },
-        { "name": "Warren.Apollo.ScheduledTasks", "type": "CRONJOB" }
+        {
+          "name": "Warren.Apollo.Api",
+          "type": "API"
+        },
+        {
+          "name": "Warren.Apollo.Consumers",
+          "type": "WORKER"
+        },
+        {
+          "name": "Warren.Apollo.ConsumersVendor",
+          "type": "WORKER"
+        },
+        {
+          "name": "Warren.Apollo.ConsumerProcessPositions",
+          "type": "WORKER"
+        },
+        {
+          "name": "Warren.Apollo.ConsumerProcessOrders",
+          "type": "WORKER"
+        },
+        {
+          "name": "Warren.Apollo.ScheduledTasks",
+          "type": "CRONJOB"
+        }
       ],
       "databases": [
         {
@@ -28,7 +47,10 @@
           "name": "Queuing.FundOperations.Orders.Updated",
           "role": "BOTH",
           "broker": "KAFKA",
-          "metadata": { "consumerGroup": "ApolloServiceConsumers", "dlqEnabled": true }
+          "metadata": {
+            "consumerGroup": "ApolloServiceConsumers",
+            "dlqEnabled": true
+          }
         },
         {
           "name": "Queuing.FundOperations.Positions.Updated",
@@ -44,31 +66,41 @@
           "name": "Queuing.Accounting.Funds.ReservationCreated",
           "role": "CONSUMER",
           "broker": "KAFKA",
-          "metadata": { "consumerGroup": "ApolloServiceConsumers" }
+          "metadata": {
+            "consumerGroup": "ApolloServiceConsumers"
+          }
         },
         {
           "name": "Queuing.Consolidation.Athena.FundQuotaPublished",
           "role": "CONSUMER",
           "broker": "KAFKA",
-          "metadata": { "consumerGroup": "ApolloServiceApi" }
+          "metadata": {
+            "consumerGroup": "ApolloServiceApi"
+          }
         },
         {
           "name": "Queuing.Apollo.Vendor.Position.Process",
           "role": "BOTH",
           "broker": "KAFKA",
-          "metadata": { "consumerGroup": "ApolloConsumerProcessPositions" }
+          "metadata": {
+            "consumerGroup": "ApolloConsumerProcessPositions"
+          }
         },
         {
           "name": "Queuing.Apollo.Vendor.Order.Process",
           "role": "BOTH",
           "broker": "KAFKA",
-          "metadata": { "consumerGroup": "ApolloConsumerProcessOrders" }
+          "metadata": {
+            "consumerGroup": "ApolloConsumerProcessOrders"
+          }
         },
         {
           "name": "TopicResources.CustomerInserted",
           "role": "CONSUMER",
           "broker": "KAFKA",
-          "metadata": { "consumerGroup": "ApolloServiceConsumers" }
+          "metadata": {
+            "consumerGroup": "ApolloServiceConsumers"
+          }
         },
         {
           "name": "TopicResources.CustomerUpdated",
@@ -86,54 +118,201 @@
           "broker": "RABBITMQ",
           "metadata": {
             "exchange": "brokertools",
-            "handlers": ["PositionPublishedHandler", "OrderPublishedHandler"],
+            "handlers": [
+              "PositionPublishedHandler",
+              "OrderPublishedHandler"
+            ],
             "library": "Inoa.ServiceBus 2.23.0"
           }
         }
       ],
       "integrations": [
-        { "targetSystem": "inoa-broker-tools", "type": "HTTP_API", "description": "Inoa Order API" },
-        { "targetSystem": "athena", "type": "HTTP_API", "description": "Athena API" },
-        { "targetSystem": "athena-operations", "type": "HTTP_API", "description": "Athena Operations API" },
-        { "targetSystem": "core-instruments", "type": "HTTP_API", "description": "Core Instruments API" },
-        { "targetSystem": "core-portfolios-monolith", "type": "HTTP_API", "description": "Core Portfolios Monolith API" },
-        { "targetSystem": "core-investments", "type": "HTTP_API", "description": "Core Investments API" },
-        { "targetSystem": "fund-operations", "type": "HTTP_API", "description": "Fund Operations API" }
+        {
+          "targetSystem": "inoa-broker-tools",
+          "type": "HTTP_API",
+          "description": "Inoa Order API"
+        },
+        {
+          "targetSystem": "athena",
+          "type": "HTTP_API",
+          "description": "Athena API"
+        },
+        {
+          "targetSystem": "athena-operations",
+          "type": "HTTP_API",
+          "description": "Athena Operations API"
+        },
+        {
+          "targetSystem": "core-instruments",
+          "type": "HTTP_API",
+          "description": "Core Instruments API"
+        },
+        {
+          "targetSystem": "core-portfolios-monolith",
+          "type": "HTTP_API",
+          "description": "Core Portfolios Monolith API"
+        },
+        {
+          "targetSystem": "core-investments",
+          "type": "HTTP_API",
+          "description": "Core Investments API"
+        },
+        {
+          "targetSystem": "fund-operations",
+          "type": "HTTP_API",
+          "description": "Fund Operations API"
+        }
       ],
       "packages": [
-        { "name": "Warren.Core.Infrastructure.Web", "version": "6.1.4", "type": "INTERNAL" },
-        { "name": "Warren.Core.Infrastructure.Background", "version": "6.2.0", "type": "INTERNAL" },
-        { "name": "Warren.Core.Common.Extensions", "version": "2.8.2", "type": "INTERNAL" },
-        { "name": "Warren.Core.Slack.Client", "version": "3.1.0", "type": "INTERNAL" },
-        { "name": "Warren.Core.Messaging.Providers.Kafka", "version": "5.7.0", "type": "INTERNAL" },
-        { "name": "Warren.Core.Accounting.Infrastructure.Contracts", "version": "7.22.0", "type": "INTERNAL" },
-        { "name": "MediatR", "version": "12.4.1", "type": "OPEN_SOURCE" },
-        { "name": "Microsoft.EntityFrameworkCore", "version": "8.0.8", "type": "OPEN_SOURCE" },
-        { "name": "Dapper", "version": "2.1.35", "type": "OPEN_SOURCE" },
-        { "name": "Inoa.ServiceBus", "version": "2.23.0", "type": "OPEN_SOURCE" },
-        { "name": "Serilog.AspNetCore", "version": "4.1.0", "type": "OPEN_SOURCE" },
-        { "name": "xunit", "version": "2.9.3", "type": "TEST" },
-        { "name": "Moq", "version": "4.20.72", "type": "TEST" },
-        { "name": "AutoFixture", "version": "4.18.1", "type": "TEST" }
+        {
+          "name": "Warren.Core.Infrastructure.Web",
+          "version": "6.1.4",
+          "type": "INTERNAL"
+        },
+        {
+          "name": "Warren.Core.Infrastructure.Background",
+          "version": "6.2.0",
+          "type": "INTERNAL"
+        },
+        {
+          "name": "Warren.Core.Common.Extensions",
+          "version": "2.8.2",
+          "type": "INTERNAL"
+        },
+        {
+          "name": "Warren.Core.Slack.Client",
+          "version": "3.1.0",
+          "type": "INTERNAL"
+        },
+        {
+          "name": "Warren.Core.Messaging.Providers.Kafka",
+          "version": "5.7.0",
+          "type": "INTERNAL"
+        },
+        {
+          "name": "Warren.Core.Accounting.Infrastructure.Contracts",
+          "version": "7.22.0",
+          "type": "INTERNAL"
+        },
+        {
+          "name": "MediatR",
+          "version": "12.4.1",
+          "type": "OPEN_SOURCE"
+        },
+        {
+          "name": "Microsoft.EntityFrameworkCore",
+          "version": "8.0.8",
+          "type": "OPEN_SOURCE"
+        },
+        {
+          "name": "Dapper",
+          "version": "2.1.35",
+          "type": "OPEN_SOURCE"
+        },
+        {
+          "name": "Inoa.ServiceBus",
+          "version": "2.23.0",
+          "type": "OPEN_SOURCE"
+        },
+        {
+          "name": "Serilog.AspNetCore",
+          "version": "4.1.0",
+          "type": "OPEN_SOURCE"
+        },
+        {
+          "name": "xunit",
+          "version": "2.9.3",
+          "type": "TEST"
+        },
+        {
+          "name": "Moq",
+          "version": "4.20.72",
+          "type": "TEST"
+        },
+        {
+          "name": "AutoFixture",
+          "version": "4.18.1",
+          "type": "TEST"
+        }
       ],
       "apiEndpoints": [
-        { "path": "/v1/orders", "method": "GET", "description": "Fund orders" },
-        { "path": "/v1/orders", "method": "POST", "description": "Create fund order" },
-        { "path": "/v1/positions/{customerApiId}", "method": "GET", "description": "Customer positions" },
-        { "path": "/v1/customers/{apiId}", "method": "GET", "description": "Customer data" },
-        { "path": "/v1/vendor/sync", "method": "POST", "description": "Sync with Inoa vendor" },
-        { "path": "/v1/quotas", "method": "GET", "description": "Fund quotas" },
-        { "path": "/v1/rebates/sync", "method": "POST", "description": "Rebates sync" },
-        { "path": "/v1/data-checks", "method": "POST", "description": "Data verification" },
-        { "path": "/v1/income-tax-report", "method": "GET", "description": "Income tax reports" }
+        {
+          "path": "/v1/orders",
+          "method": "GET",
+          "description": "Fund orders"
+        },
+        {
+          "path": "/v1/orders",
+          "method": "POST",
+          "description": "Create fund order"
+        },
+        {
+          "path": "/v1/positions/{customerApiId}",
+          "method": "GET",
+          "description": "Customer positions"
+        },
+        {
+          "path": "/v1/customers/{apiId}",
+          "method": "GET",
+          "description": "Customer data"
+        },
+        {
+          "path": "/v1/vendor/sync",
+          "method": "POST",
+          "description": "Sync with Inoa vendor"
+        },
+        {
+          "path": "/v1/quotas",
+          "method": "GET",
+          "description": "Fund quotas"
+        },
+        {
+          "path": "/v1/rebates/sync",
+          "method": "POST",
+          "description": "Rebates sync"
+        },
+        {
+          "path": "/v1/data-checks",
+          "method": "POST",
+          "description": "Data verification"
+        },
+        {
+          "path": "/v1/income-tax-report",
+          "method": "GET",
+          "description": "Income tax reports"
+        }
       ],
       "risks": [
-        { "title": "15 cron jobs", "description": "High operational complexity for reconciliation", "severity": "MEDIUM" },
-        { "title": "Alpha package in production", "description": "Warren.Core.Messaging.FundOperations 4.10.0-alpha", "severity": "MEDIUM" },
-        { "title": "Staging credentials in appsettings", "description": "Credentials visible in configuration files", "severity": "MEDIUM" },
-        { "title": "Typo in project name", "description": "Warre.Apollo.Shared (missing 'n')", "severity": "LOW" },
-        { "title": "FluentAssertions alpha", "description": "Test dependency on alpha version", "severity": "LOW" },
-        { "title": "RabbitMQ IP hardcoded", "description": "IP 172.19.152.239 for Inoa staging", "severity": "LOW" }
+        {
+          "title": "15 cron jobs",
+          "description": "High operational complexity for reconciliation",
+          "severity": "MEDIUM"
+        },
+        {
+          "title": "Alpha package in production",
+          "description": "Warren.Core.Messaging.FundOperations 4.10.0-alpha",
+          "severity": "MEDIUM"
+        },
+        {
+          "title": "Staging credentials in appsettings",
+          "description": "Credentials visible in configuration files",
+          "severity": "MEDIUM"
+        },
+        {
+          "title": "Typo in project name",
+          "description": "Warre.Apollo.Shared (missing 'n')",
+          "severity": "LOW"
+        },
+        {
+          "title": "FluentAssertions alpha",
+          "description": "Test dependency on alpha version",
+          "severity": "LOW"
+        },
+        {
+          "title": "RabbitMQ IP hardcoded",
+          "description": "IP 172.19.152.239 for Inoa staging",
+          "severity": "LOW"
+        }
       ]
     }
   ]

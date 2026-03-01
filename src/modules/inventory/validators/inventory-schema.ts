@@ -69,6 +69,7 @@ export const SystemInventorySchema = z.object({
       /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
       "Slug must contain only lowercase letters, numbers, and hyphens",
     ),
+  domainName: z.string().min(1, "Domain name is required").optional(),
   purpose: z.string().optional(),
   language: z.string().optional(),
   framework: z.string().optional(),

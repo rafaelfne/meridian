@@ -30,12 +30,57 @@ function buildDeps(overrides: Partial<ProcessInventoryDeps> = {}): ProcessInvent
 }
 
 describe("processInventory", () => {
-  it("upserts the default domain", async () => {
+  it("upserts the default domain when no domainName is specified", async () => {
     const deps = buildDeps();
     await processInventory([buildSystem()], deps);
 
     expect(deps.upsertDomain).toHaveBeenCalledWith(DEFAULT_DOMAIN_NAME);
     expect(deps.upsertDomain).toHaveBeenCalledTimes(1);
+  });
+
+  it("upserts a custom domain when domainName is specified", async () => {
+    const deps = buildDeps();
+    await processInventory(
+      [buildSystem({ domainName: "Trading" })],
+      deps,
+    );
+
+    expect(deps.upsertDomain).toHaveBeenCalledWith("Trading");
+    expect(deps.upsertDomain).toHaveBeenCalledTimes(1);
+  });
+
+  it("caches domain lookups — same domainName calls upsertDomain once", async () => {
+    const deps = buildDeps();
+    await processInventory(
+      [
+        buildSystem({ slug: "a", domainName: "Trading" }),
+        buildSystem({ slug: "b", domainName: "Trading" }),
+      ],
+      deps,
+    );
+
+    expect(deps.upsertDomain).toHaveBeenCalledWith("Trading");
+    expect(deps.upsertDomain).toHaveBeenCalledTimes(1);
+  });
+
+  it("upserts different domains for systems with different domainNames", async () => {
+    const upsertDomain = vi
+      .fn()
+      .mockResolvedValueOnce({ id: "trading-id" })
+      .mockResolvedValueOnce({ id: "platform-id" });
+    const deps = buildDeps({ upsertDomain });
+
+    await processInventory(
+      [
+        buildSystem({ slug: "a", domainName: "Trading" }),
+        buildSystem({ slug: "b", domainName: "Platform" }),
+      ],
+      deps,
+    );
+
+    expect(upsertDomain).toHaveBeenCalledTimes(2);
+    expect(deps.processSystem).toHaveBeenCalledWith("trading-id", expect.objectContaining({ slug: "a" }));
+    expect(deps.processSystem).toHaveBeenCalledWith("platform-id", expect.objectContaining({ slug: "b" }));
   });
 
   it("processes each system with the correct domain id", async () => {

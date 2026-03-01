@@ -34,11 +34,21 @@ export async function processInventory(
   const errors: string[] = [];
   let systemsProcessed = 0;
 
-  const domain = await deps.upsertDomain(DEFAULT_DOMAIN_NAME);
+  const domainCache = new Map<string, string>();
+
+  async function getDomainId(name: string): Promise<string> {
+    const cached = domainCache.get(name);
+    if (cached) return cached;
+    const domain = await deps.upsertDomain(name);
+    domainCache.set(name, domain.id);
+    return domain.id;
+  }
 
   for (const system of systems) {
     try {
-      await deps.processSystem(domain.id, system);
+      const domainName = system.domainName ?? DEFAULT_DOMAIN_NAME;
+      const domainId = await getDomainId(domainName);
+      await deps.processSystem(domainId, system);
       systemsProcessed++;
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
