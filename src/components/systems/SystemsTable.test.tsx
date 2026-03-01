@@ -1,8 +1,42 @@
 /// <reference types="@testing-library/jest-dom/vitest" />
-import { describe, it, expect, afterEach } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen, fireEvent, cleanup } from "@testing-library/react";
 import { SystemsTable } from "./SystemsTable";
 import type { SystemListItem } from "@/modules/system/types";
+
+// Mock Radix Select with native HTML elements for testability
+/* eslint-disable @typescript-eslint/no-explicit-any */
+vi.mock("@/components/ui/select", () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const React = require("react");
+  const Ctx = React.createContext<any>({});
+
+  return {
+    Select: ({ children, value, onValueChange }: any) =>
+      React.createElement(
+        Ctx.Provider,
+        { value: { val: value, onChange: onValueChange } },
+        children,
+      ),
+    SelectTrigger: () => null,
+    SelectValue: () => null,
+    SelectContent: ({ children }: any) => {
+      const { val, onChange } = React.useContext(Ctx);
+      return React.createElement(
+        "select",
+        {
+          value: val,
+          onChange: (e: any) => onChange?.(e.target.value),
+          "aria-label": "Filter by domain",
+        },
+        children,
+      );
+    },
+    SelectItem: ({ children, value }: any) =>
+      React.createElement("option", { value }, children),
+  };
+});
+/* eslint-enable @typescript-eslint/no-explicit-any */
 
 const mockDomains = [
   { id: "d1", name: "Identity" },

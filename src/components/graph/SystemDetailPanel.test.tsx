@@ -324,7 +324,7 @@ describe("SystemDetailPanel", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText("Loading…")).toBeInTheDocument();
+      expect(screen.getByText("Loading...")).toBeInTheDocument();
     });
     expect(screen.getByText("Fetching system details")).toBeInTheDocument();
 
@@ -382,7 +382,7 @@ describe("SystemDetailPanel", () => {
 
     // Repository link with target="_blank"
     const repoLink = screen.getByText(
-      "https://github.com/org/auth-service",
+      (content) => content.includes("github.com/org/auth-service"),
     );
     expect(repoLink.closest("a")).toHaveAttribute("target", "_blank");
     expect(repoLink.closest("a")).toHaveAttribute(
@@ -406,13 +406,18 @@ describe("SystemDetailPanel", () => {
       expect(screen.getByText("Auth Service")).toBeInTheDocument();
     });
 
-    // Services is the default tab, items should be visible
-    expect(screen.getByText("Auth API")).toBeInTheDocument();
+    // Default tab is "deps", switch to services tab
+    fireEvent.click(screen.getByRole("tab", { name: /svc/i }));
+
+    // Services items should be visible
+    await waitFor(() => {
+      expect(screen.getByText("Auth API")).toBeInTheDocument();
+    });
     expect(screen.getByText("Token Worker")).toBeInTheDocument();
 
     // Type badges
     expect(screen.getByText("API")).toBeInTheDocument();
-    expect(screen.getByText("WORKER")).toBeInTheDocument();
+    expect(screen.getByText("Worker")).toBeInTheDocument();
   });
 
   /* ─── 6. Renders risks tab sorted by severity ──────── */
@@ -485,8 +490,11 @@ describe("SystemDetailPanel", () => {
       expect(screen.getByText("Auth Service")).toBeInTheDocument();
     });
 
-    // Services is default tab — should show empty state
-    expect(screen.getByText("No services found")).toBeInTheDocument();
+    // Default tab is "deps" — switch to services tab to check empty state
+    fireEvent.click(screen.getByRole("tab", { name: /svc/i }));
+    await waitFor(() => {
+      expect(screen.getByText("No services found")).toBeInTheDocument();
+    });
 
     // Switch to databases tab
     fireEvent.click(screen.getByRole("tab", { name: /dbs/i }));
@@ -495,7 +503,7 @@ describe("SystemDetailPanel", () => {
     });
 
     // Switch to integrations tab
-    fireEvent.click(screen.getByRole("tab", { name: /integrations/i }));
+    fireEvent.click(screen.getByRole("tab", { name: /int\b/i }));
     await waitFor(() => {
       expect(
         screen.getByText("No integrations found"),
@@ -511,7 +519,7 @@ describe("SystemDetailPanel", () => {
     });
 
     // Switch to packages tab
-    fireEvent.click(screen.getByRole("tab", { name: /packages/i }));
+    fireEvent.click(screen.getByRole("tab", { name: /pkg/i }));
     await waitFor(() => {
       expect(screen.getByText("No packages found")).toBeInTheDocument();
     });
@@ -544,10 +552,10 @@ describe("SystemDetailPanel", () => {
       expect(screen.getByText("Auth Service")).toBeInTheDocument();
     });
 
-    const highlightButton = screen.getByRole("button", {
+    const highlightButtons = screen.getAllByRole("button", {
       name: /highlight dependencies/i,
     });
-    fireEvent.click(highlightButton);
+    fireEvent.click(highlightButtons[highlightButtons.length - 1]!);
 
     expect(handleHighlight).toHaveBeenCalledOnce();
     expect(handleHighlight).toHaveBeenCalledWith("sys-1");
