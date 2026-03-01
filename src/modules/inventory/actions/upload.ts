@@ -112,27 +112,30 @@ export async function uploadInventory(
           update: {},
         }),
       processSystem: (domainId, system) =>
-        prisma.$transaction(async (tx) => {
-          const upserted = await tx.system.upsert({
-            where: { slug: system.slug },
-            create: buildSystemData(domainId, system),
-            update: buildSystemData(domainId, system),
-          });
+        prisma.$transaction(
+          async (tx) => {
+            const upserted = await tx.system.upsert({
+              where: { slug: system.slug },
+              create: buildSystemData(domainId, system),
+              update: buildSystemData(domainId, system),
+            });
 
-          await Promise.all([
-            tx.service.deleteMany({ where: { systemId: upserted.id } }),
-            tx.database.deleteMany({ where: { systemId: upserted.id } }),
-            tx.integration.deleteMany({ where: { systemId: upserted.id } }),
-            tx.messageTopic.deleteMany({ where: { systemId: upserted.id } }),
-            tx.package.deleteMany({ where: { systemId: upserted.id } }),
-            tx.apiEndpoint.deleteMany({ where: { systemId: upserted.id } }),
-            tx.risk.deleteMany({ where: { systemId: upserted.id } }),
-          ]);
+            await Promise.all([
+              tx.service.deleteMany({ where: { systemId: upserted.id } }),
+              tx.database.deleteMany({ where: { systemId: upserted.id } }),
+              tx.integration.deleteMany({ where: { systemId: upserted.id } }),
+              tx.messageTopic.deleteMany({ where: { systemId: upserted.id } }),
+              tx.package.deleteMany({ where: { systemId: upserted.id } }),
+              tx.apiEndpoint.deleteMany({ where: { systemId: upserted.id } }),
+              tx.risk.deleteMany({ where: { systemId: upserted.id } }),
+            ]);
 
-          await createSystemChildren(tx, upserted.id, system);
+            await createSystemChildren(tx, upserted.id, system);
 
-          return { id: upserted.id };
-        }),
+            return { id: upserted.id };
+          },
+          { maxWait: 10_000, timeout: 30_000 },
+        ),
     });
 
     const hasErrors = result.errors.length > 0;
@@ -189,77 +192,76 @@ async function createSystemChildren(
   systemId: string,
   system: SystemInventory,
 ) {
-  const operations = [
-    ...system.services.map((s) =>
-      tx.service.create({
-        data: { name: s.name, type: s.type, systemId },
+  const batches = [
+    system.services.length > 0 &&
+      tx.service.createMany({
+        data: system.services.map((s) => ({
+          name: s.name,
+          type: s.type,
+          systemId,
+        })),
       }),
-    ),
-    ...system.databases.map((d) =>
-      tx.database.create({
-        data: {
+    system.databases.length > 0 &&
+      tx.database.createMany({
+        data: system.databases.map((d) => ({
           name: d.name,
           provider: d.provider,
           version: d.version,
           orm: d.orm,
           systemId,
-        },
+        })),
       }),
-    ),
-    ...system.integrations.map((i) =>
-      tx.integration.create({
-        data: {
+    system.integrations.length > 0 &&
+      tx.integration.createMany({
+        data: system.integrations.map((i) => ({
           name: i.targetSystem,
           type: mapIntegrationType(i.type),
           targetSystem: i.targetSystem,
           systemId,
-        },
+        })),
       }),
-    ),
-    ...system.messageTopics.map((k) =>
-      tx.messageTopic.create({
-        data: {
+    system.messageTopics.length > 0 &&
+      tx.messageTopic.createMany({
+        data: system.messageTopics.map((k) => ({
           name: k.name,
           role: k.role,
           broker: k.broker,
-          metadata: k.metadata ? (k.metadata as Prisma.InputJsonValue) : undefined,
+          metadata: k.metadata
+            ? (k.metadata as Prisma.InputJsonValue)
+            : undefined,
           systemId,
-        },
+        })),
       }),
-    ),
-    ...system.packages.map((p) =>
-      tx.package.create({
-        data: {
+    system.packages.length > 0 &&
+      tx.package.createMany({
+        data: system.packages.map((p) => ({
           name: p.name,
           version: p.version,
           scope: mapPackageScope(p.type),
           systemId,
-        },
+        })),
       }),
-    ),
-    ...system.apiEndpoints.map((a) =>
-      tx.apiEndpoint.create({
-        data: {
+    system.apiEndpoints.length > 0 &&
+      tx.apiEndpoint.createMany({
+        data: system.apiEndpoints.map((a) => ({
           path: a.path,
           method: a.method,
           description: a.description,
           systemId,
-        },
+        })),
       }),
-    ),
-    ...system.risks.map((r) =>
-      tx.risk.create({
-        data: {
+    system.risks.length > 0 &&
+      tx.risk.createMany({
+        data: system.risks.map((r) => ({
           title: r.title,
           description: r.description,
           severity: r.severity,
           systemId,
-        },
+        })),
       }),
-    ),
-  ];
+  ].filter(Boolean);
 
-  await Promise.all(operations);
+  await Promise.all(batches);
 }
 
 export async function uploadInventoryAction(
