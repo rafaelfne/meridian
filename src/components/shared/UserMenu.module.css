@@ -1,0 +1,34 @@
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  overflow: hidden;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.trigger:hover {
+  border-color: var(--ring);
+  box-shadow: 0 0 0 2px oklch(from var(--ring) l c h / 20%);
+}
+
+.avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.avatarFallback {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--muted-foreground);
+  line-height: 1;
+}

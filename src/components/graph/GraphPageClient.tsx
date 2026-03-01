@@ -28,6 +28,7 @@ import {
   TimeMachineSlider,
   type SnapshotMeta,
 } from "./TimeMachineSlider";
+import { HighlightNavigationBar } from "./HighlightNavigationBar";
 
 interface GraphPageClientProps {
   data: GraphData;
@@ -130,6 +131,7 @@ function GraphPageClientInner({
   const [highlightedSystemId, setHighlightedSystemId] = useState<
     string | null
   >(null);
+  const [focusedNodeId, setFocusedNodeId] = useState<string | null>(null);
 
   const handleNodeClick = useCallback((nodeId: string) => {
     setSelectedNodeId((prev) => (prev === nodeId ? null : nodeId));
@@ -140,9 +142,11 @@ function GraphPageClientInner({
   }, []);
 
   const handleHighlightDependencies = useCallback((systemId: string) => {
-    setHighlightedSystemId((prev) =>
-      prev === systemId ? null : systemId,
-    );
+    setHighlightedSystemId((prev) => {
+      const next = prev === systemId ? null : systemId;
+      if (!next) setFocusedNodeId(null);
+      return next;
+    });
   }, []);
 
   return (
@@ -160,8 +164,9 @@ function GraphPageClientInner({
           <DependencyGraph
             data={displayData}
             onNodeClick={handleNodeClick}
-            onNodeLongPress={handleHighlightDependencies}
+            onHighlight={handleHighlightDependencies}
             highlightedSystemId={highlightedSystemId}
+            focusedNodeId={focusedNodeId}
             onViewportChange={
               !isViewingSnapshot && filters.clustering
                 ? handleViewportChange
@@ -172,6 +177,13 @@ function GraphPageClientInner({
             snapshots={snapshots}
             onSnapshotSelect={handleSnapshotSelect}
             isLoading={isLoadingSnapshot}
+          />
+          <HighlightNavigationBar
+            highlightedSystemId={highlightedSystemId}
+            nodes={filteredData.nodes}
+            edges={filteredData.edges}
+            onNodeClick={handleNodeClick}
+            onFocusNode={setFocusedNodeId}
           />
         </div>
         <SystemDetailPanel

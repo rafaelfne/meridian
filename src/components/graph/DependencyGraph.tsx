@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import {
   ReactFlow,
   MiniMap,
@@ -32,21 +32,22 @@ const nodeTypes = {
 const edgeTypes = { smoothstep: DependencyEdge };
 
 const DIMMED_OPACITY = 0.15;
-const LONG_PRESS_MS = 500;
 
 interface DependencyGraphProps {
   data: GraphData;
   onNodeClick?: (nodeId: string) => void;
-  onNodeLongPress?: (nodeId: string) => void;
+  onHighlight?: (nodeId: string) => void;
   highlightedSystemId?: string | null;
+  focusedNodeId?: string | null;
   onViewportChange?: (viewport: Viewport) => void;
 }
 
 export function DependencyGraph({
   data,
   onNodeClick,
-  onNodeLongPress,
+  onHighlight,
   highlightedSystemId,
+  focusedNodeId,
   onViewportChange,
 }: DependencyGraphProps) {
   const { resolvedTheme } = useTheme();
@@ -71,35 +72,14 @@ export function DependencyGraph({
     setHoveredEdgeId(null);
   }, []);
 
-  // Long-press detection
-  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const longPressTriggered = useRef(false);
-
-  const handleNodePointerDown = useCallback(
-    (nodeId: string) => {
-      longPressTriggered.current = false;
-      longPressTimer.current = setTimeout(() => {
-        longPressTriggered.current = true;
-        onNodeLongPress?.(nodeId);
-      }, LONG_PRESS_MS);
-    },
-    [onNodeLongPress],
-  );
-
-  const handleNodePointerUp = useCallback(() => {
-    if (longPressTimer.current) {
-      clearTimeout(longPressTimer.current);
-      longPressTimer.current = null;
-    }
-  }, []);
-
   const hoverContextValue = useMemo(
     () => ({
       hoveredEdgeId,
-      onNodePointerDown: onNodeLongPress ? handleNodePointerDown : undefined,
-      onNodePointerUp: onNodeLongPress ? handleNodePointerUp : undefined,
+      highlightedSystemId,
+      focusedNodeId,
+      onHighlight,
     }),
-    [hoveredEdgeId, onNodeLongPress, handleNodePointerDown, handleNodePointerUp],
+    [hoveredEdgeId, highlightedSystemId, focusedNodeId, onHighlight],
   );
 
   // Sync nodes/edges when data changes (filtering) or highlighting changes
@@ -145,10 +125,6 @@ export function DependencyGraph({
 
   const handleNodeClick: NodeMouseHandler = useCallback(
     (_event, node) => {
-      if (longPressTriggered.current) {
-        longPressTriggered.current = false;
-        return;
-      }
       onNodeClick?.(node.id);
     },
     [onNodeClick],

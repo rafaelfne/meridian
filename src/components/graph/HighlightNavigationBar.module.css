@@ -1,0 +1,118 @@
+.bar {
+  position: absolute;
+  top: 0.75rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+
+  display: flex;
+  align-items: center;
+  gap: 0.125rem;
+  padding: 0.25rem 0.25rem 0.25rem 0.625rem;
+  border-radius: var(--radius-md);
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 2px 12px oklch(0 0 0 / 10%);
+  white-space: nowrap;
+
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.origin {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.originName {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--foreground);
+  max-width: 10rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.separator {
+  width: 1px;
+  height: 1.25rem;
+  background: var(--border);
+  margin: 0 0.25rem;
+  flex-shrink: 0;
+}
+
+.navButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  transition: color 0.15s ease, background-color 0.15s ease;
+  flex-shrink: 0;
+}
+
+.navButton:hover {
+  color: var(--foreground);
+  background-color: var(--accent);
+}
+
+.center {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.75rem;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  white-space: nowrap;
+}
+
+.center:hover {
+  background-color: var(--accent);
+}
+
+.domainDot {
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.nodeName {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--foreground);
+  max-width: 14rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.counter {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--muted-foreground);
+  white-space: nowrap;
+}
