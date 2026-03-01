@@ -20,6 +20,10 @@
   --scope-internal: oklch(0.6 0.19 260);
   --scope-opensource: oklch(0.65 0.2 150);
   --scope-test: oklch(0.7 0.18 80);
+
+  --role-consumer: oklch(0.6 0.19 260);
+  --role-producer: oklch(0.65 0.2 150);
+  --role-both: oklch(0.7 0.18 80);
 }
 
 .dark {
@@ -42,6 +46,10 @@
   --scope-internal: oklch(0.7 0.19 260);
   --scope-opensource: oklch(0.72 0.2 150);
   --scope-test: oklch(0.78 0.18 80);
+
+  --role-consumer: oklch(0.7 0.19 260);
+  --role-producer: oklch(0.72 0.2 150);
+  --role-both: oklch(0.78 0.18 80);
 }
 
 /* ── Panel body ───────────────────────────────────────── */
@@ -398,6 +406,23 @@
 .scopeTest {
   color: var(--scope-test);
   background-color: oklch(from var(--scope-test) l c h / 12%);
+}
+
+/* ── Message topic role tags ──────────────────────────── */
+
+.roleConsumer {
+  color: var(--role-consumer);
+  background-color: oklch(from var(--role-consumer) l c h / 12%);
+}
+
+.roleProducer {
+  color: var(--role-producer);
+  background-color: oklch(from var(--role-producer) l c h / 12%);
+}
+
+.roleBoth {
+  color: var(--role-both);
+  background-color: oklch(from var(--role-both) l c h / 12%);
 }
 
 /* ── Severity badge variants ──────────────────────────── */

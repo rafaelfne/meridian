@@ -537,7 +537,18 @@ export function SystemDetailPanel({
                             <div className={styles.itemNameMono}>{topic.name}</div>
                             <div className={styles.itemMeta}>{topic.broker}</div>
                           </div>
-                          <Badge variant="outline">{topic.role}</Badge>
+                          <Badge
+                            variant="outline"
+                            className={
+                              topic.role === "CONSUMER"
+                                ? styles.roleConsumer
+                                : topic.role === "PRODUCER"
+                                  ? styles.roleProducer
+                                  : styles.roleBoth
+                            }
+                          >
+                            {topic.role}
+                          </Badge>
                         </div>
                       ))}
                     </div>
