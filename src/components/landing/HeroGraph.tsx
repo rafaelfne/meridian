@@ -42,8 +42,9 @@ export function HeroGraph() {
 
   useEffect(() => {
     const svg = svgRef.current;
-    if (svg && styles.visible) {
-      svg.classList.add(styles.visible);
+    const visibleClass = styles.visible;
+    if (svg && visibleClass) {
+      svg.classList.add(visibleClass);
     }
   }, []);
 

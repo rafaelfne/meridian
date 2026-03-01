@@ -12,7 +12,7 @@ export const authConfig = {
         nextUrl.pathname.startsWith("/workspaces");
 
       if (isProtected && !isLoggedIn) {
-        return Response.redirect(new URL("/", nextUrl));
+        return false;
       }
 
       return true;
