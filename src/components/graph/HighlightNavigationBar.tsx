@@ -25,7 +25,7 @@ export function HighlightNavigationBar({
   onFocusNode,
 }: HighlightNavigationBarProps) {
   const { setCenter } = useReactFlow();
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentIndex, setCurrentIndex] = useState(-1);
 
   // Compute connected nodes (excluding the highlighted node itself)
   const connectedNodes = useMemo(() => {
@@ -52,7 +52,7 @@ export function HighlightNavigationBar({
   // Reset index when highlighted system changes
   useEffect(() => {
     const id = setTimeout(() => {
-      setCurrentIndex(0);
+      setCurrentIndex(-1);
       if (!highlightedSystemId) {
         onFocusNode?.(null);
       }
@@ -77,15 +77,16 @@ export function HighlightNavigationBar({
 
   const goNext = useCallback(() => {
     if (connectedNodes.length === 0) return;
-    const next = (currentIndex + 1) % connectedNodes.length;
+    const next = currentIndex === -1 ? 0 : (currentIndex + 1) % connectedNodes.length;
     setCurrentIndex(next);
     navigateTo(next);
   }, [currentIndex, connectedNodes.length, navigateTo]);
 
   const goPrev = useCallback(() => {
     if (connectedNodes.length === 0) return;
-    const prev =
-      (currentIndex - 1 + connectedNodes.length) % connectedNodes.length;
+    const prev = currentIndex === -1
+      ? connectedNodes.length - 1
+      : (currentIndex - 1 + connectedNodes.length) % connectedNodes.length;
     setCurrentIndex(prev);
     navigateTo(prev);
   }, [currentIndex, connectedNodes.length, navigateTo]);
@@ -110,8 +111,7 @@ export function HighlightNavigationBar({
 
   if (!highlightedSystemId || connectedNodes.length === 0) return null;
 
-  const current = connectedNodes[currentIndex];
-  if (!current) return null;
+  const current = currentIndex >= 0 ? connectedNodes[currentIndex] : null;
 
   return (
     <div className={styles.bar}>
@@ -141,16 +141,20 @@ export function HighlightNavigationBar({
       <button
         type="button"
         className={styles.center}
-        onClick={() => onNodeClick?.(current.id)}
-        title="Open details"
+        onClick={() => current && onNodeClick?.(current.id)}
+        title={current ? "Open details" : "Navigate to browse dependencies"}
       >
-        <span
-          className={styles.domainDot}
-          style={{ backgroundColor: current.data.domainColor }}
-        />
-        <span className={styles.nodeName}>{current.data.label}</span>
+        {current && (
+          <span
+            className={styles.domainDot}
+            style={{ backgroundColor: current.data.domainColor }}
+          />
+        )}
+        <span className={styles.nodeName}>
+          {current ? current.data.label : "—"}
+        </span>
         <span className={styles.counter}>
-          {currentIndex + 1}/{connectedNodes.length}
+          {currentIndex >= 0 ? currentIndex + 1 : 0}/{connectedNodes.length}
         </span>
       </button>
 
