@@ -100,10 +100,10 @@ export function buildLayeredGraphData(
         animated: style.animated,
         style: { stroke: style.stroke, strokeWidth: 2 },
         markerEnd: {
-          type: "arrowclosed",
+          type: "arrow",
           color: style.stroke,
-          width: 20,
-          height: 20,
+          width: 8,
+          height: 8,
         },
         data: {
           type: dep.type,

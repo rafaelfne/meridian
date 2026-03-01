@@ -24,7 +24,7 @@ export function HighlightNavigationBar({
   onNodeClick,
   onFocusNode,
 }: HighlightNavigationBarProps) {
-  const { setCenter } = useReactFlow();
+  const { setCenter, getNodes } = useReactFlow();
   const [currentIndex, setCurrentIndex] = useState(-1);
 
   // Compute connected nodes (excluding the highlighted node itself)
@@ -66,13 +66,18 @@ export function HighlightNavigationBar({
       const node = connectedNodes[index];
       if (!node) return;
       onFocusNode?.(node.id);
+      // Use actual ReactFlow node position (accounts for dragging and saved positions)
+      const rfNode = getNodes().find((n) => n.id === node.id);
+      const pos = rfNode?.position ?? node.position;
+      const width = (rfNode?.measured?.width ?? NODE_WIDTH);
+      const height = (rfNode?.measured?.height ?? NODE_HEIGHT);
       setCenter(
-        node.position.x + NODE_WIDTH / 2,
-        node.position.y + NODE_HEIGHT / 2,
+        pos.x + width / 2,
+        pos.y + height / 2,
         { zoom: 1.5, duration: 600 },
       );
     },
-    [connectedNodes, setCenter, onFocusNode],
+    [connectedNodes, setCenter, getNodes, onFocusNode],
   );
 
   const goNext = useCallback(() => {
