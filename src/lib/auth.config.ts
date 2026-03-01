@@ -2,7 +2,7 @@ import type { NextAuthConfig } from "next-auth";
 
 export const authConfig = {
   pages: {
-    signIn: "/login",
+    signIn: "/",
   },
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
@@ -11,8 +11,8 @@ export const authConfig = {
         nextUrl.pathname.startsWith("/w/") ||
         nextUrl.pathname.startsWith("/workspaces");
 
-      if (isProtected) {
-        return isLoggedIn;
+      if (isProtected && !isLoggedIn) {
+        return Response.redirect(new URL("/", nextUrl));
       }
 
       return true;

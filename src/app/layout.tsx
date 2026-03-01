@@ -6,8 +6,14 @@ import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Meridian",
-  description: "Dependency graph visualization for system architectures",
+  title: "Meridian — Map your system dependencies",
+  description:
+    "Upload technology inventories, resolve dependencies across HTTP, Kafka, RabbitMQ, and databases. Visualize your architecture as an interactive graph.",
+  openGraph: {
+    title: "Meridian",
+    description: "Dependency mapping for engineering teams",
+    type: "website",
+  },
 };
 
 export default function RootLayout({
