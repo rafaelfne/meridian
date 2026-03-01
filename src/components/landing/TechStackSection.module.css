@@ -1,24 +1,38 @@
 .section {
-  padding: 4rem 1.5rem;
+  padding: 5rem 1.5rem;
   border-top: 1px solid var(--meridian-border-subtle);
   border-bottom: 1px solid var(--meridian-border-subtle);
+  position: relative;
+  z-index: 1;
+}
+
+.label {
+  font-family: var(--font-display);
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--meridian-text-muted);
+  text-align: center;
+  margin-bottom: 2rem;
 }
 
 .badges {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 0.75rem;
+  gap: 1rem;
   max-width: 48rem;
   margin: 0 auto;
 }
 
 .badge {
-  font-family: var(--font-display);
-  font-size: 0.8125rem;
-  color: var(--meridian-text-muted);
-  padding: 0.375rem 0.75rem;
-  border: 1px solid var(--meridian-border);
-  border-radius: 0.375rem;
-  white-space: nowrap;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--meridian-text-secondary);
+  cursor: default;
+  transition: color 0.2s ease;
+}
+
+.badge:hover {
+  color: var(--meridian-text-primary);
 }

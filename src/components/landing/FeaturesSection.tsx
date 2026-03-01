@@ -9,16 +9,19 @@ const features = [
     icon: Upload,
     title: "Upload",
     body: "Drop a JSON inventory. Domains, services, databases, integrations, messaging — all captured in one schema.",
+    color: "blue" as const,
   },
   {
     icon: GitBranch,
     title: "Resolve",
-    body: "Dependency engine maps HTTP calls, Kafka topics, RabbitMQ queues, shared databases, and internal packages. Automatically.",
+    body: "Dependency engine maps HTTP calls, Kafka topics, RabbitMQ queues, and shared databases. Automatically.",
+    color: "purple" as const,
   },
   {
     icon: Network,
     title: "Visualize",
     body: "Interactive dependency graph. Click a node, trace every connection. Filter by domain, protocol, or language.",
+    color: "green" as const,
   },
 ];
 
@@ -45,7 +48,7 @@ export function FeaturesSection() {
   }, []);
 
   return (
-    <section ref={sectionRef} className={styles.section}>
+    <section ref={sectionRef} id="features" className={styles.section}>
       <div className={styles.grid}>
         {features.map((feature, i) => {
           const Icon = feature.icon;
@@ -54,13 +57,17 @@ export function FeaturesSection() {
               key={feature.title}
               className={styles.card}
               data-visible={visible}
+              data-color={feature.color}
               style={{ transitionDelay: `${i * 120}ms` }}
             >
-              <div className={styles.iconWrapper}>
-                <Icon size={24} strokeWidth={1.5} />
+              <div className={styles.cardGlow} />
+              <div className={styles.cardInner}>
+                <div className={styles.iconWrapper}>
+                  <Icon size={24} strokeWidth={1.5} />
+                </div>
+                <h3 className={styles.cardTitle}>{feature.title}</h3>
+                <p className={styles.cardBody}>{feature.body}</p>
               </div>
-              <h3 className={styles.cardTitle}>{feature.title}</h3>
-              <p className={styles.cardBody}>{feature.body}</p>
             </div>
           );
         })}

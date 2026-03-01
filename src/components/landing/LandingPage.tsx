@@ -4,20 +4,38 @@ import { FeaturesSection } from "./FeaturesSection";
 import { HowItWorksSection } from "./HowItWorksSection";
 import { TechStackSection } from "./TechStackSection";
 import { FooterCTA } from "./FooterCTA";
+import { Navbar } from "./Navbar";
 import styles from "./LandingPage.module.css";
 
 export function LandingPage() {
   return (
     <div className={styles.page}>
+      {/* Background ambient glows */}
+      <div className={styles.glowContainer} aria-hidden="true">
+        <div className={styles.glowTopLeft} />
+        <div className={styles.glowBottomRight} />
+      </div>
+
+      <Navbar />
+
       <section className={styles.hero}>
         <HeroGraph />
         <div className={styles.heroContent}>
-          <h1 className={styles.title}>MERIDIAN</h1>
+          <div className={styles.badge}>
+            <span className={styles.badgeDot} />
+            <span>Multi-broker messaging support</span>
+          </div>
+
+          <h1 className={styles.title}>
+            Map your system{" "}
+            <span className={styles.titleGradient}>dependencies.</span>
+          </h1>
+
           <p className={styles.subtitle}>
-            Map your system dependencies.
-            <br />
-            See what connects to what.
+            See how everything connects. From HTTP to Kafka, from RabbitMQ to
+            PostgreSQL. A panoramic, technical view of your entire architecture.
           </p>
+
           <div className={styles.heroCta}>
             <GitHubSignInButton size="large" />
           </div>

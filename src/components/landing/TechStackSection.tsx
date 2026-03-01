@@ -6,12 +6,13 @@ const techs = [
   "Prisma",
   "PostgreSQL",
   "TypeScript",
-  "Multi-broker messaging",
+  "Zod",
 ];
 
 export function TechStackSection() {
   return (
-    <section className={styles.section}>
+    <section id="tech" className={styles.section}>
+      <p className={styles.label}>Built with modern industry standards</p>
       <div className={styles.badges}>
         {techs.map((tech) => (
           <span key={tech} className={styles.badge}>

@@ -2,6 +2,8 @@
   padding: 6rem 1.5rem;
   max-width: 72rem;
   margin: 0 auto;
+  position: relative;
+  z-index: 1;
 }
 
 .grid {
@@ -11,13 +13,21 @@
 }
 
 .card {
-  padding: 2rem;
+  position: relative;
   border: 1px solid var(--meridian-border);
-  border-radius: 0.75rem;
+  border-radius: 1rem;
   background-color: var(--meridian-bg-elevated);
   opacity: 0;
   transform: translateY(20px);
-  transition: opacity 0.5s ease, transform 0.5s ease;
+  transition:
+    opacity 0.5s ease,
+    transform 0.5s ease,
+    border-color 0.3s ease;
+  overflow: hidden;
+}
+
+.card:hover {
+  border-color: var(--meridian-bg-subtle);
 }
 
 .card[data-visible="true"] {
@@ -25,29 +35,77 @@
   transform: translateY(0);
 }
 
+/* Gradient glow on hover */
+.cardGlow {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.card:hover .cardGlow {
+  opacity: 1;
+}
+
+.card[data-color="blue"] .cardGlow {
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.06) 0%, transparent 60%);
+}
+
+.card[data-color="purple"] .cardGlow {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.06) 0%, transparent 60%);
+}
+
+.card[data-color="green"] .cardGlow {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.06) 0%, transparent 60%);
+}
+
+.cardInner {
+  position: relative;
+  z-index: 1;
+  padding: 2rem;
+}
+
 .iconWrapper {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: 0.5rem;
-  background-color: var(--meridian-accent-muted);
-  color: var(--meridian-accent);
-  margin-bottom: 1rem;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 0.625rem;
+  margin-bottom: 1.25rem;
+  border: 1px solid var(--meridian-border);
+  background-color: var(--meridian-bg);
+  transition: border-color 0.3s ease;
+}
+
+.card:hover .iconWrapper {
+  border-color: var(--meridian-bg-subtle);
+}
+
+.card[data-color="blue"] .iconWrapper {
+  color: #06b6d4;
+}
+
+.card[data-color="purple"] .iconWrapper {
+  color: #a78bfa;
+}
+
+.card[data-color="green"] .iconWrapper {
+  color: #22c55e;
 }
 
 .cardTitle {
   font-family: var(--font-display);
-  font-size: 1.125rem;
+  font-size: 1.25rem;
   font-weight: 600;
   color: var(--meridian-text-primary);
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.625rem;
 }
 
 .cardBody {
   font-size: 0.9375rem;
-  line-height: 1.6;
+  line-height: 1.65;
   color: var(--meridian-text-secondary);
 }
 
@@ -61,6 +119,9 @@
   .card {
     opacity: 1;
     transform: none;
+    transition: none;
+  }
+  .cardGlow {
     transition: none;
   }
 }
