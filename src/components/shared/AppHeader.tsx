@@ -43,7 +43,7 @@ export function AppHeader({
   return (
     <header className={styles.header}>
       <Link href={brandHref} className={styles.brand}>
-        Domain Mapper
+        Meridian
       </Link>
 
       {workspaceSlug && workspaceName && (
@@ -76,18 +76,18 @@ export function AppHeader({
             );
           })}
           {(userRole === "OWNER" || userRole === "EDITOR") && (
-              <Link
-                href={`/w/${workspaceSlug}/settings`}
-                className={clsx(
-                  styles.navLink,
-                  pathname.startsWith(`/w/${workspaceSlug}/settings`) &&
-                    styles.navLinkActive,
-                )}
-              >
-                <Settings className="size-4" />
-                Settings
-              </Link>
-            )}
+            <Link
+              href={`/w/${workspaceSlug}/settings`}
+              className={clsx(
+                styles.navLink,
+                pathname.startsWith(`/w/${workspaceSlug}/settings`) &&
+                styles.navLinkActive,
+              )}
+            >
+              <Settings className="size-4" />
+              Settings
+            </Link>
+          )}
         </nav>
       )}
       <div className={styles.actions}>

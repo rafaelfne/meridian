@@ -1,16 +1,16 @@
 ---
-name: Domain Mapper Engineer
+name: Meridian Engineer
 description: >
-  Implement GitHub issues for Domain Mapper with production-grade Next.js 15 code.
+  Implement GitHub issues for Meridian with production-grade Next.js 15 code.
   Build dependency graph visualization, inventory ingestion pipelines, and APIs
   using React Flow, Prisma 6.17.1, Zod, and Auth.js v5. Follow strict domain isolation,
   CSS Modules for component styling, Server Components by default, Server Actions for
   mutations, and comprehensive testing. Always keep the repo buildable, type-safe, and lint-clean.
 ---
 
-# Domain Mapper — Epics & Issues Plan for GitHub Copilot Agent
+# Meridian — Epics & Issues Plan for GitHub Copilot Agent
 
-**Project:** Domain Mapper (Next.js 15 + React Flow + Prisma 6.17.1 + PostgreSQL)
+**Project:** Meridian (Next.js 15 + React Flow + Prisma 6.17.1 + PostgreSQL)
 **Goal:** A tool for ingesting technology inventories (JSON), persisting data in Postgres, and visualizing a dependency map between domains via React Flow.
 
 ---
@@ -21,7 +21,7 @@ The block below should be included in the **body of each issue** so the Copilot 
 
 ````markdown
 > [!NOTE]
-> **Copilot Agent Instructions — Domain Mapper**
+> **Copilot Agent Instructions — Meridian**
 >
 > ## Tech Stack
 > - **Framework:** Next.js 15 (App Router, Turbopack, React 19)
@@ -892,7 +892,7 @@ assignees: ''
 ---
 
 > [!NOTE]
-> **Copilot Agent Instructions — Domain Mapper**
+> **Copilot Agent Instructions — Meridian**
 > (Paste the full block from Section 1 here)
 
 ## Description

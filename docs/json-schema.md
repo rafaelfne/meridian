@@ -1,6 +1,6 @@
 # Inventory JSON Schema
 
-This document describes the JSON schema used to upload system inventories to Domain Mapper. The schema is validated at runtime using [Zod](https://zod.dev/) — see `src/modules/inventory/validators/inventory-schema.ts` for the source of truth.
+This document describes the JSON schema used to upload system inventories to Meridian. The schema is validated at runtime using [Zod](https://zod.dev/) — see `src/modules/inventory/validators/inventory-schema.ts` for the source of truth.
 
 ## Root Object
 
@@ -12,9 +12,9 @@ The upload payload is a single JSON object with a `systems` array:
 }
 ```
 
-| Field     | Type                    | Required | Description                       |
-| --------- | ----------------------- | -------- | --------------------------------- |
-| `systems` | `SystemInventory[]`     | ✅       | At least one system is required.  |
+| Field     | Type                | Required | Description                      |
+| --------- | ------------------- | -------- | -------------------------------- |
+| `systems` | `SystemInventory[]` | ✅        | At least one system is required. |
 
 ---
 
@@ -22,22 +22,22 @@ The upload payload is a single JSON object with a `systems` array:
 
 Each entry in the `systems` array describes one software system.
 
-| Field              | Type              | Required | Description |
-| ------------------ | ----------------- | -------- | ----------- |
-| `name`             | `string`          | ✅       | Human-readable system name (min 1 char). |
-| `slug`             | `string`          | ✅       | URL-safe identifier. Must match `^[a-z0-9]+(?:-[a-z0-9]+)*$`. |
-| `purpose`          | `string`          | —        | Brief description of the system's role. |
-| `language`         | `string`          | —        | Primary programming language (e.g., `"TypeScript"`, `"C#"`). |
-| `framework`        | `string`          | —        | Framework name (e.g., `"Next.js"`, `".NET"`). |
-| `frameworkVersion`  | `string`          | —        | Framework version. |
-| `repositoryUrl`    | `string` (URL)    | —        | Must be a valid URL if provided. |
-| `services`         | `Service[]`       | —        | Defaults to `[]`. |
-| `databases`        | `Database[]`      | —        | Defaults to `[]`. |
-| `integrations`     | `Integration[]`   | —        | Defaults to `[]`. |
-| `messageTopics`    | `MessageTopic[]`  | —        | Defaults to `[]`. |
-| `packages`         | `Package[]`       | —        | Defaults to `[]`. |
-| `apiEndpoints`     | `ApiEndpoint[]`   | —        | Defaults to `[]`. |
-| `risks`            | `Risk[]`          | —        | Defaults to `[]`. |
+| Field              | Type             | Required | Description                                                   |
+| ------------------ | ---------------- | -------- | ------------------------------------------------------------- |
+| `name`             | `string`         | ✅        | Human-readable system name (min 1 char).                      |
+| `slug`             | `string`         | ✅        | URL-safe identifier. Must match `^[a-z0-9]+(?:-[a-z0-9]+)*$`. |
+| `purpose`          | `string`         | —        | Brief description of the system's role.                       |
+| `language`         | `string`         | —        | Primary programming language (e.g., `"TypeScript"`, `"C#"`).  |
+| `framework`        | `string`         | —        | Framework name (e.g., `"Next.js"`, `".NET"`).                 |
+| `frameworkVersion` | `string`         | —        | Framework version.                                            |
+| `repositoryUrl`    | `string` (URL)   | —        | Must be a valid URL if provided.                              |
+| `services`         | `Service[]`      | —        | Defaults to `[]`.                                             |
+| `databases`        | `Database[]`     | —        | Defaults to `[]`.                                             |
+| `integrations`     | `Integration[]`  | —        | Defaults to `[]`.                                             |
+| `messageTopics`    | `MessageTopic[]` | —        | Defaults to `[]`.                                             |
+| `packages`         | `Package[]`      | —        | Defaults to `[]`.                                             |
+| `apiEndpoints`     | `ApiEndpoint[]`  | —        | Defaults to `[]`.                                             |
+| `risks`            | `Risk[]`         | —        | Defaults to `[]`.                                             |
 
 ---
 
@@ -45,12 +45,12 @@ Each entry in the `systems` array describes one software system.
 
 A deployable unit within a system.
 
-| Field  | Type     | Required | Description |
-| ------ | -------- | -------- | ----------- |
-| `name` | `string` | ✅       | Service name (min 1 char). |
-| `type` | `enum`   | ✅       | One of: `API`, `WORKER`, `CRONJOB`, `BACKGROUND_SERVICE`. |
-| `port` | `number` | —        | Positive integer. |
-| `path` | `string` | —        | Base path (e.g., `"/api/auth"`). |
+| Field  | Type     | Required | Description                                               |
+| ------ | -------- | -------- | --------------------------------------------------------- |
+| `name` | `string` | ✅        | Service name (min 1 char).                                |
+| `type` | `enum`   | ✅        | One of: `API`, `WORKER`, `CRONJOB`, `BACKGROUND_SERVICE`. |
+| `port` | `number` | —        | Positive integer.                                         |
+| `path` | `string` | —        | Base path (e.g., `"/api/auth"`).                          |
 
 ---
 
@@ -58,11 +58,11 @@ A deployable unit within a system.
 
 A data store used by the system.
 
-| Field      | Type     | Required | Description |
-| ---------- | -------- | -------- | ----------- |
-| `name`     | `string` | ✅       | Database name (min 1 char). |
-| `provider` | `string` | ✅       | Database provider (e.g., `"PostgreSQL"`, `"MySQL"`, `"MongoDB"`). |
-| `version`  | `string` | —        | Database version. |
+| Field      | Type     | Required | Description                                                               |
+| ---------- | -------- | -------- | ------------------------------------------------------------------------- |
+| `name`     | `string` | ✅        | Database name (min 1 char).                                               |
+| `provider` | `string` | ✅        | Database provider (e.g., `"PostgreSQL"`, `"MySQL"`, `"MongoDB"`).         |
+| `version`  | `string` | —        | Database version.                                                         |
 | `orm`      | `string` | —        | ORM or query library (e.g., `"Prisma"`, `"Entity Framework Core 8.0.8"`). |
 
 ---
@@ -71,11 +71,11 @@ A data store used by the system.
 
 A synchronous dependency on another system.
 
-| Field          | Type     | Required | Description |
-| -------------- | -------- | -------- | ----------- |
-| `targetSystem` | `string` | ✅       | Slug of the target system (min 1 char). |
-| `type`         | `enum`   | ✅       | One of: `HTTP_API`, `DATABASE_DIRECT`, `GRPC`, `MESSAGE_QUEUE`, `EVENT_STREAM`, `FILE_TRANSFER`, `SDK`, `OTHER`. |
-| `description`  | `string` | —        | Human-readable description of the integration. |
+| Field          | Type     | Required | Description                                                                                                      |
+| -------------- | -------- | -------- | ---------------------------------------------------------------------------------------------------------------- |
+| `targetSystem` | `string` | ✅        | Slug of the target system (min 1 char).                                                                          |
+| `type`         | `enum`   | ✅        | One of: `HTTP_API`, `DATABASE_DIRECT`, `GRPC`, `MESSAGE_QUEUE`, `EVENT_STREAM`, `FILE_TRANSFER`, `SDK`, `OTHER`. |
+| `description`  | `string` | —        | Human-readable description of the integration.                                                                   |
 
 ---
 
@@ -83,22 +83,22 @@ A synchronous dependency on another system.
 
 An asynchronous messaging topic or queue.
 
-| Field      | Type     | Required | Description |
-| ---------- | -------- | -------- | ----------- |
-| `name`     | `string` | ✅       | Topic or queue name (min 1 char). |
-| `role`     | `enum`   | ✅       | One of: `PRODUCER`, `CONSUMER`, `BOTH`. |
-| `broker`   | `enum`   | ✅       | One of: `KAFKA`, `RABBITMQ`, `SQS`, `SNS`, `OTHER`. |
+| Field      | Type     | Required | Description                                                                                         |
+| ---------- | -------- | -------- | --------------------------------------------------------------------------------------------------- |
+| `name`     | `string` | ✅        | Topic or queue name (min 1 char).                                                                   |
+| `role`     | `enum`   | ✅        | One of: `PRODUCER`, `CONSUMER`, `BOTH`.                                                             |
+| `broker`   | `enum`   | ✅        | One of: `KAFKA`, `RABBITMQ`, `SQS`, `SNS`, `OTHER`.                                                 |
 | `metadata` | `object` | —        | Optional metadata with known optional fields below. Additional fields are accepted (`passthrough`). |
 
 ### MessageTopic Metadata
 
-| Field          | Type      | Description |
-| -------------- | --------- | ----------- |
-| `consumerGroup`| `string`  | Consumer group identifier. |
-| `exchange`     | `string`  | RabbitMQ exchange name. |
-| `routingKey`   | `string`  | RabbitMQ routing key. |
-| `dlqEnabled`   | `boolean` | Whether a dead-letter queue is enabled. |
-| `retryPolicy`  | `string`  | Retry policy description. |
+| Field           | Type      | Description                             |
+| --------------- | --------- | --------------------------------------- |
+| `consumerGroup` | `string`  | Consumer group identifier.              |
+| `exchange`      | `string`  | RabbitMQ exchange name.                 |
+| `routingKey`    | `string`  | RabbitMQ routing key.                   |
+| `dlqEnabled`    | `boolean` | Whether a dead-letter queue is enabled. |
+| `retryPolicy`   | `string`  | Retry policy description.               |
 
 ---
 
@@ -106,10 +106,10 @@ An asynchronous messaging topic or queue.
 
 A library dependency of the system.
 
-| Field     | Type     | Required | Description |
-| --------- | -------- | -------- | ----------- |
-| `name`    | `string` | ✅       | Package name (min 1 char). |
-| `version` | `string` | —        | Semantic version. |
+| Field     | Type     | Required | Description                                |
+| --------- | -------- | -------- | ------------------------------------------ |
+| `name`    | `string` | ✅        | Package name (min 1 char).                 |
+| `version` | `string` | —        | Semantic version.                          |
 | `type`    | `enum`   | —        | One of: `INTERNAL`, `OPEN_SOURCE`, `TEST`. |
 
 ---
@@ -118,11 +118,11 @@ A library dependency of the system.
 
 A public API endpoint exposed by the system.
 
-| Field         | Type     | Required | Description |
-| ------------- | -------- | -------- | ----------- |
-| `path`        | `string` | ✅       | Endpoint path (e.g., `"/v1/orders"`). |
-| `method`      | `string` | ✅       | HTTP method (e.g., `"GET"`, `"POST"`). |
-| `description` | `string` | —        | What the endpoint does. |
+| Field         | Type     | Required | Description                            |
+| ------------- | -------- | -------- | -------------------------------------- |
+| `path`        | `string` | ✅        | Endpoint path (e.g., `"/v1/orders"`).  |
+| `method`      | `string` | ✅        | HTTP method (e.g., `"GET"`, `"POST"`). |
+| `description` | `string` | —        | What the endpoint does.                |
 
 ---
 
@@ -130,11 +130,11 @@ A public API endpoint exposed by the system.
 
 A known risk or concern for the system.
 
-| Field         | Type     | Required | Description |
-| ------------- | -------- | -------- | ----------- |
-| `title`       | `string` | ✅       | Short risk title (min 1 char). |
-| `description` | `string` | —        | Detailed description. |
-| `severity`    | `enum`   | ✅       | One of: `LOW`, `MEDIUM`, `HIGH`, `CRITICAL`. |
+| Field         | Type     | Required | Description                                  |
+| ------------- | -------- | -------- | -------------------------------------------- |
+| `title`       | `string` | ✅        | Short risk title (min 1 char).               |
+| `description` | `string` | —        | Detailed description.                        |
+| `severity`    | `enum`   | ✅        | One of: `LOW`, `MEDIUM`, `HIGH`, `CRITICAL`. |
 
 ---
 

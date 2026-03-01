@@ -1,18 +1,18 @@
 services:
   postgres:
     image: postgres:16
-    container_name: tech_radar_db
+    container_name: meridian_db
     restart: unless-stopped
     ports:
       - "${POSTGRES_PORT:-5433}:5432"
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-user}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
-      POSTGRES_DB: ${POSTGRES_DB:-tech_radar}
+      POSTGRES_DB: ${POSTGRES_DB:-meridian}
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-user} -d ${POSTGRES_DB:-tech_radar}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-user} -d ${POSTGRES_DB:-meridian}"]
       interval: 10s
       timeout: 5s
       retries: 5

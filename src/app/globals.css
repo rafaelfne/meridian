@@ -147,33 +147,3 @@
     @apply bg-background text-foreground;
   }
 }
-
-/* xyflow Controls & MiniMap dark mode overrides */
-.dark .react-flow__controls {
-  background: oklch(0.208 0.042 265.755);
-  border-color: oklch(1 0 0 / 10%);
-}
-
-.dark .react-flow__controls button {
-  background: oklch(0.208 0.042 265.755);
-  border-color: oklch(1 0 0 / 10%);
-  fill: oklch(0.984 0.003 247.858);
-  color: oklch(0.984 0.003 247.858);
-}
-
-.dark .react-flow__controls button:hover {
-  background: oklch(0.279 0.041 260.031);
-}
-
-.dark .react-flow__minimap {
-  background: oklch(0.165 0.042 264.695);
-}
-
-.dark .react-flow__minimap-mask {
-  fill: oklch(0 0 0 / 60%);
-}
-
-.dark .react-flow__minimap-node {
-  fill: oklch(0.35 0.04 260);
-  stroke: none;
-}

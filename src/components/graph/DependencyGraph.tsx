@@ -153,6 +153,7 @@ export function DependencyGraph({
     <div className={styles.wrapper}>
       <GraphHoverContext.Provider value={hoverContextValue}>
         <ReactFlow
+          colorMode={isDark ? "dark" : "light"}
           nodes={nodes}
           edges={edges}
           onNodesChange={onNodesChange}

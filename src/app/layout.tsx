@@ -6,7 +6,7 @@ import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Domain Mapper",
+  title: "Meridian",
   description: "Dependency graph visualization for system architectures",
 };
 

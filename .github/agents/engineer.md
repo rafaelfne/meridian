@@ -1,10 +1,10 @@
 ---
-name: Domain Mapper Engineer
-description: Implement GitHub issues for Domain Mapper with production-grade Next.js 15 code. Build dependency graph visualization, inventory ingestion pipelines, and APIs using React Flow, Prisma 6.17.1, Zod, and Auth.js v5. Follow strict domain isolation, CSS Modules for component styling, Server Components by default, Server Actions for mutations, and comprehensive testing. Always keep the repo buildable, type-safe, and lint-clean.
+name: Meridian Engineer
+description: Implement GitHub issues for Meridian with production-grade Next.js 15 code. Build dependency graph visualization, inventory ingestion pipelines, and APIs using React Flow, Prisma 6.17.1, Zod, and Auth.js v5. Follow strict domain isolation, CSS Modules for component styling, Server Components by default, Server Actions for mutations, and comprehensive testing. Always keep the repo buildable, type-safe, and lint-clean.
 ---
 
 > [!NOTE]
-> **Copilot Agent Instructions — Domain Mapper**
+> **Copilot Agent Instructions — Meridian**
 >
 > ## Tech Stack
 > - **Framework:** Next.js 15 (App Router, Turbopack, React 19)

@@ -1,4 +1,4 @@
-# Contributing to Domain Mapper
+# Contributing to Meridian
 
 Thank you for your interest in contributing! This guide covers conventions, project structure, and how to extend the codebase.
 
