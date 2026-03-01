@@ -251,7 +251,7 @@ export function SystemDetailPanel({
 
   return (
     <Sheet open={systemId !== null} onOpenChange={handleOpenChange}>
-      <SheetContent side="right" className="flex flex-col sm:max-w-md">
+      <SheetContent side="right" className="flex flex-col sm:max-w-lg">
         {/* ── Loading state ──────────────────────────────── */}
         {loading && (
           <>
