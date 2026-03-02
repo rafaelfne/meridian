@@ -48,12 +48,9 @@ export function GraphCommandSearch({
       const node = current ?? fallback;
       if (!node) return;
 
-      const width = (node.measured?.width ?? node.width ?? NODE_WIDTH);
-      const height = (node.measured?.height ?? node.height ?? NODE_HEIGHT);
-
       setCenter(
-        node.position.x + width / 2,
-        node.position.y + height / 2,
+        node.position.x + NODE_WIDTH / 2,
+        node.position.y + NODE_HEIGHT / 2,
         { zoom: 1.5, duration: 800 },
       );
       setOpen(false);
