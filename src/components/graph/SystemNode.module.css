@@ -13,20 +13,26 @@
   width: 250px;
   height: 100px;
   padding: 0.625rem 0.75rem;
-  border: 1px solid var(--border);
+  border: 1.5px solid var(--node-domain-color, var(--border));
   border-radius: var(--radius-md);
   background-color: var(--card);
   color: var(--card-foreground);
-  box-shadow: 0 1px 3px oklch(0 0 0 / 8%);
+  box-shadow:
+    0 1px 2px oklch(1 0 0 / 3%),
+    0 4px 8px oklch(1 0 0 / 5%),
+    0 8px 20px oklch(1 0 0 / 7%);
   cursor: grab;
   transition:
-    box-shadow 0.2s ease,
+    box-shadow 0.25s ease,
     border-color 0.2s ease,
     background-color 0.2s ease;
 }
 
 .node:hover {
-  box-shadow: 0 2px 8px oklch(0 0 0 / 12%);
+  box-shadow:
+    0 2px 4px oklch(1 0 0 / 5%),
+    0 8px 16px oklch(1 0 0 / 8%),
+    0 16px 32px oklch(1 0 0 / 10%);
   border-color: var(--ring);
 }
 

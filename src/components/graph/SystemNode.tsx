@@ -24,6 +24,7 @@ export function SystemNode({ id, data, selected }: SystemNodeProps) {
         isHighlighted && styles.highlighted,
         isFocused && styles.focused,
       )}
+      style={{ "--node-domain-color": data.domainColor } as React.CSSProperties}
     >      <Handle type="target" position={Position.Left} />
 
       <div className={styles.header}>
