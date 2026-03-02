@@ -130,6 +130,8 @@ export function DependencyEdge({
             backgroundColor: "color-mix(in srgb, var(--card) 85%, transparent)",
             padding: "2px 6px",
             borderRadius: 4,
+            opacity: style?.opacity != null ? Number(style.opacity) : 1,
+            transition: "opacity 0.2s ease",
           }}
           className="nodrag nopan"
         >

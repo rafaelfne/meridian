@@ -32,7 +32,7 @@ const nodeTypes = {
 };
 const edgeTypes = { smoothstep: DependencyEdge };
 
-const DIMMED_OPACITY = 0.15;
+const DIMMED_OPACITY = 0.08;
 
 interface DependencyGraphProps {
   data: GraphData;
@@ -149,8 +149,8 @@ export function DependencyGraph({
         data.nodes.map((node) => ({
           ...node,
           style: connectedNodeIds.has(node.id)
-            ? undefined
-            : { opacity: DIMMED_OPACITY },
+            ? { transition: 'opacity 0.2s ease' }
+            : { opacity: DIMMED_OPACITY, transition: 'opacity 0.2s ease' },
         })),
       );
 
@@ -163,6 +163,7 @@ export function DependencyGraph({
               ...edge.style,
               opacity: isConnected ? 1 : DIMMED_OPACITY,
               strokeWidth: isConnected ? 3.5 : (edge.style.strokeWidth ?? 2),
+              transition: 'opacity 0.2s ease, stroke-width 0.2s ease',
             },
           };
         }),
