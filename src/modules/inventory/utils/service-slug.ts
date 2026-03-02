@@ -53,3 +53,30 @@ export function generateServiceSlug(name: string): string {
 
   return meaningful.map(pascalToKebab).join("-");
 }
+
+/**
+ * Deduplicate an array of service records by slug.
+ * When two or more services produce the same slug, appends `-2`, `-3`, etc.
+ * The first occurrence keeps the original slug.
+ *
+ * @example
+ * deduplicateServiceSlugs([
+ *   { slug: "api-cash", name: "A", ... },
+ *   { slug: "api-cash", name: "B", ... },
+ * ])
+ * // → [{ slug: "api-cash", ... }, { slug: "api-cash-2", ... }]
+ */
+export function deduplicateServiceSlugs<
+  T extends { slug: string },
+>(services: T[]): T[] {
+  const counts = new Map<string, number>();
+
+  return services.map((service) => {
+    const base = service.slug;
+    const seen = (counts.get(base) ?? 0) + 1;
+    counts.set(base, seen);
+
+    if (seen === 1) return service;
+    return { ...service, slug: `${base}-${seen}` };
+  });
+}

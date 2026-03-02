@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { generateServiceSlug } from "./service-slug";
+import { generateServiceSlug, deduplicateServiceSlugs } from "./service-slug";
 
 describe("generateServiceSlug", () => {
   describe(".NET dotted PascalCase names", () => {
@@ -90,5 +90,63 @@ describe("generateServiceSlug", () => {
     it("returns single lowercase word as-is", () => {
       expect(generateServiceSlug("scheduler")).toBe("scheduler");
     });
+  });
+});
+
+describe("deduplicateServiceSlugs", () => {
+  it("leaves unique slugs unchanged", () => {
+    const services = [
+      { slug: "api-cash", name: "A" },
+      { slug: "api-portfolios", name: "B" },
+      { slug: "worker-orders", name: "C" },
+    ];
+    const result = deduplicateServiceSlugs(services);
+    expect(result.map((s) => s.slug)).toEqual([
+      "api-cash",
+      "api-portfolios",
+      "worker-orders",
+    ]);
+  });
+
+  it("appends -2, -3 for duplicate slugs", () => {
+    const services = [
+      { slug: "api-cash", name: "A" },
+      { slug: "api-cash", name: "B" },
+      { slug: "api-cash", name: "C" },
+    ];
+    const result = deduplicateServiceSlugs(services);
+    expect(result.map((s) => s.slug)).toEqual([
+      "api-cash",
+      "api-cash-2",
+      "api-cash-3",
+    ]);
+  });
+
+  it("handles mixed unique and duplicate slugs", () => {
+    const services = [
+      { slug: "api-cash", name: "A" },
+      { slug: "worker-orders", name: "B" },
+      { slug: "api-cash", name: "C" },
+    ];
+    const result = deduplicateServiceSlugs(services);
+    expect(result.map((s) => s.slug)).toEqual([
+      "api-cash",
+      "worker-orders",
+      "api-cash-2",
+    ]);
+  });
+
+  it("returns empty array for empty input", () => {
+    expect(deduplicateServiceSlugs([])).toEqual([]);
+  });
+
+  it("preserves all other properties", () => {
+    const services = [
+      { slug: "api", name: "X", type: "API" as const, systemId: "s1" },
+      { slug: "api", name: "Y", type: "WORKER" as const, systemId: "s1" },
+    ];
+    const result = deduplicateServiceSlugs(services);
+    expect(result[0]).toEqual({ slug: "api", name: "X", type: "API", systemId: "s1" });
+    expect(result[1]).toEqual({ slug: "api-2", name: "Y", type: "WORKER", systemId: "s1" });
   });
 });

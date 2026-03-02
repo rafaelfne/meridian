@@ -9,7 +9,7 @@ import { processInventory } from "../services/process-inventory";
 import { processDependenciesAction } from "@/modules/graph/actions/process";
 import { saveGraphSnapshot } from "@/modules/graph/actions/save-snapshot";
 import type { SystemInventory } from "../types";
-import { generateServiceSlug } from "../utils/service-slug";
+import { generateServiceSlug, deduplicateServiceSlugs } from "../utils/service-slug";
 
 export interface UploadInventoryResult {
   success: boolean;
@@ -196,12 +196,14 @@ async function createSystemChildren(
   const batches = [
     system.services.length > 0 &&
       tx.service.createMany({
-        data: system.services.map((s) => ({
-          name: s.name,
-          slug: s.slug ?? generateServiceSlug(s.name),
-          type: s.type,
-          systemId,
-        })),
+        data: deduplicateServiceSlugs(
+          system.services.map((s) => ({
+            name: s.name,
+            slug: s.slug ?? generateServiceSlug(s.name),
+            type: s.type,
+            systemId,
+          })),
+        ),
       }),
     system.databases.length > 0 &&
       tx.database.createMany({
