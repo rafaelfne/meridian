@@ -150,6 +150,7 @@ model System {
 model Service {
   id       String      @id @default(cuid())
   name     String
+  slug     String      @unique
   type     ServiceType
   systemId String
   system   System      @relation(fields: [systemId], references: [id], onDelete: Cascade)

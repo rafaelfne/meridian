@@ -30,6 +30,13 @@ export async function processDependenciesAction(): Promise<ProcessDependenciesAc
               where: { slug },
               select: { id: true, slug: true, name: true },
             }),
+          async (serviceSlug) => {
+            const service = await prisma.service.findUnique({
+              where: { slug: serviceSlug },
+              select: { system: { select: { id: true, slug: true, name: true } } },
+            });
+            return service?.system ?? null;
+          },
         ),
       resolveDatabase: () =>
         resolveDatabaseDeps({
@@ -51,6 +58,13 @@ export async function processDependenciesAction(): Promise<ProcessDependenciesAc
               where: { slug },
               select: { id: true },
             }),
+          getSystemByServiceSlug: async (serviceSlug) => {
+            const service = await prisma.service.findUnique({
+              where: { slug: serviceSlug },
+              select: { system: { select: { id: true } } },
+            });
+            return service?.system ?? null;
+          },
         }),
       resolveMessaging: () =>
         resolveMessagingDeps({

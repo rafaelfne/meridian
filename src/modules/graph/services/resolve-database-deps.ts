@@ -8,6 +8,8 @@ export interface ResolveDatabaseDepsDeps {
   getAllDatabases: () => Promise<DatabaseRecord[]>;
   getAllIntegrations: () => Promise<IntegrationRecord[]>;
   getSystemBySlug: (slug: string) => Promise<{ id: string } | null>;
+  /** Fallback: resolve a Service slug to its owning System. */
+  getSystemByServiceSlug?: (slug: string) => Promise<{ id: string } | null>;
 }
 
 /**
@@ -63,7 +65,10 @@ export async function resolveDatabaseDeps(
     if (integration.type !== "DATABASE_DIRECT") continue;
     if (!integration.targetSystem) continue;
 
-    const target = await deps.getSystemBySlug(integration.targetSystem);
+    let target = await deps.getSystemBySlug(integration.targetSystem);
+    if (!target && deps.getSystemByServiceSlug) {
+      target = await deps.getSystemByServiceSlug(integration.targetSystem);
+    }
     if (!target) continue;
 
     results.push({

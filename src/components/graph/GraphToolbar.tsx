@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Search, ChevronDown, RotateCcw, Eye, EyeOff, Zap, Layers, Group } from "lucide-react";
 import clsx from "clsx";
 import {
@@ -175,10 +175,10 @@ export function GraphToolbar({
 
   const depTypeOptions = [...DEPENDENCY_TYPES] as string[];
 
-  const isMac = useMemo(
-    () => typeof navigator !== "undefined" && /Mac|iPhone|iPad|iPod/.test(navigator.userAgent),
-    [],
-  );
+  const [isMac, setIsMac] = useState(false);
+  useEffect(() => {
+    setIsMac(/Mac|iPhone|iPad|iPod/.test(navigator.userAgent));
+  }, []);
 
   return (
     <div className={styles.toolbar} role="toolbar" aria-label="Graph filters">

@@ -9,6 +9,7 @@ import { processInventory } from "../services/process-inventory";
 import { processDependenciesAction } from "@/modules/graph/actions/process";
 import { saveGraphSnapshot } from "@/modules/graph/actions/save-snapshot";
 import type { SystemInventory } from "../types";
+import { generateServiceSlug } from "../utils/service-slug";
 
 export interface UploadInventoryResult {
   success: boolean;
@@ -197,6 +198,7 @@ async function createSystemChildren(
       tx.service.createMany({
         data: system.services.map((s) => ({
           name: s.name,
+          slug: s.slug ?? generateServiceSlug(s.name),
           type: s.type,
           systemId,
         })),

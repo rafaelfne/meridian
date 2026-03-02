@@ -8,9 +8,18 @@ import type {
 
 const HTTP_API = "HTTP_API";
 
+/**
+ * Resolves HTTP_API integrations into dependency edges.
+ *
+ * Resolution order for `targetSystem` slug:
+ *   1. Direct `System.slug` match
+ *   2. Fallback: `Service.slug` → owning `System` (handles monolith sub-services)
+ *   3. If neither matches → unresolved
+ */
 export async function resolveHttpDependencies(
   getAllIntegrations: () => Promise<Integration[]>,
   getSystemBySlug: (slug: string) => Promise<System | null>,
+  getSystemByServiceSlug?: (slug: string) => Promise<System | null>,
 ): Promise<ResolveHttpDepsResult> {
   const integrations = await getAllIntegrations();
   const httpIntegrations = integrations.filter((i) => i.type === HTTP_API);
@@ -30,7 +39,13 @@ export async function resolveHttpDependencies(
       continue;
     }
 
-    const target = await getSystemBySlug(integration.targetSystem);
+    // 1. Try direct system slug match
+    let target = await getSystemBySlug(integration.targetSystem);
+
+    // 2. Fallback: try matching a service slug → owning system
+    if (!target && getSystemByServiceSlug) {
+      target = await getSystemByServiceSlug(integration.targetSystem);
+    }
 
     if (!target) {
       unresolved.push({

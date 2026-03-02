@@ -172,4 +172,79 @@ describe("resolveHttpDependencies", () => {
     expect(getSystemBySlug).toHaveBeenCalledWith("slug-b");
     expect(getSystemBySlug).toHaveBeenCalledTimes(2);
   });
+
+  describe("service slug fallback", () => {
+    it("resolves via service slug when system slug not found", async () => {
+      const getAllIntegrations = vi.fn().mockResolvedValue([
+        buildIntegration({ targetSystem: "api-investments" }),
+      ]);
+      const getSystemBySlug = vi.fn().mockResolvedValue(null);
+      const getSystemByServiceSlug = vi
+        .fn()
+        .mockResolvedValue(buildSystem({ id: "monolith-id", slug: "core", name: "Core" }));
+
+      const result = await resolveHttpDependencies(
+        getAllIntegrations,
+        getSystemBySlug,
+        getSystemByServiceSlug,
+      );
+
+      expect(result.resolved).toHaveLength(1);
+      expect(result.resolved[0]!.targetId).toBe("monolith-id");
+      expect(getSystemBySlug).toHaveBeenCalledWith("api-investments");
+      expect(getSystemByServiceSlug).toHaveBeenCalledWith("api-investments");
+    });
+
+    it("prefers system slug over service slug", async () => {
+      const getAllIntegrations = vi.fn().mockResolvedValue([
+        buildIntegration({ targetSystem: "core" }),
+      ]);
+      const getSystemBySlug = vi
+        .fn()
+        .mockResolvedValue(buildSystem({ id: "system-match", slug: "core" }));
+      const getSystemByServiceSlug = vi
+        .fn()
+        .mockResolvedValue(buildSystem({ id: "service-match", slug: "other" }));
+
+      const result = await resolveHttpDependencies(
+        getAllIntegrations,
+        getSystemBySlug,
+        getSystemByServiceSlug,
+      );
+
+      expect(result.resolved).toHaveLength(1);
+      expect(result.resolved[0]!.targetId).toBe("system-match");
+      expect(getSystemByServiceSlug).not.toHaveBeenCalled();
+    });
+
+    it("marks as unresolved when both lookups fail", async () => {
+      const getAllIntegrations = vi.fn().mockResolvedValue([
+        buildIntegration({ targetSystem: "nonexistent" }),
+      ]);
+      const getSystemBySlug = vi.fn().mockResolvedValue(null);
+      const getSystemByServiceSlug = vi.fn().mockResolvedValue(null);
+
+      const result = await resolveHttpDependencies(
+        getAllIntegrations,
+        getSystemBySlug,
+        getSystemByServiceSlug,
+      );
+
+      expect(result.resolved).toEqual([]);
+      expect(result.unresolved).toHaveLength(1);
+      expect(result.unresolved[0]!.targetSystemSlug).toBe("nonexistent");
+    });
+
+    it("works without service slug fallback (backward compatible)", async () => {
+      const getAllIntegrations = vi.fn().mockResolvedValue([
+        buildIntegration({ targetSystem: "unknown" }),
+      ]);
+      const getSystemBySlug = vi.fn().mockResolvedValue(null);
+
+      const result = await resolveHttpDependencies(getAllIntegrations, getSystemBySlug);
+
+      expect(result.resolved).toEqual([]);
+      expect(result.unresolved).toHaveLength(1);
+    });
+  });
 });

@@ -2,6 +2,13 @@ import { z } from "zod/v4";
 
 export const ServiceSchema = z.object({
   name: z.string().min(1, "Service name is required"),
+  slug: z
+    .string()
+    .regex(
+      /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
+      "Service slug must contain only lowercase letters, numbers, and hyphens",
+    )
+    .optional(),
   type: z.enum(["API", "WORKER", "CRONJOB", "BACKGROUND_SERVICE"]),
   port: z.number().int().positive().optional(),
   path: z.string().optional(),
