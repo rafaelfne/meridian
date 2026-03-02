@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { Search, ChevronDown, RotateCcw, Eye, EyeOff, Zap, Layers, Group } from "lucide-react";
 import clsx from "clsx";
 import {
@@ -175,6 +175,11 @@ export function GraphToolbar({
 
   const depTypeOptions = [...DEPENDENCY_TYPES] as string[];
 
+  const isMac = useMemo(
+    () => typeof navigator !== "undefined" && /Mac|iPhone|iPad|iPod/.test(navigator.userAgent),
+    [],
+  );
+
   return (
     <div className={styles.toolbar} role="toolbar" aria-label="Graph filters">
       {/* Search */}
@@ -189,7 +194,7 @@ export function GraphToolbar({
           aria-label="Search systems"
         />
         <kbd className={styles.kbd}>
-          <span>⌘</span>K
+          <span>{isMac ? "⌘" : "Ctrl"}</span>K
         </kbd>
       </div>
 
