@@ -27,7 +27,7 @@ export function GraphCommandSearch({
   visibleNodeIds,
 }: GraphCommandSearchProps) {
   const [open, setOpen] = useState(false);
-  const { setCenter } = useReactFlow();
+  const { setCenter, getNodes } = useReactFlow();
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -42,17 +42,23 @@ export function GraphCommandSearch({
 
   const handleSelect = useCallback(
     (nodeId: string) => {
-      const node = nodes.find((n) => n.id === nodeId);
+      // Use getNodes() to get the *current* position (accounts for drag-repositioning)
+      const current = getNodes().find((n) => n.id === nodeId);
+      const fallback = nodes.find((n) => n.id === nodeId);
+      const node = current ?? fallback;
       if (!node) return;
 
+      const width = (node.measured?.width ?? node.width ?? NODE_WIDTH);
+      const height = (node.measured?.height ?? node.height ?? NODE_HEIGHT);
+
       setCenter(
-        node.position.x + NODE_WIDTH / 2,
-        node.position.y + NODE_HEIGHT / 2,
+        node.position.x + width / 2,
+        node.position.y + height / 2,
         { zoom: 1.5, duration: 800 },
       );
       setOpen(false);
     },
-    [nodes, setCenter],
+    [nodes, setCenter, getNodes],
   );
 
   return (
