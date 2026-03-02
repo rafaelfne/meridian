@@ -31,7 +31,7 @@ export async function processDependenciesAction(): Promise<ProcessDependenciesAc
               select: { id: true, slug: true, name: true },
             }),
           async (serviceSlug) => {
-            const service = await prisma.service.findUnique({
+            const service = await prisma.service.findFirst({
               where: { slug: serviceSlug },
               select: { system: { select: { id: true, slug: true, name: true } } },
             });
@@ -59,7 +59,7 @@ export async function processDependenciesAction(): Promise<ProcessDependenciesAc
               select: { id: true },
             }),
           getSystemByServiceSlug: async (serviceSlug) => {
-            const service = await prisma.service.findUnique({
+            const service = await prisma.service.findFirst({
               where: { slug: serviceSlug },
               select: { system: { select: { id: true } } },
             });

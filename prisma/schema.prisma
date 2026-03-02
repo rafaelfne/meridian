@@ -150,10 +150,12 @@ model System {
 model Service {
   id       String      @id @default(cuid())
   name     String
-  slug     String      @unique
+  slug     String
   type     ServiceType
   systemId String
   system   System      @relation(fields: [systemId], references: [id], onDelete: Cascade)
+
+  @@unique([systemId, slug])
 }
 
 enum ServiceType {
