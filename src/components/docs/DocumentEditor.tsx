@@ -154,6 +154,49 @@ export function DocumentEditor({ document, workspaceSlug, systemSlug }: Props) {
 
     const canSave = !isPending && !slugTaken && !checkingSlug && title.trim().length > 0 && slug.length > 0;
 
+    // Hydrate mermaid placeholders in the preview pane
+    const previewRef = useRef<HTMLDivElement>(null);
+    useEffect(() => {
+        const container = previewRef.current;
+        if (!container) return;
+
+        const placeholders = container.querySelectorAll<HTMLPreElement>(
+            "pre.mermaid-placeholder[data-mermaid]",
+        );
+        if (placeholders.length === 0) return;
+
+        let cancelled = false;
+
+        async function hydrate() {
+            const mermaid = (await import("mermaid")).default;
+            mermaid.initialize({
+                startOnLoad: false,
+                theme: "dark",
+                fontFamily: "var(--font-mono)",
+                securityLevel: "strict",
+            });
+
+            for (const el of placeholders) {
+                if (cancelled) return;
+                const source = el.getAttribute("data-mermaid") ?? "";
+                try {
+                    const id = `mermaid-preview-${Math.random().toString(36).slice(2, 9)}`;
+                    const { svg } = await mermaid.render(id, source.trim());
+                    el.innerHTML = svg;
+                    el.classList.add("mermaid-rendered");
+                } catch {
+                    // Leave original source visible on error
+                }
+            }
+        }
+
+        void hydrate();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [previewHtml]);
+
     return (
         <div className={styles.editor}>
             <div className={styles.toolbar}>
@@ -225,6 +268,7 @@ export function DocumentEditor({ document, workspaceSlug, systemSlug }: Props) {
                     </div>
                 )}
                 <div
+                    ref={previewRef}
                     className={styles.previewContent}
                     dangerouslySetInnerHTML={{ __html: previewHtml }}
                 />

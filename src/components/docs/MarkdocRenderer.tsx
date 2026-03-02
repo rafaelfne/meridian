@@ -6,12 +6,14 @@ import Markdoc, {
 import { Callout } from "./markdoc/Callout";
 import { ApiEndpoint } from "./markdoc/ApiEndpoint";
 import { SystemRef } from "./markdoc/SystemRef";
+import { MermaidBlock } from "./markdoc/MermaidBlock";
 import styles from "./MarkdocRenderer.module.css";
 
 const components = {
     Callout,
     ApiEndpoint,
     SystemRef,
+    MermaidBlock,
 };
 
 export function MarkdocRenderer({

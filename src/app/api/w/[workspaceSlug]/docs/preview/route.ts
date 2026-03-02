@@ -1,6 +1,6 @@
 import { verifyWorkspaceAccess } from "@/lib/workspace-context";
 import { renderMarkdocSource } from "@/modules/docs/services/render-markdoc";
-import Markdoc from "@markdoc/markdoc";
+import { renderMarkdocHtml } from "@/modules/docs/services/render-markdoc-html";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(
@@ -19,7 +19,7 @@ export async function POST(
   const { content, headings, errors } = renderMarkdocSource(source);
 
   // Render to HTML string for the editor preview
-  const html = Markdoc.renderers.html(content);
+  const html = renderMarkdocHtml(content);
 
   return NextResponse.json({ html, headings, errors });
 }

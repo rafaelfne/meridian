@@ -318,3 +318,22 @@
   color: oklch(0.704 0.191 22.216);
   margin-top: 0.25rem;
 }
+
+/* Mermaid placeholders in the preview pane */
+.previewContent :global(pre.mermaid-placeholder) {
+  display: flex;
+  justify-content: center;
+  border: 1px solid var(--meridian-border);
+  border-radius: var(--radius-md);
+  background: var(--meridian-bg-elevated);
+  overflow: hidden;
+}
+
+.previewContent :global(pre.mermaid-rendered) {
+  padding: 1.25rem;
+}
+
+.previewContent :global(pre.mermaid-rendered) :global(svg) {
+  max-width: 100%;
+  height: auto;
+}

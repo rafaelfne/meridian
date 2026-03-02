@@ -1,0 +1,58 @@
+.wrapper {
+  margin: 1.5rem 0;
+  border: 1px solid var(--meridian-border);
+  border-radius: var(--radius-md);
+  background: var(--meridian-bg-elevated);
+  overflow: hidden;
+}
+
+.diagram {
+  display: flex;
+  justify-content: center;
+  padding: 1.25rem;
+  transition: opacity 0.25s ease;
+}
+
+.diagram :global(svg) {
+  max-width: 100%;
+  height: auto;
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  font-size: 0.8125rem;
+  color: var(--meridian-text-secondary);
+}
+
+.errorHeader {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: oklch(0.7 0.18 25);
+  background: oklch(0.7 0.18 25 / 8%);
+  border-bottom: 1px solid oklch(0.7 0.18 25 / 20%);
+}
+
+.errorBody {
+  padding: 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: oklch(0.7 0.18 25 / 80%);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.source {
+  padding: 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--meridian-text-secondary);
+  border-top: 1px solid var(--meridian-border);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
