@@ -22,6 +22,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { SystemDetailTabs, type SystemTab } from "@/components/systems/SystemDetailTabs";
 
 
 
@@ -102,9 +103,327 @@ export default async function SystemDetailPage({
 
   const canEdit = ctx.role === "EDITOR" || ctx.role === "OWNER";
 
+  /* ── Tab: Overview ─────────────────────────────────────────── */
+  const overviewTab = (
+    <Card>
+      <CardHeader>
+        <CardTitle>Overview</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <dl className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+          <div>
+            <dt className="text-sm font-medium text-muted-foreground">Language</dt>
+            <dd className="text-sm">{system.language ?? "—"}</dd>
+          </div>
+          <div>
+            <dt className="text-sm font-medium text-muted-foreground">Framework</dt>
+            <dd className="text-sm">
+              {system.framework
+                ? `${system.framework}${system.frameworkVersion ? ` ${system.frameworkVersion}` : ""}`
+                : "—"}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-sm font-medium text-muted-foreground">Domain</dt>
+            <dd className="text-sm">{system.domain.name}</dd>
+          </div>
+          {system.repositoryUrl && (
+            <div>
+              <dt className="text-sm font-medium text-muted-foreground">Repository</dt>
+              <dd className="text-sm">
+                <a
+                  href={system.repositoryUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 hover:underline"
+                >
+                  View <ExternalLink className="h-3 w-3" />
+                </a>
+              </dd>
+            </div>
+          )}
+        </dl>
+      </CardContent>
+    </Card>
+  );
+
+  /* ── Tab: Architecture ─────────────────────────────────────── */
+  const archSections: React.ReactNode[] = [];
+
+  if (system.services.length > 0) {
+    archSections.push(
+      <Card key="services">
+        <CardHeader>
+          <CardTitle>Services</CardTitle>
+          <CardDescription>{system.services.length} service(s)</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Type</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {system.services.map((service) => (
+                <TableRow key={service.id}>
+                  <TableCell className="font-medium">{service.name}</TableCell>
+                  <TableCell>
+                    <TagBadge category="service-type" value={service.type} />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>,
+    );
+  }
+
+  if (system.databases.length > 0) {
+    archSections.push(
+      <Card key="databases">
+        <CardHeader>
+          <CardTitle>Databases</CardTitle>
+          <CardDescription>{system.databases.length} database(s)</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Provider</TableHead>
+                <TableHead>Version</TableHead>
+                <TableHead>ORM</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {system.databases.map((db) => (
+                <TableRow key={db.id}>
+                  <TableCell className="font-medium">{db.name}</TableCell>
+                  <TableCell>{db.provider}</TableCell>
+                  <TableCell>{db.version ?? "—"}</TableCell>
+                  <TableCell>{db.orm ?? "—"}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>,
+    );
+  }
+
+  if (system.integrations.length > 0) {
+    archSections.push(
+      <Card key="integrations">
+        <CardHeader>
+          <CardTitle>Integrations</CardTitle>
+          <CardDescription>{system.integrations.length} integration(s)</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead>Target</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {system.integrations.map((integration) => (
+                <TableRow key={integration.id}>
+                  <TableCell className="font-medium">{integration.name}</TableCell>
+                  <TableCell>
+                    <TagBadge category="integration-type" value={integration.type} />
+                  </TableCell>
+                  <TableCell>{integration.targetSystem ?? "—"}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>,
+    );
+  }
+
+  if (system.messageTopics.length > 0) {
+    archSections.push(
+      <Card key="topics">
+        <CardHeader>
+          <CardTitle>Message Topics</CardTitle>
+          <CardDescription>{system.messageTopics.length} topic(s)</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Broker</TableHead>
+                <TableHead>Role</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {system.messageTopics.map((topic) => (
+                <TableRow key={topic.id}>
+                  <TableCell className="font-medium">{topic.name}</TableCell>
+                  <TableCell>
+                    <TagBadge category="broker" value={topic.broker} />
+                  </TableCell>
+                  <TableCell>
+                    <TagBadge category="topic-role" value={topic.role} />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>,
+    );
+  }
+
+  if (system.packages.length > 0) {
+    archSections.push(
+      <Card key="packages">
+        <CardHeader>
+          <CardTitle>Packages</CardTitle>
+          <CardDescription>Top packages used</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Version</TableHead>
+                <TableHead>Scope</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {system.packages.map((pkg) => (
+                <TableRow key={pkg.id}>
+                  <TableCell className="font-medium">{pkg.name}</TableCell>
+                  <TableCell>{pkg.version ?? "—"}</TableCell>
+                  <TableCell>
+                    <TagBadge category="package-scope" value={pkg.scope} />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>,
+    );
+  }
+
+  const architectureContent =
+    archSections.length > 0 ? (
+      <div className="space-y-6">{archSections}</div>
+    ) : null;
+
+  const archItemCount =
+    system.services.length +
+    system.databases.length +
+    system.integrations.length +
+    system.messageTopics.length +
+    system.packages.length;
+
+  /* ── Tab: Risks ────────────────────────────────────────────── */
+  const risksContent =
+    system.risks.length > 0 ? (
+      <Card>
+        <CardHeader>
+          <CardTitle>Risks</CardTitle>
+          <CardDescription>{system.risks.length} risk(s)</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Title</TableHead>
+                <TableHead>Severity</TableHead>
+                <TableHead>Description</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {system.risks.map((risk) => (
+                <TableRow key={risk.id}>
+                  <TableCell className="font-medium">{risk.title}</TableCell>
+                  <TableCell>
+                    <TagBadge category="severity" value={risk.severity} />
+                  </TableCell>
+                  <TableCell>{risk.description ?? "—"}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+    ) : null;
+
+  /* ── Tab: Documentation ────────────────────────────────────── */
+  const docsContent = (
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle>Documentation</CardTitle>
+            <CardDescription>{documents.length} document(s)</CardDescription>
+          </div>
+          {canEdit && (
+            <Link
+              href={`/w/${workspaceSlug}/systems/${slug}/docs/new`}
+              className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+            >
+              <Plus size={14} />
+              New Document
+            </Link>
+          )}
+        </div>
+      </CardHeader>
+      {documents.length > 0 && (
+        <CardContent>
+          <div className="space-y-2">
+            {documents.map((doc) => (
+              <Link
+                key={doc.id}
+                href={`/w/${workspaceSlug}/systems/${slug}/docs/${doc.slug}`}
+                className="flex items-center gap-3 rounded-md p-3 hover:bg-muted transition-colors"
+              >
+                <FileText size={16} className="text-muted-foreground flex-shrink-0" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium truncate">{doc.title}</p>
+                  <p className="text-xs text-muted-foreground">
+                    Updated{" "}
+                    {doc.updatedAt.toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })}
+                    {doc.author.name && ` by ${doc.author.name}`}
+                  </p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </CardContent>
+      )}
+    </Card>
+  );
+
+  /* ── Assemble tabs ─────────────────────────────────────────── */
+  const tabs: SystemTab[] = [
+    ...(architectureContent
+      ? [{ value: "architecture", label: "Architecture", count: archItemCount, content: architectureContent }]
+      : []),
+    ...(risksContent
+      ? [{ value: "risks", label: "Risks", count: system.risks.length, content: risksContent }]
+      : []),
+    { value: "docs", label: "Docs", count: documents.length, content: docsContent },
+  ];
+
   return (
-    <div className="container mx-auto max-w-7xl space-y-8 py-8 px-4">
-      <div>
+    <div className="container mx-auto max-w-7xl py-8 px-4">
+      <div className="mb-6">
         <div className="mb-1 flex items-center gap-3">
           <h1 className="text-2xl font-bold tracking-tight">
             {system.name}
@@ -116,302 +435,11 @@ export default async function SystemDetailPage({
         )}
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Overview</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <dl className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-            <div>
-              <dt className="text-sm font-medium text-muted-foreground">
-                Language
-              </dt>
-              <dd className="text-sm">{system.language ?? "—"}</dd>
-            </div>
-            <div>
-              <dt className="text-sm font-medium text-muted-foreground">
-                Framework
-              </dt>
-              <dd className="text-sm">
-                {system.framework
-                  ? `${system.framework}${system.frameworkVersion ? ` ${system.frameworkVersion}` : ""}`
-                  : "—"}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-sm font-medium text-muted-foreground">
-                Domain
-              </dt>
-              <dd className="text-sm">{system.domain.name}</dd>
-            </div>
-            {system.repositoryUrl && (
-              <div>
-                <dt className="text-sm font-medium text-muted-foreground">
-                  Repository
-                </dt>
-                <dd className="text-sm">
-                  <a
-                    href={system.repositoryUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 hover:underline"
-                  >
-                    View <ExternalLink className="h-3 w-3" />
-                  </a>
-                </dd>
-              </div>
-            )}
-          </dl>
-        </CardContent>
-      </Card>
+      {overviewTab}
 
-      {system.services.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Services</CardTitle>
-            <CardDescription>
-              {system.services.length} service(s)
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Type</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {system.services.map((service) => (
-                  <TableRow key={service.id}>
-                    <TableCell className="font-medium">
-                      {service.name}
-                    </TableCell>
-                    <TableCell>
-                      <TagBadge category="service-type" value={service.type} />
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      )}
-
-      {system.databases.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Databases</CardTitle>
-            <CardDescription>
-              {system.databases.length} database(s)
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Provider</TableHead>
-                  <TableHead>Version</TableHead>
-                  <TableHead>ORM</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {system.databases.map((db) => (
-                  <TableRow key={db.id}>
-                    <TableCell className="font-medium">{db.name}</TableCell>
-                    <TableCell>{db.provider}</TableCell>
-                    <TableCell>{db.version ?? "—"}</TableCell>
-                    <TableCell>{db.orm ?? "—"}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      )}
-
-      {system.integrations.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Integrations</CardTitle>
-            <CardDescription>
-              {system.integrations.length} integration(s)
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Target</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {system.integrations.map((integration) => (
-                  <TableRow key={integration.id}>
-                    <TableCell className="font-medium">
-                      {integration.name}
-                    </TableCell>
-                    <TableCell>
-                      <TagBadge category="integration-type" value={integration.type} />
-                    </TableCell>
-                    <TableCell>{integration.targetSystem ?? "—"}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      )}
-
-      {system.messageTopics.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Message Topics</CardTitle>
-            <CardDescription>
-              {system.messageTopics.length} topic(s)
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Broker</TableHead>
-                  <TableHead>Role</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {system.messageTopics.map((topic) => (
-                  <TableRow key={topic.id}>
-                    <TableCell className="font-medium">{topic.name}</TableCell>
-                    <TableCell>
-                      <TagBadge category="broker" value={topic.broker} />
-                    </TableCell>
-                    <TableCell>
-                      <TagBadge category="topic-role" value={topic.role} />
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      )}
-
-      {system.risks.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Risks</CardTitle>
-            <CardDescription>{system.risks.length} risk(s)</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Title</TableHead>
-                  <TableHead>Severity</TableHead>
-                  <TableHead>Description</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {system.risks.map((risk) => (
-                  <TableRow key={risk.id}>
-                    <TableCell className="font-medium">{risk.title}</TableCell>
-                    <TableCell>
-                      <TagBadge category="severity" value={risk.severity} />
-                    </TableCell>
-                    <TableCell>{risk.description ?? "—"}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      )}
-
-      {system.packages.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Packages</CardTitle>
-            <CardDescription>Top packages used</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Version</TableHead>
-                  <TableHead>Scope</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {system.packages.map((pkg) => (
-                  <TableRow key={pkg.id}>
-                    <TableCell className="font-medium">{pkg.name}</TableCell>
-                    <TableCell>{pkg.version ?? "—"}</TableCell>
-                    <TableCell>
-                      <TagBadge category="package-scope" value={pkg.scope} />
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Documentation */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>Documentation</CardTitle>
-              <CardDescription>
-                {documents.length} document(s)
-              </CardDescription>
-            </div>
-            {canEdit && (
-              <Link
-                href={`/w/${workspaceSlug}/systems/${slug}/docs/new`}
-                className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
-              >
-                <Plus size={14} />
-                New Document
-              </Link>
-            )}
-          </div>
-        </CardHeader>
-        {documents.length > 0 && (
-          <CardContent>
-            <div className="space-y-2">
-              {documents.map((doc) => (
-                <Link
-                  key={doc.id}
-                  href={`/w/${workspaceSlug}/systems/${slug}/docs/${doc.slug}`}
-                  className="flex items-center gap-3 rounded-md p-3 hover:bg-muted transition-colors"
-                >
-                  <FileText size={16} className="text-muted-foreground flex-shrink-0" />
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium truncate">{doc.title}</p>
-                    <p className="text-xs text-muted-foreground">
-                      Updated{" "}
-                      {doc.updatedAt.toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      })}
-                      {doc.author.name && ` by ${doc.author.name}`}
-                    </p>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </CardContent>
-        )}
-      </Card>
+      <div className="mt-6">
+        <SystemDetailTabs tabs={tabs} />
+      </div>
     </div>
   );
 }
