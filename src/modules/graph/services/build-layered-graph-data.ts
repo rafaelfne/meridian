@@ -19,8 +19,14 @@ const NODE_WIDTH = 250;
 const NODE_HEIGHT = 100;
 const HORIZONTAL_SEP = 256;
 const VERTICAL_SEP = 144;
-const LAYER_GAP = 160;
-const LAYER_LABEL_HEIGHT = 40;
+
+/** Padding inside layer group containers */
+const GROUP_PADDING_X = 40;
+const GROUP_PADDING_Y = 60;
+const GROUP_PADDING_BOTTOM = 30;
+
+/** Vertical gap between layer containers */
+const LAYER_GAP = 100;
 
 /**
  * Deterministic color palette for domain names.
@@ -61,8 +67,9 @@ const LAYER_ORDER: LayerName[] = ["EDGE", "BUSINESS_LOGIC", "DATA_INFRA"];
 /**
  * Builds graph data with a layered topology layout.
  *
- * Nodes are grouped into three layers (EDGE, BUSINESS_LOGIC, DATA_INFRA)
- * and arranged vertically. Each layer is laid out independently using dagre LR.
+ * Each layer (EDGE, BUSINESS_LOGIC, DATA_INFRA) becomes a group container
+ * node with its systems as children. Layers are stacked vertically,
+ * and nodes within each layer are laid out using dagre LR.
  */
 export function buildLayeredGraphData(
   systems: SystemWithCounts[],
@@ -116,36 +123,14 @@ export function buildLayeredGraphData(
   // Compute parallel offsets for edges sharing the same node pair
   const edges = assignParallelOffsets(rawEdges);
 
-  // Layout each layer independently and stack vertically
-  const allNodes: GraphNode[] = [];
-  let currentY = 0;
+  // ── Phase 1: Layout nodes inside each layer ────────────
+  const layerInternalPositions = new Map<LayerName, Map<string, { x: number; y: number }>>();
+  const layerContentSizes = new Map<LayerName, { width: number; height: number }>();
 
   for (const layerName of LAYER_ORDER) {
     const layerSystems = layerGroups[layerName];
     if (layerSystems.length === 0) continue;
 
-    const config = LAYER_CONFIG[layerName];
-
-    // Add layer label node
-    allNodes.push({
-      id: `layer-label-${layerName}`,
-      type: "layerLabel",
-      position: { x: 0, y: currentY },
-      data: {
-        label: config.label,
-        domain: "",
-        language: null,
-        framework: null,
-        servicesCount: layerSystems.length,
-        risksCount: 0,
-        domainColor: config.color,
-        layer: layerName,
-      },
-    });
-
-    currentY += LAYER_LABEL_HEIGHT;
-
-    // Run dagre layout for this layer's systems
     const graph = new dagre.graphlib.Graph();
     graph.setDefaultEdgeLabel(() => ({}));
     graph.setGraph({
@@ -168,22 +153,84 @@ export function buildLayeredGraphData(
 
     dagre.layout(graph);
 
-    let maxLayerHeight = 0;
+    const positions = new Map<string, { x: number; y: number }>();
+    let maxX = 0;
+    let maxY = 0;
 
     for (const system of layerSystems) {
-      const nodePos = graph.node(system.id) as dagre.Node | undefined;
-      const x = nodePos?.x ?? 0;
-      const y = nodePos?.y ?? 0;
+      const pos = graph.node(system.id) as dagre.Node | undefined;
+      const x = (pos?.x ?? 0) - NODE_WIDTH / 2;
+      const y = (pos?.y ?? 0) - NODE_HEIGHT / 2;
+      positions.set(system.id, { x, y });
+      maxX = Math.max(maxX, x + NODE_WIDTH);
+      maxY = Math.max(maxY, y + NODE_HEIGHT);
+    }
 
+    layerInternalPositions.set(layerName, positions);
+    layerContentSizes.set(layerName, {
+      width: maxX + GROUP_PADDING_X * 2,
+      height: maxY + GROUP_PADDING_Y + GROUP_PADDING_BOTTOM,
+    });
+  }
+
+  // ── Phase 2: Stack layers vertically ───────────────────
+  // Find the widest layer to center-align all groups
+  let maxGroupWidth = 0;
+  for (const size of layerContentSizes.values()) {
+    maxGroupWidth = Math.max(maxGroupWidth, size.width);
+  }
+
+  const allNodes: GraphNode[] = [];
+  let currentY = 0;
+
+  for (const layerName of LAYER_ORDER) {
+    const layerSystems = layerGroups[layerName];
+    if (layerSystems.length === 0) continue;
+
+    const config = LAYER_CONFIG[layerName];
+    const size = layerContentSizes.get(layerName)!;
+    const positions = layerInternalPositions.get(layerName)!;
+
+    // Use the widest layer width for all groups so they align
+    const groupWidth = Math.max(size.width, maxGroupWidth);
+    const groupHeight = size.height;
+    const groupX = 0;
+    const groupY = currentY;
+    const groupId = `layer-group-${layerName}`;
+
+    // Create group container
+    allNodes.push({
+      id: groupId,
+      type: "layerGroup",
+      position: { x: groupX, y: groupY },
+      data: {
+        label: config.label,
+        domain: "",
+        language: null,
+        framework: null,
+        servicesCount: layerSystems.length,
+        risksCount: 0,
+        domainColor: config.color,
+        width: groupWidth,
+        height: groupHeight,
+        layer: layerName,
+      },
+    });
+
+    // Add child nodes with relative positions inside the group
+    for (const system of layerSystems) {
+      const relativePos = positions.get(system.id)!;
       const layer = layers.get(system.id) ?? "BUSINESS_LOGIC";
 
       allNodes.push({
         id: system.id,
         type: "system",
         position: {
-          x: x - NODE_WIDTH / 2,
-          y: currentY + (y - NODE_HEIGHT / 2),
+          x: relativePos.x + GROUP_PADDING_X,
+          y: relativePos.y + GROUP_PADDING_Y,
         },
+        parentId: groupId,
+        extent: "parent" as const,
         data: {
           label: system.name,
           domain: system.domain.name,
@@ -194,12 +241,10 @@ export function buildLayeredGraphData(
           domainColor: getDomainColor(system.domain.name),
           layer,
         },
-      });
-
-      maxLayerHeight = Math.max(maxLayerHeight, y + NODE_HEIGHT / 2);
+      } as GraphNode);
     }
 
-    currentY += maxLayerHeight + LAYER_GAP;
+    currentY += groupHeight + LAYER_GAP;
   }
 
   return { nodes: allNodes, edges };

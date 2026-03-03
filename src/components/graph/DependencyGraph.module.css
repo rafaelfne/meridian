@@ -4,6 +4,15 @@
   min-height: 0;
 }
 
+/* Animated layout transition — applied temporarily when node structure changes */
+.animatingLayout :global(.react-flow__node) {
+  transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.animatingLayout :global(.react-flow__edge) {
+  transition: opacity 0.3s ease;
+}
+
 .empty {
   display: flex;
   flex-direction: column;

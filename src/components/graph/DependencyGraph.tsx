@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef, useLayoutEffect } from "react";
 import {
   ReactFlow,
   MiniMap,
@@ -21,6 +21,7 @@ import { DependencyEdge } from "./DependencyEdge";
 import { LayerLabelNode } from "./LayerLabelNode";
 import { DomainGroupNode } from "./DomainGroupNode";
 import { CollapsedDomainNode } from "./CollapsedDomainNode";
+import { LayerGroupNode } from "./LayerGroupNode";
 import { GraphHoverContext } from "./GraphHoverContext";
 import styles from "./DependencyGraph.module.css";
 
@@ -29,6 +30,7 @@ const nodeTypes = {
   layerLabel: LayerLabelNode,
   domainGroup: DomainGroupNode,
   collapsedDomain: CollapsedDomainNode,
+  layerGroup: LayerGroupNode,
 };
 const edgeTypes = { smoothstep: DependencyEdge };
 
@@ -128,6 +130,27 @@ export function DependencyGraph({
     [hoveredEdgeId, highlightedSystemId, focusedNodeId, onHighlight, edgeOffsets, setEdgeOffset],
   );
 
+  // ── Animated layout transition ───────────────────────
+  // When the node set changes (e.g. clustering toggle), enable a CSS
+  // transition on React Flow's internal node transform for 400ms.
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const prevNodeKeyRef = useRef<string>("");
+
+  useLayoutEffect(() => {
+    // Build a lightweight fingerprint of the current node ids + types
+    const key = data.nodes.map((n) => `${n.id}:${n.type}`).join(",");
+    const changed = prevNodeKeyRef.current !== "" && prevNodeKeyRef.current !== key;
+    prevNodeKeyRef.current = key;
+
+    if (changed && wrapperRef.current) {
+      wrapperRef.current.classList.add(styles.animatingLayout!);
+      const timer = setTimeout(() => {
+        wrapperRef.current?.classList.remove(styles.animatingLayout!);
+      }, 450);
+      return () => clearTimeout(timer);
+    }
+  }, [data.nodes]);
+
   // Sync nodes/edges when data changes (filtering) or highlighting changes
   useEffect(() => {
     if (highlightedSystemId) {
@@ -207,7 +230,7 @@ export function DependencyGraph({
   }
 
   return (
-    <div className={styles.wrapper}>
+    <div ref={wrapperRef} className={styles.wrapper}>
       <GraphHoverContext.Provider value={hoverContextValue}>
         <ReactFlow
           colorMode={isDark ? "dark" : "light"}
