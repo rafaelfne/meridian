@@ -34,17 +34,39 @@ export function DependencyEdge({
   // Combine auto parallel offset with user-dragged offset
   const userOffset = edgeOffsets[id] ?? 0;
   const offset = (data.parallelOffset ?? 0) + userOffset;
-  const adjustedSourceY = sourceY + offset;
-  const adjustedTargetY = targetY + offset;
 
-  const [edgePath, labelX, labelY] = getSmoothStepPath({
-    sourceX,
-    sourceY: adjustedSourceY,
-    targetX,
-    targetY: adjustedTargetY,
-    sourcePosition,
-    targetPosition,
-  });
+  let edgePath: string;
+  let labelX: number;
+  let labelY: number;
+
+  if (Math.abs(offset) < 0.5) {
+    // No offset — standard smooth step, endpoints at handles
+    const [path, lx, ly] = getSmoothStepPath({
+      sourceX,
+      sourceY,
+      targetX,
+      targetY,
+      sourcePosition,
+      targetPosition,
+    });
+    edgePath = path;
+    labelX = lx;
+    labelY = ly;
+  } else {
+    // Parallel / dragged edges — cubic bezier that starts and ends at the
+    // actual handle positions but curves through the offset midpoint.
+    // This keeps arrow tips connected to the nodes.
+    const dx = Math.abs(targetX - sourceX);
+    const controlDist = Math.max(dx * 0.3, 50);
+    edgePath = [
+      `M ${sourceX},${sourceY}`,
+      `C ${sourceX + controlDist},${sourceY + offset}`,
+      `${targetX - controlDist},${targetY + offset}`,
+      `${targetX},${targetY}`,
+    ].join(" ");
+    labelX = (sourceX + targetX) / 2;
+    labelY = (sourceY + targetY) / 2 + offset * 0.6;
+  }
 
   const strokeColor = (style?.stroke as string) ?? "#94a3b8";
   const baseWidth = (style?.strokeWidth as number) ?? 2;
@@ -71,7 +93,7 @@ export function DependencyEdge({
 
   // Midpoint in graph coordinates (label position)
   const midX = labelX;
-  const midY = labelY + offset;
+  const midY = labelY;
 
   return (
     <>
@@ -122,7 +144,7 @@ export function DependencyEdge({
         <div
           style={{
             position: "absolute",
-            transform: `translate(-50%, -50%) translate(${labelX}px,${labelY + offset}px)`,
+            transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
             pointerEvents: "all",
             fontSize: "0.625rem",
             fontWeight: 500,
