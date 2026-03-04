@@ -1,5 +1,5 @@
 import dagre from "dagre";
-import type { GraphData, GraphNode, GraphEdge } from "../types";
+import type { GraphData, GraphNode } from "../types";
 
 const GROUP_PADDING_X = 40;
 const GROUP_PADDING_Y = 60;
@@ -7,6 +7,13 @@ const GROUP_PADDING_BOTTOM = 30;
 
 const NODE_WIDTH = 250;
 const NODE_HEIGHT = 100;
+const SERVICE_PORT_HEIGHT = 24;
+
+/** Calculate node height based on the number of targeted services. */
+function getNodeHeight(targetedServicesCount: number): number {
+  if (targetedServicesCount === 0) return NODE_HEIGHT;
+  return NODE_HEIGHT + targetedServicesCount * SERVICE_PORT_HEIGHT;
+}
 
 /** Gap between nodes inside a cluster */
 const INNER_NODE_SEP = 40;
@@ -71,7 +78,8 @@ export function buildClusteredGraphData(data: GraphData): GraphData {
     });
 
     for (const node of nodes) {
-      g.setNode(node.id, { width: NODE_WIDTH, height: NODE_HEIGHT });
+      const height = getNodeHeight(node.data.services?.length ?? 0);
+      g.setNode(node.id, { width: NODE_WIDTH, height });
     }
     for (const edge of internalEdges) {
       g.setEdge(edge.source, edge.target);
@@ -85,12 +93,13 @@ export function buildClusteredGraphData(data: GraphData): GraphData {
     let maxY = 0;
 
     for (const node of nodes) {
+      const height = getNodeHeight(node.data.services?.length ?? 0);
       const pos = g.node(node.id) as dagre.Node | undefined;
       const x = (pos?.x ?? 0) - NODE_WIDTH / 2;
-      const y = (pos?.y ?? 0) - NODE_HEIGHT / 2;
+      const y = (pos?.y ?? 0) - height / 2;
       positions.set(node.id, { x, y });
       maxX = Math.max(maxX, x + NODE_WIDTH);
-      maxY = Math.max(maxY, y + NODE_HEIGHT);
+      maxY = Math.max(maxY, y + height);
     }
 
     intraPositions.set(domain, positions);

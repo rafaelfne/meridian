@@ -275,4 +275,111 @@ describe("buildGraphData", () => {
     expect(typeof result.nodes[0]!.position.x).toBe("number");
     expect(typeof result.nodes[0]!.position.y).toBe("number");
   });
+
+  it("only includes services targeted by edges (not all services)", () => {
+    const services = [
+      { slug: "api-orders", name: "API Orders", type: "API" },
+      { slug: "worker-sync", name: "Worker Sync", type: "WORKER" },
+    ];
+    const systems = [
+      makeSystem({ id: "sys-1" }),
+      makeSystem({ id: "sys-2", slug: "sys-2", services }),
+    ];
+    // Edge targets only api-orders, not worker-sync
+    const dependencies = [
+      makeDependency({
+        id: "dep-1",
+        sourceId: "sys-1",
+        targetId: "sys-2",
+        metadata: { targetServiceSlug: "api-orders" },
+      }),
+    ];
+
+    const result = buildGraphData(systems, dependencies);
+
+    const targetNode = result.nodes.find((n) => n.id === "sys-2")!;
+    expect(targetNode.data.services).toEqual([
+      { slug: "api-orders", name: "API Orders", type: "API" },
+    ]);
+  });
+
+  it("omits services when no edge targets them", () => {
+    const services = [
+      { slug: "api-orders", name: "API Orders", type: "API" },
+      { slug: "worker-sync", name: "Worker Sync", type: "WORKER" },
+    ];
+    const systems = [makeSystem({ id: "sys-1", services })];
+
+    const result = buildGraphData(systems, []);
+
+    expect(result.nodes).toHaveLength(1);
+    expect(result.nodes[0]!.data.services).toBeUndefined();
+  });
+
+  it("sets targetHandle when dependency metadata has targetServiceSlug", () => {
+    const systems = [
+      makeSystem({ id: "sys-1" }),
+      makeSystem({ id: "sys-2", slug: "sys-2" }),
+    ];
+    const dependencies = [
+      makeDependency({
+        id: "dep-1",
+        sourceId: "sys-1",
+        targetId: "sys-2",
+        metadata: { url: "https://example.com", targetServiceSlug: "api-investments" },
+      }),
+    ];
+
+    const result = buildGraphData(systems, dependencies);
+
+    expect(result.edges).toHaveLength(1);
+    expect(result.edges[0]!.targetHandle).toBe("svc-api-investments");
+    expect(result.edges[0]!.data.targetServiceSlug).toBe("api-investments");
+  });
+
+  it("does not set targetHandle when metadata has no targetServiceSlug", () => {
+    const systems = [
+      makeSystem({ id: "sys-1" }),
+      makeSystem({ id: "sys-2", slug: "sys-2" }),
+    ];
+    const dependencies = [
+      makeDependency({
+        id: "dep-1",
+        sourceId: "sys-1",
+        targetId: "sys-2",
+        metadata: { url: "https://example.com" },
+      }),
+    ];
+
+    const result = buildGraphData(systems, dependencies);
+
+    expect(result.edges).toHaveLength(1);
+    expect(result.edges[0]!.targetHandle).toBeUndefined();
+    expect(result.edges[0]!.data.targetServiceSlug).toBeUndefined();
+  });
+
+  it("computes taller layout for nodes with targeted services", () => {
+    const services = [
+      { slug: "api-a", name: "API A", type: "API" },
+      { slug: "api-b", name: "API B", type: "API" },
+      { slug: "worker-c", name: "Worker C", type: "WORKER" },
+    ];
+    const systems = [
+      makeSystem({ id: "sys-1" }),
+      makeSystem({ id: "sys-2", slug: "sys-2", services, _count: { services: 3, risks: 0 } }),
+    ];
+    const dependencies = [
+      makeDependency({ id: "dep-1", sourceId: "sys-1", targetId: "sys-2", metadata: { targetServiceSlug: "api-a" } }),
+      makeDependency({ id: "dep-2", sourceId: "sys-1", targetId: "sys-2", type: "KAFKA_TOPIC", metadata: { targetServiceSlug: "worker-c" } }),
+    ];
+
+    const result = buildGraphData(systems, dependencies);
+
+    // sys-2 should have 2 targeted services
+    const targetNode = result.nodes.find((n) => n.id === "sys-2")!;
+    expect(targetNode.data.services).toHaveLength(2);
+    expect(result.nodes).toHaveLength(2);
+    expect(typeof result.nodes[0]!.position.y).toBe("number");
+    expect(typeof result.nodes[1]!.position.y).toBe("number");
+  });
 });

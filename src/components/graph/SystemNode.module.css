@@ -11,7 +11,7 @@
 
 .node {
   width: 250px;
-  height: 100px;
+  min-height: 100px;
   padding: 0.625rem 0.75rem;
   border: 1.5px solid var(--node-domain-color, var(--border));
   border-radius: var(--radius-md);
@@ -26,6 +26,10 @@
     box-shadow 0.25s ease,
     border-color 0.2s ease,
     background-color 0.2s ease;
+}
+
+.withPorts {
+  height: auto;
 }
 
 .node:hover {
@@ -135,4 +139,57 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* ── Service Ports ─────────────────────────── */
+
+.servicePorts {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-top: 0.375rem;
+  padding-top: 0.375rem;
+  border-top: 1px solid oklch(from var(--border) l c h / 50%);
+}
+
+.servicePort {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  height: 1.25rem;
+  padding-left: 0.375rem;
+}
+
+.serviceHandle {
+  width: 6px !important;
+  height: 6px !important;
+  min-width: 6px !important;
+  min-height: 6px !important;
+  background: var(--node-domain-color, var(--muted-foreground)) !important;
+  border: 1px solid var(--card) !important;
+  left: -0.75rem !important;
+}
+
+.serviceTypeTag {
+  flex-shrink: 0;
+  padding: 0.0625rem 0.25rem;
+  font-size: 0.5625rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+  background-color: oklch(from var(--muted-foreground) l c h / 10%);
+  border-radius: var(--radius-sm);
+}
+
+.serviceName {
+  font-size: 0.625rem;
+  line-height: 1.2;
+  color: var(--foreground);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 }

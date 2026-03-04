@@ -195,6 +195,69 @@ describe("resolveHttpDependencies", () => {
       expect(getSystemByServiceSlug).toHaveBeenCalledWith("api-investments");
     });
 
+    it("preserves targetServiceSlug in metadata when resolved via service slug", async () => {
+      const getAllIntegrations = vi.fn().mockResolvedValue([
+        buildIntegration({ targetSystem: "api-investments", url: "https://core.local/investments" }),
+      ]);
+      const getSystemBySlug = vi.fn().mockResolvedValue(null);
+      const getSystemByServiceSlug = vi
+        .fn()
+        .mockResolvedValue(buildSystem({ id: "monolith-id", slug: "core", name: "Core" }));
+
+      const result = await resolveHttpDependencies(
+        getAllIntegrations,
+        getSystemBySlug,
+        getSystemByServiceSlug,
+      );
+
+      expect(result.resolved).toHaveLength(1);
+      expect(result.resolved[0]!.metadata).toEqual({
+        url: "https://core.local/investments",
+        targetServiceSlug: "api-investments",
+      });
+    });
+
+    it("sets only targetServiceSlug in metadata when no url and resolved via service slug", async () => {
+      const getAllIntegrations = vi.fn().mockResolvedValue([
+        buildIntegration({ targetSystem: "api-investments", url: null }),
+      ]);
+      const getSystemBySlug = vi.fn().mockResolvedValue(null);
+      const getSystemByServiceSlug = vi
+        .fn()
+        .mockResolvedValue(buildSystem({ id: "monolith-id", slug: "core", name: "Core" }));
+
+      const result = await resolveHttpDependencies(
+        getAllIntegrations,
+        getSystemBySlug,
+        getSystemByServiceSlug,
+      );
+
+      expect(result.resolved).toHaveLength(1);
+      expect(result.resolved[0]!.metadata).toEqual({
+        targetServiceSlug: "api-investments",
+      });
+    });
+
+    it("does NOT set targetServiceSlug when resolved via direct system slug", async () => {
+      const getAllIntegrations = vi.fn().mockResolvedValue([
+        buildIntegration({ targetSystem: "core", url: "https://core.local" }),
+      ]);
+      const getSystemBySlug = vi
+        .fn()
+        .mockResolvedValue(buildSystem({ id: "system-match", slug: "core" }));
+      const getSystemByServiceSlug = vi.fn();
+
+      const result = await resolveHttpDependencies(
+        getAllIntegrations,
+        getSystemBySlug,
+        getSystemByServiceSlug,
+      );
+
+      expect(result.resolved).toHaveLength(1);
+      expect(result.resolved[0]!.metadata).toEqual({ url: "https://core.local" });
+      expect(result.resolved[0]!.metadata).not.toHaveProperty("targetServiceSlug");
+    });
+
     it("prefers system slug over service slug", async () => {
       const getAllIntegrations = vi.fn().mockResolvedValue([
         buildIntegration({ targetSystem: "core" }),

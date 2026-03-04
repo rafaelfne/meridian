@@ -41,10 +41,12 @@ export async function resolveHttpDependencies(
 
     // 1. Try direct system slug match
     let target = await getSystemBySlug(integration.targetSystem);
+    let matchedViaServiceSlug = false;
 
     // 2. Fallback: try matching a service slug → owning system
     if (!target && getSystemByServiceSlug) {
       target = await getSystemByServiceSlug(integration.targetSystem);
+      if (target) matchedViaServiceSlug = true;
     }
 
     if (!target) {
@@ -58,12 +60,16 @@ export async function resolveHttpDependencies(
       continue;
     }
 
+    const metadata: Record<string, unknown> = {};
+    if (integration.url) metadata.url = integration.url;
+    if (matchedViaServiceSlug) metadata.targetServiceSlug = integration.targetSystem;
+
     resolved.push({
       sourceId: integration.systemId,
       targetId: target.id,
       type: HTTP_API,
       label: integration.name,
-      metadata: integration.url ? { url: integration.url } : null,
+      metadata: Object.keys(metadata).length > 0 ? metadata : null,
     });
   }
 

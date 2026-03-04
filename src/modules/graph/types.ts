@@ -82,6 +82,13 @@ export interface ResolveHttpDepsResult {
 /** Supported layer names for topological layout. */
 export type LayerName = "EDGE" | "BUSINESS_LOGIC" | "DATA_INFRA";
 
+/** Lightweight service info attached to graph nodes. */
+export interface GraphServiceInfo {
+  slug: string;
+  name: string;
+  type: string;
+}
+
 /** Data payload for a system node rendered in React Flow. */
 export interface GraphNodeData extends Record<string, unknown> {
   label: string;
@@ -93,6 +100,8 @@ export interface GraphNodeData extends Record<string, unknown> {
   risksCount: number;
   domainColor: string;
   layer?: LayerName;
+  /** Services belonging to this system (for sub-service port rendering). */
+  services?: GraphServiceInfo[];
 }
 
 /** Data payload for a dependency edge rendered in React Flow. */
@@ -104,6 +113,8 @@ export interface GraphEdgeData extends Record<string, unknown> {
   particleCount?: number;
   /** Vertical offset (px) to separate parallel edges sharing the same node pair. */
   parallelOffset?: number;
+  /** When the dependency targets a specific service inside a monolith. */
+  targetServiceSlug?: string;
 }
 
 /** A React Flow node representing a system. */
@@ -119,6 +130,8 @@ export interface GraphEdge {
   id: string;
   source: string;
   target: string;
+  sourceHandle?: string;
+  targetHandle?: string;
   type: string;
   animated: boolean;
   style: { stroke: string; strokeWidth: number };
@@ -147,6 +160,7 @@ export interface SystemWithCounts {
   layer?: LayerName | null;
   domain: { name: string };
   _count: { services: number; risks: number };
+  services?: { slug: string; name: string; type: string }[];
 }
 
 /** Raw dependency data as received from the data source. */
@@ -156,4 +170,6 @@ export interface DependencyRecord {
   targetId: string;
   type: string;
   label: string | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  metadata?: any;
 }

@@ -54,6 +54,7 @@ export async function GET(
           framework: true,
           domain: { select: { name: true } },
           _count: { select: { services: true, risks: true } },
+          services: { select: { slug: true, name: true, type: true } },
         },
       }),
       prisma.dependency.findMany({
@@ -64,6 +65,7 @@ export async function GET(
           targetId: true,
           type: true,
           label: true,
+          metadata: true,
         },
       }),
     ]);

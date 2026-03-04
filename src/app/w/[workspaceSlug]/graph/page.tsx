@@ -26,6 +26,7 @@ export default async function GraphPage({
         layer: true,
         domain: { select: { name: true } },
         _count: { select: { services: true, risks: true } },
+        services: { select: { slug: true, name: true, type: true } },
       },
     }),
     prisma.dependency.findMany({
@@ -36,6 +37,7 @@ export default async function GraphPage({
         targetId: true,
         type: true,
         label: true,
+        metadata: true,
       },
     }),
     prisma.graphSnapshot.findMany({

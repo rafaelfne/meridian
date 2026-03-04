@@ -14,8 +14,15 @@ import {
 
 const NODE_WIDTH = 250;
 const NODE_HEIGHT = 100;
+const SERVICE_PORT_HEIGHT = 24;
 const HORIZONTAL_SEP = 256;
 const VERTICAL_SEP = 144;
+
+/** Calculate node height based on the number of targeted services. */
+function getNodeHeight(targetedServicesCount: number): number {
+  if (targetedServicesCount === 0) return NODE_HEIGHT;
+  return NODE_HEIGHT + targetedServicesCount * SERVICE_PORT_HEIGHT;
+}
 
 /**
  * Deterministic color palette for domain names.
@@ -79,33 +86,58 @@ export function buildGraphData(
   // Build a set of valid system IDs for filtering edges
   const systemIds = new Set(systems.map((s) => s.id));
 
-  // Build nodes
-  const nodes: GraphNode[] = systems.map((system) => ({
-    id: system.id,
-    type: "system",
-    position: { x: 0, y: 0 },
-    data: {
-      label: system.name,
-      slug: system.slug,
-      domain: system.domain.name,
-      language: system.language,
-      framework: system.framework,
-      servicesCount: system._count.services,
-      risksCount: system._count.risks,
-      domainColor: getDomainColor(system.domain.name),
-      layer: system.layer ?? undefined,
-    },
-  }));
+  // Collect which services are targeted by edges (per target system)
+  const targetedServiceSlugs = new Map<string, Set<string>>();
+  for (const dep of dependencies) {
+    const slug = (dep.metadata as Record<string, unknown> | null)?.targetServiceSlug as string | undefined;
+    if (slug && systemIds.has(dep.targetId)) {
+      let slugs = targetedServiceSlugs.get(dep.targetId);
+      if (!slugs) {
+        slugs = new Set();
+        targetedServiceSlugs.set(dep.targetId, slugs);
+      }
+      slugs.add(slug);
+    }
+  }
+
+  // Build nodes — only include services that are targeted by edges
+  const nodes: GraphNode[] = systems.map((system) => {
+    const targeted = targetedServiceSlugs.get(system.id);
+    const filteredServices = targeted && system.services
+      ? system.services.filter((s) => targeted.has(s.slug))
+      : undefined;
+
+    return {
+      id: system.id,
+      type: "system",
+      position: { x: 0, y: 0 },
+      data: {
+        label: system.name,
+        slug: system.slug,
+        domain: system.domain.name,
+        language: system.language,
+        framework: system.framework,
+        servicesCount: system._count.services,
+        risksCount: system._count.risks,
+        domainColor: getDomainColor(system.domain.name),
+        layer: system.layer ?? undefined,
+        services: filteredServices?.length ? filteredServices : undefined,
+      },
+    };
+  });
 
   // Build edges (only include edges where both source and target exist in the filtered systems)
   const rawEdges: GraphEdge[] = dependencies
     .filter((dep) => systemIds.has(dep.sourceId) && systemIds.has(dep.targetId))
     .map((dep) => {
       const style = getEdgeStyle(dep.type);
+      const targetServiceSlug =
+        (dep.metadata as Record<string, unknown> | null)?.targetServiceSlug as string | undefined;
       return {
         id: dep.id,
         source: dep.sourceId,
         target: dep.targetId,
+        ...(targetServiceSlug ? { targetHandle: `svc-${targetServiceSlug}` } : {}),
         type: "smoothstep",
         animated: style.animated,
         style: { stroke: style.stroke, strokeWidth: 2 },
@@ -119,6 +151,7 @@ export function buildGraphData(
           type: dep.type,
           label: resolveEdgeLabel(dep.type, dep.label),
           showParticles: style.animated,
+          ...(targetServiceSlug ? { targetServiceSlug } : {}),
         },
       };
     });
@@ -136,7 +169,8 @@ export function buildGraphData(
   });
 
   for (const node of nodes) {
-    graph.setNode(node.id, { width: NODE_WIDTH, height: NODE_HEIGHT });
+    const height = getNodeHeight(node.data.services?.length ?? 0);
+    graph.setNode(node.id, { width: NODE_WIDTH, height });
   }
 
   for (const edge of edges) {
@@ -147,6 +181,7 @@ export function buildGraphData(
 
   // Apply calculated positions to nodes
   const layoutNodes: GraphNode[] = nodes.map((node) => {
+    const height = getNodeHeight(node.data.services?.length ?? 0);
     const nodeWithPosition = graph.node(node.id) as
       | dagre.Node
       | undefined;
@@ -157,7 +192,7 @@ export function buildGraphData(
       ...node,
       position: {
         x: x - NODE_WIDTH / 2,
-        y: y - NODE_HEIGHT / 2,
+        y: y - height / 2,
       },
     };
   });

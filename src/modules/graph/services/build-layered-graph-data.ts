@@ -17,8 +17,15 @@ import { inferLayers } from "./infer-layers";
 
 const NODE_WIDTH = 250;
 const NODE_HEIGHT = 100;
+const SERVICE_PORT_HEIGHT = 24;
 const HORIZONTAL_SEP = 256;
 const VERTICAL_SEP = 144;
+
+/** Calculate node height based on the number of targeted services. */
+function getNodeHeight(targetedServicesCount: number): number {
+  if (targetedServicesCount === 0) return NODE_HEIGHT;
+  return NODE_HEIGHT + targetedServicesCount * SERVICE_PORT_HEIGHT;
+}
 
 /** Padding inside layer group containers */
 const GROUP_PADDING_X = 40;
@@ -82,6 +89,20 @@ export function buildLayeredGraphData(
   const systemIds = new Set(systems.map((s) => s.id));
   const layers = inferLayers(systems, dependencies);
 
+  // Collect which services are targeted by edges (per target system)
+  const targetedServiceSlugs = new Map<string, Set<string>>();
+  for (const dep of dependencies) {
+    const slug = (dep.metadata as Record<string, unknown> | null)?.targetServiceSlug as string | undefined;
+    if (slug && systemIds.has(dep.targetId)) {
+      let slugs = targetedServiceSlugs.get(dep.targetId);
+      if (!slugs) {
+        slugs = new Set();
+        targetedServiceSlugs.set(dep.targetId, slugs);
+      }
+      slugs.add(slug);
+    }
+  }
+
   // Group systems by layer
   const layerGroups: Record<LayerName, SystemWithCounts[]> = {
     EDGE: [],
@@ -99,10 +120,13 @@ export function buildLayeredGraphData(
     .filter((dep) => systemIds.has(dep.sourceId) && systemIds.has(dep.targetId))
     .map((dep) => {
       const style = getEdgeStyle(dep.type);
+      const targetServiceSlug =
+        (dep.metadata as Record<string, unknown> | null)?.targetServiceSlug as string | undefined;
       return {
         id: dep.id,
         source: dep.sourceId,
         target: dep.targetId,
+        ...(targetServiceSlug ? { targetHandle: `svc-${targetServiceSlug}` } : {}),
         type: "smoothstep",
         animated: style.animated,
         style: { stroke: style.stroke, strokeWidth: 2 },
@@ -116,6 +140,7 @@ export function buildLayeredGraphData(
           type: dep.type,
           label: resolveEdgeLabel(dep.type, dep.label),
           showParticles: style.animated,
+          ...(targetServiceSlug ? { targetServiceSlug } : {}),
         },
       };
     });
@@ -140,7 +165,12 @@ export function buildLayeredGraphData(
     });
 
     for (const system of layerSystems) {
-      graph.setNode(system.id, { width: NODE_WIDTH, height: NODE_HEIGHT });
+      const targeted = targetedServiceSlugs.get(system.id);
+      const targetedCount = targeted && system.services
+        ? system.services.filter((s) => targeted.has(s.slug)).length
+        : 0;
+      const height = getNodeHeight(targetedCount);
+      graph.setNode(system.id, { width: NODE_WIDTH, height });
     }
 
     // Only add edges that are within this layer
@@ -158,12 +188,17 @@ export function buildLayeredGraphData(
     let maxY = 0;
 
     for (const system of layerSystems) {
+      const targeted = targetedServiceSlugs.get(system.id);
+      const targetedCount = targeted && system.services
+        ? system.services.filter((s) => targeted.has(s.slug)).length
+        : 0;
+      const h = getNodeHeight(targetedCount);
       const pos = graph.node(system.id) as dagre.Node | undefined;
       const x = (pos?.x ?? 0) - NODE_WIDTH / 2;
-      const y = (pos?.y ?? 0) - NODE_HEIGHT / 2;
+      const y = (pos?.y ?? 0) - h / 2;
       positions.set(system.id, { x, y });
       maxX = Math.max(maxX, x + NODE_WIDTH);
-      maxY = Math.max(maxY, y + NODE_HEIGHT);
+      maxY = Math.max(maxY, y + h);
     }
 
     layerInternalPositions.set(layerName, positions);
@@ -222,6 +257,10 @@ export function buildLayeredGraphData(
     for (const system of layerSystems) {
       const relativePos = positions.get(system.id)!;
       const layer = layers.get(system.id) ?? "BUSINESS_LOGIC";
+      const targeted = targetedServiceSlugs.get(system.id);
+      const filteredServices = targeted && system.services
+        ? system.services.filter((s) => targeted.has(s.slug))
+        : undefined;
 
       allNodes.push({
         id: system.id,
@@ -242,6 +281,7 @@ export function buildLayeredGraphData(
           risksCount: system._count.risks,
           domainColor: getDomainColor(system.domain.name),
           layer,
+          services: filteredServices?.length ? filteredServices : undefined,
         },
       } as GraphNode);
     }
