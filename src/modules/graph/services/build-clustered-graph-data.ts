@@ -13,7 +13,7 @@ const INNER_NODE_SEP = 40;
 const INNER_RANK_SEP = 60;
 
 /** Gap between cluster groups in the top-level layout */
-const CLUSTER_SEP = 120;
+const CLUSTER_SEP = 60;
 
 /**
  * Wraps system nodes in domain group nodes using a two-phase layout:
