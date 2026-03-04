@@ -21,6 +21,7 @@ function makeNode(
     position: { x: 0, y: 0 },
     data: {
       label: overrides.label ?? id,
+      slug: overrides.slug ?? id,
       domain: overrides.domain ?? "default",
       language: overrides.language ?? "TypeScript",
       framework: overrides.framework ?? null,

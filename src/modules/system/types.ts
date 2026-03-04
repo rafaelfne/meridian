@@ -1,6 +1,7 @@
 export interface SystemDetailService {
   id: string;
   name: string;
+  slug: string;
   type: "API" | "WORKER" | "CRONJOB" | "BACKGROUND_SERVICE";
 }
 
@@ -84,6 +85,13 @@ export interface SystemDetail {
   dependedBy: SystemDetailDependency[];
 }
 
+export interface ServiceListItem {
+  id: string;
+  name: string;
+  slug: string;
+  type: "API" | "WORKER" | "CRONJOB" | "BACKGROUND_SERVICE";
+}
+
 export interface SystemListItem {
   id: string;
   name: string;
@@ -97,4 +105,8 @@ export interface SystemListItem {
     integrations: number;
     documents: number;
   };
+}
+
+export interface SystemListItemWithServices extends SystemListItem {
+  services: ServiceListItem[];
 }

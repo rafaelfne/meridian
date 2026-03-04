@@ -31,7 +31,7 @@ export async function getSystemDetailAction(
         layer: true,
         domain: { select: { name: true } },
         services: {
-          select: { id: true, name: true, type: true },
+          select: { id: true, name: true, slug: true, type: true },
         },
         databases: {
           select: {

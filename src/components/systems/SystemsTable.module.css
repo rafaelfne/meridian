@@ -73,3 +73,73 @@
   color: var(--foreground);
   text-decoration: underline;
 }
+
+/* Expand/collapse */
+.expandHead {
+  width: 2rem;
+}
+
+.expandCell {
+  width: 2rem;
+  text-align: center;
+  color: var(--muted-foreground);
+}
+
+/* System row states */
+.systemRow {
+  cursor: pointer;
+}
+
+.systemRowExpanded {
+  background-color: var(--muted);
+}
+
+/* Nested services row */
+.servicesRow {
+  background-color: var(--muted);
+}
+
+.servicesRow:hover {
+  background-color: var(--muted);
+}
+
+.servicesCell {
+  padding: 0 1rem 0.75rem 3rem;
+}
+
+.servicesContainer {
+  border-left: 2px solid var(--border);
+  padding-left: 1rem;
+}
+
+.serviceRow {
+  font-size: 0.8125rem;
+}
+
+/* Slug input */
+.slugInput {
+  height: 1.75rem;
+  font-size: 0.8125rem;
+  max-width: 14rem;
+  font-family: monospace;
+}
+
+.slugInputDirty {
+  border-color: var(--accent);
+  background-color: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+
+/* Confirm bar */
+.confirmBar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding: 0.75rem 0;
+  border-top: 1px solid var(--border);
+}
+
+.changesSummary {
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+}

@@ -191,8 +191,8 @@ const mockSystemDetail: SystemDetail = {
   layer: null,
   domain: { name: "Identity" },
   services: [
-    { id: "svc-1", name: "Auth API", type: "API" as const },
-    { id: "svc-2", name: "Token Worker", type: "WORKER" as const },
+    { id: "svc-1", name: "Auth API", slug: "auth-api", type: "API" as const },
+    { id: "svc-2", name: "Token Worker", slug: "token-worker", type: "WORKER" as const },
   ],
   databases: [
     {
@@ -412,9 +412,9 @@ describe("SystemDetailPanel", () => {
 
     // Services items should be visible
     await waitFor(() => {
-      expect(screen.getByText("Auth API")).toBeInTheDocument();
+      expect(screen.getByText("auth-api")).toBeInTheDocument();
     });
-    expect(screen.getByText("Token Worker")).toBeInTheDocument();
+    expect(screen.getByText("token-worker")).toBeInTheDocument();
 
     // Type badges
     expect(screen.getByText("API")).toBeInTheDocument();

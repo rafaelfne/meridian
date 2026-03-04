@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { prisma } from "@/lib/prisma";
 import { requireWorkspaceAccess } from "@/lib/workspace-context";
-import type { SystemListItem } from "@/modules/system/types";
+import type { SystemListItemWithServices } from "@/modules/system/types";
 import { SystemsTable } from "@/components/systems/SystemsTable";
 
 export default async function SystemsPage({
@@ -24,6 +24,10 @@ export default async function SystemsPage({
         language: true,
         framework: true,
         domain: { select: { id: true, name: true } },
+        services: {
+          select: { id: true, name: true, slug: true, type: true },
+          orderBy: { name: "asc" },
+        },
         _count: {
           select: {
             services: true,
@@ -33,7 +37,7 @@ export default async function SystemsPage({
           },
         },
       },
-    }) as Promise<SystemListItem[]>,
+    }) as Promise<SystemListItemWithServices[]>,
     prisma.domain.findMany({
       where: { workspaceId: ctx.workspaceId },
       orderBy: { name: "asc" },

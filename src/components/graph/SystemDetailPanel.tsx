@@ -484,7 +484,7 @@ export function SystemDetailPanel({
                     <div className={styles.itemList}>
                       {detail.services.map((svc) => (
                         <div key={svc.id} className={styles.item}>
-                          <div className={styles.itemNameMono}>{svc.name}</div>
+                          <div className={styles.itemNameMono}>{svc.slug}</div>
                           <ServiceTypeTag type={svc.type} />
                         </div>
                       ))}

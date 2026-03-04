@@ -205,6 +205,7 @@ export function buildLayeredGraphData(
       position: { x: groupX, y: groupY },
       data: {
         label: config.label,
+        slug: layerName,
         domain: "",
         language: null,
         framework: null,
@@ -233,6 +234,7 @@ export function buildLayeredGraphData(
         extent: "parent" as const,
         data: {
           label: system.name,
+          slug: system.slug,
           domain: system.domain.name,
           language: system.language,
           framework: system.framework,

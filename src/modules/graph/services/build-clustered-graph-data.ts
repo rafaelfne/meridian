@@ -162,6 +162,7 @@ export function buildClusteredGraphData(data: GraphData): GraphData {
       position: clusterPos,
       data: {
         label: domain,
+        slug: domain,
         domain,
         language: null,
         framework: null,

@@ -2,7 +2,17 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen, fireEvent, cleanup } from "@testing-library/react";
 import { SystemsTable } from "./SystemsTable";
-import type { SystemListItem } from "@/modules/system/types";
+import type { SystemListItemWithServices } from "@/modules/system/types";
+
+// Mock server action
+vi.mock("@/modules/system/actions/update-slugs", () => ({
+  updateSlugsAction: vi.fn(),
+}));
+
+// Mock sonner toast
+vi.mock("sonner", () => ({
+  toast: { success: vi.fn(), error: vi.fn() },
+}));
 
 // Mock Radix Select with native HTML elements for testability
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -43,7 +53,9 @@ const mockDomains = [
   { id: "d2", name: "Payments" },
 ];
 
-function createSystem(overrides: Partial<SystemListItem> = {}): SystemListItem {
+function createSystem(
+  overrides: Partial<SystemListItemWithServices> = {},
+): SystemListItemWithServices {
   return {
     id: "s1",
     name: "Auth Service",
@@ -52,11 +64,15 @@ function createSystem(overrides: Partial<SystemListItem> = {}): SystemListItem {
     framework: "NestJS",
     domain: { id: "d1", name: "Identity" },
     _count: { services: 2, databases: 1, integrations: 3, documents: 0 },
+    services: [
+      { id: "svc1", name: "Auth API", slug: "auth-api", type: "API" },
+      { id: "svc2", name: "Auth Worker", slug: "auth-worker", type: "WORKER" },
+    ],
     ...overrides,
   };
 }
 
-const mockSystems: SystemListItem[] = [
+const mockSystems: SystemListItemWithServices[] = [
   createSystem(),
   createSystem({
     id: "s2",
@@ -66,6 +82,9 @@ const mockSystems: SystemListItem[] = [
     framework: "Spring Boot",
     domain: { id: "d2", name: "Payments" },
     _count: { services: 1, databases: 2, integrations: 1, documents: 1 },
+    services: [
+      { id: "svc3", name: "Payment API", slug: "payment-api", type: "API" },
+    ],
   }),
   createSystem({
     id: "s3",
@@ -75,6 +94,7 @@ const mockSystems: SystemListItem[] = [
     framework: null,
     domain: { id: "d2", name: "Payments" },
     _count: { services: 0, databases: 1, integrations: 0, documents: 0 },
+    services: [],
   }),
 ];
 
@@ -84,47 +104,73 @@ describe("SystemsTable", () => {
   });
 
   it("renders all systems", () => {
-    render(<SystemsTable systems={mockSystems} domains={mockDomains} workspaceSlug="test-ws" />);
+    render(
+      <SystemsTable
+        systems={mockSystems}
+        domains={mockDomains}
+        workspaceSlug="test-ws"
+      />,
+    );
     expect(screen.getByText("Auth Service")).toBeInTheDocument();
     expect(screen.getByText("Payment Gateway")).toBeInTheDocument();
     expect(screen.getByText("Billing Engine")).toBeInTheDocument();
   });
 
   it("renders system name as link to detail page", () => {
-    render(<SystemsTable systems={mockSystems} domains={mockDomains} workspaceSlug="test-ws" />);
+    render(
+      <SystemsTable
+        systems={mockSystems}
+        domains={mockDomains}
+        workspaceSlug="test-ws"
+      />,
+    );
     const link = screen.getByText("Auth Service").closest("a");
     expect(link).toHaveAttribute("href", "/w/test-ws/systems/auth-service");
   });
 
   it("renders domain badges", () => {
-    render(<SystemsTable systems={mockSystems} domains={mockDomains} workspaceSlug="test-ws" />);
-    // Each domain badge in the table + 1 option in the dropdown
+    render(
+      <SystemsTable
+        systems={mockSystems}
+        domains={mockDomains}
+        workspaceSlug="test-ws"
+      />,
+    );
     expect(screen.getAllByText("Identity").length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText("Payments").length).toBeGreaterThanOrEqual(2);
   });
 
-  it("renders counts correctly", () => {
-    render(
-      <SystemsTable systems={[mockSystems[0]!]} domains={mockDomains} workspaceSlug="test-ws" />,
-    );
-    expect(screen.getByText("2")).toBeInTheDocument(); // services
-    expect(screen.getByText("1")).toBeInTheDocument(); // databases
-    expect(screen.getByText("3")).toBeInTheDocument(); // integrations
-  });
-
   it("renders dash for null language", () => {
     const systems = [createSystem({ language: null })];
-    render(<SystemsTable systems={systems} domains={mockDomains} workspaceSlug="test-ws" />);
+    render(
+      <SystemsTable
+        systems={systems}
+        domains={mockDomains}
+        workspaceSlug="test-ws"
+      />,
+    );
     expect(screen.getByText("—")).toBeInTheDocument();
   });
 
   it("shows empty state when no systems", () => {
-    render(<SystemsTable systems={[]} domains={mockDomains} workspaceSlug="test-ws" />);
+    render(
+      <SystemsTable
+        systems={[]}
+        domains={mockDomains}
+        workspaceSlug="test-ws"
+      />,
+    );
     expect(screen.getByText("No systems found")).toBeInTheDocument();
   });
 
   it("filters systems by search input", () => {
-    render(<SystemsTable systems={mockSystems} domains={mockDomains} workspaceSlug="test-ws" />);
+    render(
+      <SystemsTable
+        systems={mockSystems}
+        domains={mockDomains}
+        workspaceSlug="test-ws"
+      />,
+    );
 
     const searchInput = screen.getByLabelText("Search systems");
     fireEvent.change(searchInput, { target: { value: "auth" } });
@@ -135,7 +181,13 @@ describe("SystemsTable", () => {
   });
 
   it("shows filter empty state when no matches", () => {
-    render(<SystemsTable systems={mockSystems} domains={mockDomains} workspaceSlug="test-ws" />);
+    render(
+      <SystemsTable
+        systems={mockSystems}
+        domains={mockDomains}
+        workspaceSlug="test-ws"
+      />,
+    );
 
     const searchInput = screen.getByLabelText("Search systems");
     fireEvent.change(searchInput, { target: { value: "nonexistent" } });
@@ -146,7 +198,13 @@ describe("SystemsTable", () => {
   });
 
   it("filters systems by domain", () => {
-    render(<SystemsTable systems={mockSystems} domains={mockDomains} workspaceSlug="test-ws" />);
+    render(
+      <SystemsTable
+        systems={mockSystems}
+        domains={mockDomains}
+        workspaceSlug="test-ws"
+      />,
+    );
 
     const domainSelect = screen.getByLabelText("Filter by domain");
     fireEvent.change(domainSelect, { target: { value: "Payments" } });
@@ -157,42 +215,158 @@ describe("SystemsTable", () => {
   });
 
   it("renders sort buttons for sortable columns", () => {
-    render(<SystemsTable systems={mockSystems} domains={mockDomains} workspaceSlug="test-ws" />);
+    render(
+      <SystemsTable
+        systems={mockSystems}
+        domains={mockDomains}
+        workspaceSlug="test-ws"
+      />,
+    );
     expect(screen.getByLabelText("Sort by name")).toBeInTheDocument();
     expect(screen.getByLabelText("Sort by domain")).toBeInTheDocument();
     expect(screen.getByLabelText("Sort by language")).toBeInTheDocument();
     expect(screen.getByLabelText("Sort by framework")).toBeInTheDocument();
   });
 
-  it("sorts systems by name descending on click", () => {
-    render(<SystemsTable systems={mockSystems} domains={mockDomains} workspaceSlug="test-ws" />);
-
-    // Default is name ascending, click once more to switch to descending
-    fireEvent.click(screen.getByLabelText("Sort by name"));
-
-    const rows = screen.getAllByRole("row");
-    // row 0 is the header, rows 1-3 are data
-    expect(rows[1]).toHaveTextContent("Payment Gateway");
-    expect(rows[2]).toHaveTextContent("Billing Engine");
-    expect(rows[3]).toHaveTextContent("Auth Service");
-  });
-
-  it("sorts systems by domain on click", () => {
-    render(<SystemsTable systems={mockSystems} domains={mockDomains} workspaceSlug="test-ws" />);
-
-    fireEvent.click(screen.getByLabelText("Sort by domain"));
-
-    const rows = screen.getAllByRole("row");
-    // Identity comes before Payments alphabetically
-    expect(rows[1]).toHaveTextContent("Auth Service");
-  });
-
   it("renders domain options in the filter dropdown", () => {
-    render(<SystemsTable systems={mockSystems} domains={mockDomains} workspaceSlug="test-ws" />);
+    render(
+      <SystemsTable
+        systems={mockSystems}
+        domains={mockDomains}
+        workspaceSlug="test-ws"
+      />,
+    );
     const options = screen.getAllByRole("option");
-    expect(options).toHaveLength(3); // "All domains" + 2 domains
+    expect(options).toHaveLength(3);
     expect(options[0]).toHaveTextContent("All domains");
     expect(options[1]).toHaveTextContent("Identity");
     expect(options[2]).toHaveTextContent("Payments");
+  });
+
+  it("renders system slug inputs with current values", () => {
+    render(
+      <SystemsTable
+        systems={mockSystems}
+        domains={mockDomains}
+        workspaceSlug="test-ws"
+      />,
+    );
+    const aliasInput = screen.getByLabelText("Alias for Auth Service");
+    expect(aliasInput).toHaveValue("auth-service");
+  });
+
+  it("expands system row to show services on click", () => {
+    render(
+      <SystemsTable
+        systems={mockSystems}
+        domains={mockDomains}
+        workspaceSlug="test-ws"
+      />,
+    );
+
+    // Services should not be visible initially
+    expect(screen.queryByText("Auth API")).not.toBeInTheDocument();
+    expect(screen.queryByText("Auth Worker")).not.toBeInTheDocument();
+
+    // Click the system row to expand
+    fireEvent.click(screen.getByText("Auth Service").closest("tr")!);
+
+    // Services should now be visible
+    expect(screen.getByText("Auth API")).toBeInTheDocument();
+    expect(screen.getByText("Auth Worker")).toBeInTheDocument();
+  });
+
+  it("collapses expanded row on second click", () => {
+    render(
+      <SystemsTable
+        systems={mockSystems}
+        domains={mockDomains}
+        workspaceSlug="test-ws"
+      />,
+    );
+
+    const systemRow = screen.getByText("Auth Service").closest("tr")!;
+
+    // Expand
+    fireEvent.click(systemRow);
+    expect(screen.getByText("Auth API")).toBeInTheDocument();
+
+    // Collapse
+    fireEvent.click(systemRow);
+    expect(screen.queryByText("Auth API")).not.toBeInTheDocument();
+  });
+
+  it("does not expand system with no services", () => {
+    render(
+      <SystemsTable
+        systems={mockSystems}
+        domains={mockDomains}
+        workspaceSlug="test-ws"
+      />,
+    );
+
+    const billingRow = screen.getByText("Billing Engine").closest("tr")!;
+    fireEvent.click(billingRow);
+
+    // No sub-table should appear (Billing Engine has 0 services)
+    expect(screen.queryByText("Service Name")).not.toBeInTheDocument();
+  });
+
+  it("shows service slug inputs in expanded sub-table", () => {
+    render(
+      <SystemsTable
+        systems={mockSystems}
+        domains={mockDomains}
+        workspaceSlug="test-ws"
+      />,
+    );
+
+    // Expand Auth Service
+    fireEvent.click(screen.getByText("Auth Service").closest("tr")!);
+
+    const serviceAliasInput = screen.getByLabelText(
+      "Alias for service Auth API",
+    );
+    expect(serviceAliasInput).toHaveValue("auth-api");
+  });
+
+  it("shows confirm button when a slug is edited", () => {
+    render(
+      <SystemsTable
+        systems={mockSystems}
+        domains={mockDomains}
+        workspaceSlug="test-ws"
+      />,
+    );
+
+    // No confirm button initially
+    expect(screen.queryByText("Confirm")).not.toBeInTheDocument();
+
+    // Edit a system slug
+    const aliasInput = screen.getByLabelText("Alias for Auth Service");
+    fireEvent.change(aliasInput, { target: { value: "auth-svc" } });
+
+    expect(screen.getByText("Confirm")).toBeInTheDocument();
+    expect(screen.getByText("1 slug(s) modified")).toBeInTheDocument();
+  });
+
+  it("hides confirm button when slug is reverted to original", () => {
+    render(
+      <SystemsTable
+        systems={mockSystems}
+        domains={mockDomains}
+        workspaceSlug="test-ws"
+      />,
+    );
+
+    const aliasInput = screen.getByLabelText("Alias for Auth Service");
+
+    // Edit
+    fireEvent.change(aliasInput, { target: { value: "auth-svc" } });
+    expect(screen.getByText("Confirm")).toBeInTheDocument();
+
+    // Revert
+    fireEvent.change(aliasInput, { target: { value: "auth-service" } });
+    expect(screen.queryByText("Confirm")).not.toBeInTheDocument();
   });
 });

@@ -30,6 +30,7 @@ function createGraphData(overrides: Partial<GraphData> = {}): GraphData {
         position: { x: 0, y: 0 },
         data: {
           label: "Auth Service",
+          slug: "auth-service",
           domain: "Identity",
           language: "TypeScript",
           framework: "NestJS",

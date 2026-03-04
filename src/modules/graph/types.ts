@@ -85,6 +85,7 @@ export type LayerName = "EDGE" | "BUSINESS_LOGIC" | "DATA_INFRA";
 /** Data payload for a system node rendered in React Flow. */
 export interface GraphNodeData extends Record<string, unknown> {
   label: string;
+  slug: string;
   domain: string;
   language: string | null;
   framework: string | null;

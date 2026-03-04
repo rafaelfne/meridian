@@ -43,16 +43,32 @@ export function GraphCommandSearch({
   const handleSelect = useCallback(
     (nodeId: string) => {
       // Use getNodes() to get the *current* position (accounts for drag-repositioning)
-      const current = getNodes().find((n) => n.id === nodeId);
+      const allNodes = getNodes();
+      const current = allNodes.find((n) => n.id === nodeId);
       const fallback = nodes.find((n) => n.id === nodeId);
       const node = current ?? fallback;
       if (!node) return;
 
-      setCenter(
-        node.position.x + NODE_WIDTH / 2,
-        node.position.y + NODE_HEIGHT / 2,
-        { zoom: 1.5, duration: 800 },
-      );
+      // Compute absolute position by walking up the parent chain
+      // (grouped nodes have positions relative to their parent)
+      const nodeMap = new Map(allNodes.map((n) => [n.id, n]));
+      let absX = node.position.x;
+      let absY = node.position.y;
+      let parent = (node as { parentId?: string }).parentId
+        ? nodeMap.get((node as { parentId?: string }).parentId!)
+        : undefined;
+      while (parent) {
+        absX += parent.position.x;
+        absY += parent.position.y;
+        parent = (parent as { parentId?: string }).parentId
+          ? nodeMap.get((parent as { parentId?: string }).parentId!)
+          : undefined;
+      }
+
+      setCenter(absX + NODE_WIDTH / 2, absY + NODE_HEIGHT / 2, {
+        zoom: 1.5,
+        duration: 800,
+      });
       setOpen(false);
     },
     [nodes, setCenter, getNodes],
@@ -85,7 +101,7 @@ export function GraphCommandSearch({
                     className={styles.domainDot}
                     style={{ backgroundColor: node.data.domainColor }}
                   />
-                  <span className={styles.nodeLabel}>{node.data.label}</span>
+                  <span className={styles.nodeLabel}>{node.data.slug}</span>
                   <span className={styles.nodeMeta}>{node.data.domain}</span>
                 </div>
               </CommandItem>

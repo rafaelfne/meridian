@@ -14,6 +14,7 @@ vi.mock("@xyflow/react", () => ({
 function createNodeProps(overrides: Partial<GraphNodeData> = {}) {
   const data: GraphNodeData = {
     label: "Auth Service",
+    slug: "auth-service",
     domain: "Identity",
     language: "TypeScript",
     framework: "NestJS",

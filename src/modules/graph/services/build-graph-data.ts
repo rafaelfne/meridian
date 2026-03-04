@@ -86,6 +86,7 @@ export function buildGraphData(
     position: { x: 0, y: 0 },
     data: {
       label: system.name,
+      slug: system.slug,
       domain: system.domain.name,
       language: system.language,
       framework: system.framework,
