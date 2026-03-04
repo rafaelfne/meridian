@@ -29,6 +29,12 @@ const UpdateSlugsSchema = z.object({
         .regex(slugPattern, "Slug must be lowercase alphanumeric with hyphens"),
     }),
   ),
+  systemDomains: z.array(
+    z.object({
+      id: z.string(),
+      domainId: z.string(),
+    }),
+  ).optional().default([]),
 });
 
 export interface UpdateSlugsResult {
@@ -38,7 +44,11 @@ export interface UpdateSlugsResult {
 
 export async function updateSlugsAction(
   workspaceSlug: string,
-  payload: { systemSlugs: { id: string; slug: string }[]; serviceSlugs: { id: string; slug: string }[] },
+  payload: {
+    systemSlugs: { id: string; slug: string }[];
+    serviceSlugs: { id: string; slug: string }[];
+    systemDomains?: { id: string; domainId: string }[];
+  },
 ): Promise<UpdateSlugsResult> {
   await requireWorkspaceAccess(workspaceSlug, "EDITOR");
 
@@ -48,9 +58,9 @@ export async function updateSlugsAction(
     return { success: false, error: firstError?.message ?? "Invalid payload" };
   }
 
-  const { systemSlugs, serviceSlugs } = parsed.data;
+  const { systemSlugs, serviceSlugs, systemDomains } = parsed.data;
 
-  if (systemSlugs.length === 0 && serviceSlugs.length === 0) {
+  if (systemSlugs.length === 0 && serviceSlugs.length === 0 && systemDomains.length === 0) {
     return { success: true };
   }
 
@@ -61,6 +71,9 @@ export async function updateSlugsAction(
       }
       for (const { id, slug } of serviceSlugs) {
         await tx.service.update({ where: { id }, data: { slug } });
+      }
+      for (const { id, domainId } of systemDomains) {
+        await tx.system.update({ where: { id }, data: { domainId } });
       }
     });
 

@@ -25,19 +25,24 @@ vi.mock("@/components/ui/select", () => {
     Select: ({ children, value, onValueChange }: any) =>
       React.createElement(
         SelectContext.Provider,
-        { value: { val: value, onChange: onValueChange } },
+        { value: { val: value, onChange: onValueChange, ariaLabel: "" } },
         children,
       ),
-    SelectTrigger: () => null,
+    SelectTrigger: ({ children, "aria-label": ariaLabel }: any) => {
+      const parent = React.useContext(SelectContext);
+      // Store the aria-label for use by SelectContent
+      parent.ariaLabel = ariaLabel;
+      return children;
+    },
     SelectValue: () => null,
     SelectContent: ({ children }: any) => {
-      const { val, onChange } = React.useContext(SelectContext);
+      const { val, onChange, ariaLabel } = React.useContext(SelectContext);
       return React.createElement(
         "select",
         {
           value: val,
           onChange: (e: any) => onChange?.(e.target.value),
-          "aria-label": "Filter by domain",
+          ...(ariaLabel ? { "aria-label": ariaLabel } : {}),
         },
         children,
       );
@@ -128,7 +133,7 @@ describe("SystemsTable", () => {
     expect(link).toHaveAttribute("href", "/w/test-ws/systems/auth-service");
   });
 
-  it("renders domain badges", () => {
+  it("renders domain selects for each system", () => {
     render(
       <SystemsTable
         systems={mockSystems}
@@ -136,8 +141,9 @@ describe("SystemsTable", () => {
         workspaceSlug="test-ws"
       />,
     );
-    expect(screen.getAllByText("Identity").length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText("Payments").length).toBeGreaterThanOrEqual(2);
+    expect(screen.getByLabelText("Domain for Auth Service")).toBeInTheDocument();
+    expect(screen.getByLabelText("Domain for Payment Gateway")).toBeInTheDocument();
+    expect(screen.getByLabelText("Domain for Billing Engine")).toBeInTheDocument();
   });
 
   it("renders dash for null language", () => {
@@ -236,7 +242,8 @@ describe("SystemsTable", () => {
         workspaceSlug="test-ws"
       />,
     );
-    const options = screen.getAllByRole("option");
+    const filterSelect = screen.getByLabelText("Filter by domain");
+    const options = filterSelect.querySelectorAll("option");
     expect(options).toHaveLength(3);
     expect(options[0]).toHaveTextContent("All domains");
     expect(options[1]).toHaveTextContent("Identity");
@@ -347,7 +354,7 @@ describe("SystemsTable", () => {
     fireEvent.change(aliasInput, { target: { value: "auth-svc" } });
 
     expect(screen.getByText("Confirm")).toBeInTheDocument();
-    expect(screen.getByText("1 slug(s) modified")).toBeInTheDocument();
+    expect(screen.getByText("1 change(s) pending")).toBeInTheDocument();
   });
 
   it("hides confirm button when slug is reverted to original", () => {

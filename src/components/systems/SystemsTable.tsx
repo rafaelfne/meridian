@@ -60,11 +60,15 @@ export function SystemsTable({
   const [editedServiceSlugs, setEditedServiceSlugs] = useState<
     Record<string, string>
   >({});
+  const [editedDomains, setEditedDomains] = useState<
+    Record<string, string>
+  >({});
   const [isSaving, startSaveTransition] = useTransition();
 
   const isDirty =
     Object.keys(editedSystemSlugs).length > 0 ||
-    Object.keys(editedServiceSlugs).length > 0;
+    Object.keys(editedServiceSlugs).length > 0 ||
+    Object.keys(editedDomains).length > 0;
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -158,6 +162,19 @@ export function SystemsTable({
     [],
   );
 
+  const handleDomainChange = useCallback(
+    (systemId: string, originalDomainId: string, newDomainId: string) => {
+      setEditedDomains((prev) => {
+        if (newDomainId === originalDomainId) {
+          const { [systemId]: _, ...rest } = prev;
+          return rest;
+        }
+        return { ...prev, [systemId]: newDomainId };
+      });
+    },
+    [],
+  );
+
   const handleConfirm = useCallback(() => {
     startSaveTransition(async () => {
       const result = await updateSlugsAction(workspaceSlug, {
@@ -169,17 +186,22 @@ export function SystemsTable({
           id,
           slug,
         })),
+        systemDomains: Object.entries(editedDomains).map(([id, domainId]) => ({
+          id,
+          domainId,
+        })),
       });
 
       if (result.success) {
-        toast.success("Slugs updated and dependencies reprocessed");
+        toast.success("Changes saved and dependencies reprocessed");
         setEditedSystemSlugs({});
         setEditedServiceSlugs({});
+        setEditedDomains({});
       } else {
         toast.error(result.error ?? "Failed to update slugs");
       }
     });
-  }, [workspaceSlug, editedSystemSlugs, editedServiceSlugs]);
+  }, [workspaceSlug, editedSystemSlugs, editedServiceSlugs, editedDomains]);
 
   const renderSortIcon = (field: SortField) => {
     if (sortField !== field) {
@@ -280,6 +302,9 @@ export function SystemsTable({
               const currentSystemSlug =
                 editedSystemSlugs[system.id] ?? system.slug;
               const isSystemSlugDirty = system.id in editedSystemSlugs;
+              const currentDomainId =
+                editedDomains[system.id] ?? system.domain.id;
+              const isDomainDirty = system.id in editedDomains;
 
               return (
                 <Fragment key={system.id}>
@@ -325,8 +350,34 @@ export function SystemsTable({
                         aria-label={`Alias for ${system.name}`}
                       />
                     </TableCell>
-                    <TableCell>
-                      <Badge variant="outline">{system.domain.name}</Badge>
+                    <TableCell onClick={(e) => e.stopPropagation()}>
+                      <Select
+                        value={currentDomainId}
+                        onValueChange={(value) =>
+                          handleDomainChange(
+                            system.id,
+                            system.domain.id,
+                            value,
+                          )
+                        }
+                      >
+                        <SelectTrigger
+                          className={clsx(
+                            styles.slugInput,
+                            isDomainDirty && styles.slugInputDirty,
+                          )}
+                          aria-label={`Domain for ${system.name}`}
+                        >
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {domains.map((d) => (
+                            <SelectItem key={d.id} value={d.id}>
+                              {d.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </TableCell>
                     <TableCell>{system.language ?? "—"}</TableCell>
                     <TableCell>{system.framework ?? "—"}</TableCell>
@@ -434,8 +485,9 @@ export function SystemsTable({
         <div className={styles.confirmBar}>
           <span className={styles.changesSummary}>
             {Object.keys(editedSystemSlugs).length +
-              Object.keys(editedServiceSlugs).length}{" "}
-            slug(s) modified
+              Object.keys(editedServiceSlugs).length +
+              Object.keys(editedDomains).length}{" "}
+            change(s) pending
           </span>
           <Button onClick={handleConfirm} disabled={isSaving}>
             {isSaving ? "Processing…" : "Confirm"}
