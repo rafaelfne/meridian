@@ -15,6 +15,67 @@ import edgeStyles from "./DependencyEdge.module.css";
 
 type DependencyEdgeProps = EdgeProps & { data: GraphEdgeData };
 
+/**
+ * Builds an orthogonal (step-style) SVG path that starts at (sourceX, sourceY)
+ * and ends at (targetX, targetY) while routing the horizontal middle section
+ * through an offset Y level.  Keeps arrow endpoints anchored to handles.
+ *
+ * Shape (LR):  source ─┐         ┌─ target
+ *                       │ offset  │
+ *                       └─────────┘
+ */
+function buildOffsetStepPath(
+  sourceX: number,
+  sourceY: number,
+  targetX: number,
+  targetY: number,
+  offset: number,
+  borderRadius = 5,
+): [path: string, labelX: number, labelY: number] {
+  const dx = targetX - sourceX;
+  const qX1 = sourceX + dx / 3;
+  const qX2 = sourceX + (dx * 2) / 3;
+  const offsetY = (sourceY + targetY) / 2 + offset;
+
+  const dy1 = offsetY - sourceY;
+  const dy2 = targetY - offsetY;
+  const sgnY1 = Math.sign(dy1) || 1;
+  const sgnY2 = Math.sign(dy2) || 1;
+
+  const r = Math.max(
+    0,
+    Math.min(borderRadius, Math.abs(dy1) / 2, Math.abs(dy2) / 2, Math.abs(dx) / 6),
+  );
+
+  let path: string;
+
+  if (r < 0.5) {
+    path = [
+      `M ${sourceX},${sourceY}`,
+      `L ${qX1},${sourceY}`,
+      `L ${qX1},${offsetY}`,
+      `L ${qX2},${offsetY}`,
+      `L ${qX2},${targetY}`,
+      `L ${targetX},${targetY}`,
+    ].join(" ");
+  } else {
+    path = [
+      `M ${sourceX},${sourceY}`,
+      `L ${qX1 - r},${sourceY}`,
+      `Q ${qX1},${sourceY} ${qX1},${sourceY + sgnY1 * r}`,
+      `L ${qX1},${offsetY - sgnY1 * r}`,
+      `Q ${qX1},${offsetY} ${qX1 + r},${offsetY}`,
+      `L ${qX2 - r},${offsetY}`,
+      `Q ${qX2},${offsetY} ${qX2},${offsetY + sgnY2 * r}`,
+      `L ${qX2},${targetY - sgnY2 * r}`,
+      `Q ${qX2},${targetY} ${qX2 + r},${targetY}`,
+      `L ${targetX},${targetY}`,
+    ].join(" ");
+  }
+
+  return [path, (sourceX + targetX) / 2, offsetY];
+}
+
 export function DependencyEdge({
   id,
   sourceX,
@@ -53,19 +114,12 @@ export function DependencyEdge({
     labelX = lx;
     labelY = ly;
   } else {
-    // Parallel / dragged edges — cubic bezier that starts and ends at the
-    // actual handle positions but curves through the offset midpoint.
-    // This keeps arrow tips connected to the nodes.
-    const dx = Math.abs(targetX - sourceX);
-    const controlDist = Math.max(dx * 0.3, 50);
-    edgePath = [
-      `M ${sourceX},${sourceY}`,
-      `C ${sourceX + controlDist},${sourceY + offset}`,
-      `${targetX - controlDist},${targetY + offset}`,
-      `${targetX},${targetY}`,
-    ].join(" ");
-    labelX = (sourceX + targetX) / 2;
-    labelY = (sourceY + targetY) / 2 + offset * 0.6;
+    // Parallel / dragged edges — orthogonal step path that starts and ends at the
+    // actual handle positions but routes through an offset Y level in the middle.
+    // This keeps arrow tips connected to the nodes while separating parallel edges.
+    [edgePath, labelX, labelY] = buildOffsetStepPath(
+      sourceX, sourceY, targetX, targetY, offset,
+    );
   }
 
   const strokeColor = (style?.stroke as string) ?? "#94a3b8";
