@@ -262,6 +262,7 @@ export function SystemsTable({
       </div>
 
       {filteredAndSorted.length > 0 ? (
+        <div className={styles.tableWrapper}>
         <Table>
           <TableHeader>
             <TableRow>
@@ -484,6 +485,7 @@ export function SystemsTable({
             })}
           </TableBody>
         </Table>
+        </div>
       ) : (
         <div className={styles.emptyState}>
           {search || (domainFilter && domainFilter !== "__all__")

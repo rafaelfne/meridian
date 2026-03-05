@@ -63,15 +63,23 @@
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
-  color: var(--accent);
+  color: var(--meridian-accent);
   text-decoration: none;
   font-weight: 500;
   transition: color 0.15s ease;
 }
 
 .docsLink:hover {
-  color: var(--foreground);
+  color: var(--meridian-accent-hover);
   text-decoration: underline;
+}
+
+/* Table card wrapper */
+.tableWrapper {
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  background-color: var(--card);
+  overflow: hidden;
 }
 
 /* Expand/collapse */
