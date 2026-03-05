@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
-import { Search, ChevronDown, RotateCcw, Eye, EyeOff, Zap, Layers, Group } from "lucide-react";
+import { useState, useRef, useEffect, useCallback, useTransition } from "react";
+import { Search, ChevronDown, RotateCcw, Eye, EyeOff, Zap, Layers, Group, Loader2 } from "lucide-react";
 import clsx from "clsx";
 import {
   DEPENDENCY_TYPE_CONFIG,
@@ -162,6 +162,7 @@ export function GraphToolbar({
   filteredEdges,
 }: GraphToolbarProps) {
   const { filters, setFilters, resetFilters } = useGraphFilters();
+  const [isClusterPending, startClusterTransition] = useTransition();
 
   const hasActiveFilters =
     filters.domains.length > 0 ||
@@ -295,7 +296,12 @@ export function GraphToolbar({
         className={clsx(styles.toggle, {
           [styles.toggleActive ?? ""]: filters.clustering,
         })}
-        onClick={() => setFilters({ clustering: !filters.clustering })}
+        onClick={() =>
+          startClusterTransition(() =>
+            setFilters({ clustering: !filters.clustering }),
+          )
+        }
+        disabled={isClusterPending}
         aria-pressed={filters.clustering}
         title={
           filters.clustering
@@ -303,7 +309,11 @@ export function GraphToolbar({
             : "Enable domain clustering"
         }
       >
-        <Group size={14} />
+        {isClusterPending ? (
+          <Loader2 size={14} className={styles.spinning} />
+        ) : (
+          <Group size={14} />
+        )}
         Cluster
       </button>
 

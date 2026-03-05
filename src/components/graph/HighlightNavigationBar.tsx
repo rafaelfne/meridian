@@ -24,12 +24,15 @@ export function HighlightNavigationBar({
   onNodeClick,
   onFocusNode,
 }: HighlightNavigationBarProps) {
-  const { setCenter, getNodes } = useReactFlow();
-  const [currentIndex, setCurrentIndex] = useState(-1);
+  const { setCenter, getInternalNode } = useReactFlow();
+  const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Compute connected nodes (excluding the highlighted node itself)
-  const connectedNodes = useMemo(() => {
+  // Build navigation list: origin node at index 0, then its connected dependencies
+  const navigationNodes = useMemo(() => {
     if (!highlightedSystemId) return [];
+
+    const originNode = nodes.find((n) => n.id === highlightedSystemId);
+    if (!originNode) return [];
 
     const connectedIds = new Set<string>();
     for (const edge of edges) {
@@ -40,19 +43,17 @@ export function HighlightNavigationBar({
       }
     }
 
-    return nodes.filter((n) => connectedIds.has(n.id));
+    const deps = nodes.filter((n) => connectedIds.has(n.id));
+    return [originNode, ...deps];
   }, [highlightedSystemId, nodes, edges]);
 
-  // Find the highlighted node for display
-  const highlightedNode = useMemo(
-    () => nodes.find((n) => n.id === highlightedSystemId) ?? null,
-    [nodes, highlightedSystemId],
-  );
+  // The highlighted node is always the first in the navigation list
+  const highlightedNode = navigationNodes[0] ?? null;
 
   // Reset index when highlighted system changes
   useEffect(() => {
     const id = setTimeout(() => {
-      setCurrentIndex(-1);
+      setCurrentIndex(0);
       if (!highlightedSystemId) {
         onFocusNode?.(null);
       }
@@ -63,12 +64,14 @@ export function HighlightNavigationBar({
   // Navigate viewport to node
   const navigateTo = useCallback(
     (index: number) => {
-      const node = connectedNodes[index];
+      const node = navigationNodes[index];
       if (!node) return;
-      onFocusNode?.(node.id);
-      // Use actual ReactFlow node position (accounts for dragging and saved positions)
-      const rfNode = getNodes().find((n) => n.id === node.id);
-      const pos = rfNode?.position ?? node.position;
+      // At origin (index 0): clear focusedNodeId so the node keeps its green
+      // .highlighted style instead of getting the blue .focused overlay.
+      onFocusNode?.(index === 0 ? null : node.id);
+      // Use internal node for absolute position (accounts for parent offsets in cluster mode)
+      const rfNode = getInternalNode(node.id);
+      const pos = rfNode?.internals.positionAbsolute ?? node.position;
       const width = (rfNode?.measured?.width ?? NODE_WIDTH);
       const height = (rfNode?.measured?.height ?? NODE_HEIGHT);
       setCenter(
@@ -77,28 +80,26 @@ export function HighlightNavigationBar({
         { zoom: 1.5, duration: 600 },
       );
     },
-    [connectedNodes, setCenter, getNodes, onFocusNode],
+    [navigationNodes, setCenter, getInternalNode, onFocusNode],
   );
 
   const goNext = useCallback(() => {
-    if (connectedNodes.length === 0) return;
-    const next = currentIndex === -1 ? 0 : (currentIndex + 1) % connectedNodes.length;
+    if (navigationNodes.length <= 1) return;
+    const next = (currentIndex + 1) % navigationNodes.length;
     setCurrentIndex(next);
     navigateTo(next);
-  }, [currentIndex, connectedNodes.length, navigateTo]);
+  }, [currentIndex, navigationNodes.length, navigateTo]);
 
   const goPrev = useCallback(() => {
-    if (connectedNodes.length === 0) return;
-    const prev = currentIndex === -1
-      ? connectedNodes.length - 1
-      : (currentIndex - 1 + connectedNodes.length) % connectedNodes.length;
+    if (navigationNodes.length <= 1) return;
+    const prev = (currentIndex - 1 + navigationNodes.length) % navigationNodes.length;
     setCurrentIndex(prev);
     navigateTo(prev);
-  }, [currentIndex, connectedNodes.length, navigateTo]);
+  }, [currentIndex, navigationNodes.length, navigateTo]);
 
   // Keyboard navigation
   useEffect(() => {
-    if (!highlightedSystemId || connectedNodes.length === 0) return;
+    if (!highlightedSystemId || navigationNodes.length <= 1) return;
 
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === "ArrowRight") {
@@ -112,11 +113,11 @@ export function HighlightNavigationBar({
 
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [highlightedSystemId, connectedNodes.length, goNext, goPrev]);
+  }, [highlightedSystemId, navigationNodes.length, goNext, goPrev]);
 
-  if (!highlightedSystemId || connectedNodes.length === 0) return null;
+  if (!highlightedSystemId || navigationNodes.length <= 1) return null;
 
-  const current = currentIndex >= 0 ? connectedNodes[currentIndex] : null;
+  const current = navigationNodes[currentIndex] ?? null;
 
   return (
     <div className={styles.bar}>
@@ -159,7 +160,7 @@ export function HighlightNavigationBar({
           {current ? current.data.label : "—"}
         </span>
         <span className={styles.counter}>
-          {currentIndex >= 0 ? currentIndex + 1 : 0}/{connectedNodes.length}
+          {currentIndex + 1}/{navigationNodes.length}
         </span>
       </button>
 

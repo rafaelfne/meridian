@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback, useRef, Suspense } from "react";
+import { useState, useMemo, useCallback, useRef, useEffect, Suspense } from "react";
 import { ReactFlowProvider, type Viewport } from "@xyflow/react";
 import type {
   GraphData,
@@ -220,6 +220,15 @@ function GraphPageClientInner({
     });
   }, []);
 
+  // Clear highlight when the highlighted node is no longer in the displayed data
+  // (e.g., switching to collapsed cluster mode removes system nodes)
+  useEffect(() => {
+    if (highlightedSystemId && !visibleNodeIds.has(highlightedSystemId)) {
+      setHighlightedSystemId(null);
+      setFocusedNodeId(null);
+    }
+  }, [highlightedSystemId, visibleNodeIds]);
+
   return (
     <ReactFlowProvider>
       <div className="flex flex-1 flex-col min-h-0 overflow-hidden">
@@ -262,8 +271,8 @@ function GraphPageClientInner({
           />
           <HighlightNavigationBar
             highlightedSystemId={highlightedSystemId}
-            nodes={filteredData.nodes}
-            edges={filteredData.edges}
+            nodes={displayData.nodes}
+            edges={displayData.edges}
             onNodeClick={handleNodeClick}
             onFocusNode={setFocusedNodeId}
           />

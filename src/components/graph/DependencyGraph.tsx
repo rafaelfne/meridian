@@ -15,7 +15,7 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { useTheme } from "next-themes";
-import type { GraphData } from "@/modules/graph/types";
+import type { GraphData, GraphNode } from "@/modules/graph/types";
 import { SystemNode } from "./SystemNode";
 import { DependencyEdge } from "./DependencyEdge";
 import { LayerLabelNode } from "./LayerLabelNode";
@@ -165,6 +165,14 @@ export function DependencyGraph({
           connectedEdgeIds.add(edge.id);
           connectedNodeIds.add(edge.source);
           connectedNodeIds.add(edge.target);
+        }
+      }
+
+      // Keep parent group nodes visible when they contain connected children
+      for (const node of data.nodes) {
+        const parentId = (node as GraphNode & { parentId?: string }).parentId;
+        if (parentId && connectedNodeIds.has(node.id)) {
+          connectedNodeIds.add(parentId);
         }
       }
 
