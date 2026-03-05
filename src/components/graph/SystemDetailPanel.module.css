@@ -143,6 +143,13 @@
   background-color: var(--accent);
 }
 
+.depNameGroup {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
 .depArrow {
   font-size: 0.75rem;
   color: var(--muted-foreground);
@@ -157,6 +164,14 @@
   font-weight: 500;
   color: var(--foreground);
   min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.depSystemName {
+  font-size: 0.6875rem;
+  color: var(--muted-foreground);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

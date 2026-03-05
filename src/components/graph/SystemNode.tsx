@@ -93,8 +93,8 @@ export function SystemNode({ id, data, selected }: SystemNodeProps) {
                 className={styles.serviceHandle}
               />
               <span className={styles.serviceTypeTag}>{svcTypeLabel(svc.type)}</span>
-              <span className={styles.serviceName} title={svc.name}>
-                {svc.name}
+              <span className={styles.serviceName} title={svc.slug}>
+                {svc.slug}
               </span>
             </div>
           ))}

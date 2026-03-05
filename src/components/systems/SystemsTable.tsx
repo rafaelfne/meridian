@@ -9,6 +9,9 @@ import {
   FileText,
   ChevronRight,
   ChevronDown,
+  ChevronsUpDown,
+  Check,
+  Plus,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
@@ -29,8 +32,22 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import type { SystemListItemWithServices } from "@/modules/system/types";
 import { updateSlugsAction } from "@/modules/system/actions/update-slugs";
+import { createDomainAction } from "@/modules/system/actions/create-domain";
 import styles from "./SystemsTable.module.css";
 import clsx from "clsx";
 
@@ -53,6 +70,7 @@ export function SystemsTable({
   const [sortField, setSortField] = useState<SortField>("name");
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
 
+  const [localDomains, setLocalDomains] = useState(domains);
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
   const [editedSystemSlugs, setEditedSystemSlugs] = useState<
     Record<string, string>
@@ -234,7 +252,7 @@ export function SystemsTable({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="__all__">All domains</SelectItem>
-            {domains.map((d) => (
+            {localDomains.map((d) => (
               <SelectItem key={d.id} value={d.name}>
                 {d.name}
               </SelectItem>
@@ -351,33 +369,26 @@ export function SystemsTable({
                       />
                     </TableCell>
                     <TableCell onClick={(e) => e.stopPropagation()}>
-                      <Select
+                      <DomainCombobox
+                        domains={localDomains}
                         value={currentDomainId}
-                        onValueChange={(value) =>
+                        isDirty={isDomainDirty}
+                        workspaceSlug={workspaceSlug}
+                        onSelect={(domainId) =>
                           handleDomainChange(
                             system.id,
                             system.domain.id,
-                            value,
+                            domainId,
                           )
                         }
-                      >
-                        <SelectTrigger
-                          className={clsx(
-                            styles.slugInput,
-                            isDomainDirty && styles.slugInputDirty,
-                          )}
-                          aria-label={`Domain for ${system.name}`}
-                        >
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {domains.map((d) => (
-                            <SelectItem key={d.id} value={d.id}>
-                              {d.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                        onDomainCreated={(domain) =>
+                          setLocalDomains((prev) =>
+                            [...prev, domain].sort((a, b) =>
+                              a.name.localeCompare(b.name),
+                            ),
+                          )
+                        }
+                      />
                     </TableCell>
                     <TableCell>{system.language ?? "—"}</TableCell>
                     <TableCell>{system.framework ?? "—"}</TableCell>
@@ -495,5 +506,125 @@ export function SystemsTable({
         </div>
       )}
     </div>
+  );
+}
+
+/* ── Domain Combobox ─────────────────────────── */
+
+interface DomainComboboxProps {
+  domains: { id: string; name: string }[];
+  value: string;
+  isDirty: boolean;
+  workspaceSlug: string;
+  onSelect: (domainId: string) => void;
+  onDomainCreated: (domain: { id: string; name: string }) => void;
+}
+
+function DomainCombobox({
+  domains,
+  value,
+  isDirty,
+  workspaceSlug,
+  onSelect,
+  onDomainCreated,
+}: DomainComboboxProps) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [creating, setCreating] = useState(false);
+
+  const selectedDomain = domains.find((d) => d.id === value);
+
+  const trimmed = query.trim();
+  const exactMatch = domains.some(
+    (d) => d.name.toLowerCase() === trimmed.toLowerCase(),
+  );
+  const showCreate = trimmed.length > 0 && !exactMatch;
+
+  const handleCreate = async () => {
+    setCreating(true);
+    const result = await createDomainAction(workspaceSlug, trimmed);
+    setCreating(false);
+
+    if (result.success && result.domain) {
+      onDomainCreated(result.domain);
+      onSelect(result.domain.id);
+      setQuery("");
+      setOpen(false);
+    } else {
+      toast.error(result.error ?? "Failed to create domain");
+    }
+  };
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className={clsx(
+            "w-full justify-between font-normal",
+            styles.slugInput,
+            isDirty && styles.slugInputDirty,
+          )}
+        >
+          <span className="truncate">
+            {selectedDomain?.name ?? "Select domain"}
+          </span>
+          <ChevronsUpDown className="ml-1 size-3.5 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[200px] p-0">
+        <Command shouldFilter={false}>
+          <CommandInput
+            placeholder="Search or create..."
+            value={query}
+            onValueChange={setQuery}
+          />
+          <CommandList>
+            <CommandEmpty>
+              {trimmed ? "No domain found." : "Type to search..."}
+            </CommandEmpty>
+            <CommandGroup>
+              {domains
+                .filter((d) =>
+                  d.name.toLowerCase().includes(trimmed.toLowerCase()),
+                )
+                .map((d) => (
+                  <CommandItem
+                    key={d.id}
+                    value={d.name}
+                    onSelect={() => {
+                      onSelect(d.id);
+                      setQuery("");
+                      setOpen(false);
+                    }}
+                  >
+                    <Check
+                      className={clsx(
+                        "mr-2 size-3.5",
+                        value === d.id ? "opacity-100" : "opacity-0",
+                      )}
+                    />
+                    {d.name}
+                  </CommandItem>
+                ))}
+            </CommandGroup>
+            {showCreate && (
+              <CommandGroup>
+                <CommandItem
+                  onSelect={handleCreate}
+                  disabled={creating}
+                  className="text-primary"
+                >
+                  <Plus className="mr-2 size-3.5" />
+                  {creating ? "Creating..." : `Create "${trimmed}"`}
+                </CommandItem>
+              </CommandGroup>
+            )}
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
   );
 }

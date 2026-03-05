@@ -441,7 +441,12 @@ export function SystemDetailPanel({
                               }}
                             >
                               <ArrowRight className="size-3" style={{ color: "var(--muted-foreground)" }} />
-                              <span className={styles.depName}>{dep.system.name}</span>
+                              <div className={styles.depNameGroup}>
+                                <span className={styles.depName}>{dep.label ?? dep.system.name}</span>
+                                {dep.label && (
+                                  <span className={styles.depSystemName}>{dep.system.name}</span>
+                                )}
+                              </div>
                               <span className={clsx(styles.depType, depTypeClass(dep.type))}>
                                 {depTypeLabel(dep.type)}
                               </span>
@@ -464,7 +469,12 @@ export function SystemDetailPanel({
                               }}
                             >
                               <ArrowLeft className="size-3" style={{ color: "var(--muted-foreground)" }} />
-                              <span className={styles.depName}>{dep.system.name}</span>
+                              <div className={styles.depNameGroup}>
+                                <span className={styles.depName}>{dep.label ?? dep.system.name}</span>
+                                {dep.label && (
+                                  <span className={styles.depSystemName}>{dep.system.name}</span>
+                                )}
+                              </div>
                               <span className={clsx(styles.depType, depTypeClass(dep.type))}>
                                 {depTypeLabel(dep.type)}
                               </span>

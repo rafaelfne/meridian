@@ -60,6 +60,7 @@ export interface SystemDetailDependency {
   id: string;
   type: string;
   label: string | null;
+  metadata?: Record<string, unknown> | null;
   system: { id: string; name: string; slug: string };
 }
 
