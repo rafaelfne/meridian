@@ -52,11 +52,6 @@ export async function uploadInventory(
   formData: FormData,
 ): Promise<UploadInventoryResult> {
   try {
-    const file = formData.get("file");
-    if (!file || !(file instanceof File)) {
-      return { success: false, errors: ["No file provided"] };
-    }
-
     const workspaceId = formData.get("workspaceId");
     if (!workspaceId || typeof workspaceId !== "string") {
       return { success: false, errors: ["No workspaceId provided"] };
@@ -80,32 +75,63 @@ export async function uploadInventory(
       return { success: false, errors: ["Insufficient workspace permissions"] };
     }
 
-    let rawJson: unknown;
-    try {
-      const text = await file.text();
-      rawJson = JSON.parse(text);
-    } catch {
-      return { success: false, errors: ["Invalid JSON file"] };
+    // Support both single "file" and multiple "files" entries
+    const rawFiles = formData.getAll("files");
+    const singleFile = formData.get("file");
+    const files: File[] = [];
+
+    for (const entry of rawFiles) {
+      if (entry instanceof File) files.push(entry);
+    }
+    if (files.length === 0 && singleFile instanceof File) {
+      files.push(singleFile);
+    }
+    if (files.length === 0) {
+      return { success: false, errors: ["No files provided"] };
     }
 
-    const validation = InventoryUploadSchema.safeParse(rawJson);
-    if (!validation.success) {
-      const errorMessages = validation.error.issues.map(
-        (issue) => `${issue.path.join(".")}: ${issue.message}`,
-      );
-      return { success: false, errors: errorMessages };
+    // Parse and validate all files, collecting all systems
+    const allSystems: SystemInventory[] = [];
+    const parseErrors: string[] = [];
+    const filenames: string[] = [];
+
+    for (const file of files) {
+      let rawJson: unknown;
+      try {
+        const text = await file.text();
+        rawJson = JSON.parse(text);
+      } catch {
+        parseErrors.push(`${file.name}: Invalid JSON file`);
+        continue;
+      }
+
+      const validation = InventoryUploadSchema.safeParse(rawJson);
+      if (!validation.success) {
+        const issues = validation.error.issues.map(
+          (issue) => `${file.name}: ${issue.path.join(".")}: ${issue.message}`,
+        );
+        parseErrors.push(...issues);
+        continue;
+      }
+
+      filenames.push(file.name);
+      allSystems.push(...validation.data.systems);
+    }
+
+    if (parseErrors.length > 0 && allSystems.length === 0) {
+      return { success: false, errors: parseErrors };
     }
 
     const upload = await prisma.inventoryUpload.create({
       data: {
-        filename: file.name,
+        filename: filenames.join(", "),
         status: "PROCESSING",
-        rawPayload: rawJson as object,
+        rawPayload: { files: filenames, systemCount: allSystems.length },
         workspaceId,
       },
     });
 
-    const result = await processInventory(validation.data.systems, {
+    const result = await processInventory(allSystems, {
       upsertDomain: (name) =>
         prisma.domain.upsert({
           where: { workspaceId_name: { workspaceId, name } },
@@ -139,14 +165,15 @@ export async function uploadInventory(
         ),
     });
 
-    const hasErrors = result.errors.length > 0;
+    const allErrors = [...parseErrors, ...result.errors];
+    const hasErrors = allErrors.length > 0;
     await prisma.inventoryUpload.update({
       where: { id: upload.id },
       data: {
         status:
           hasErrors && result.systemsProcessed === 0 ? "FAILED" : "COMPLETED",
         systemsCount: result.systemsProcessed,
-        errors: hasErrors ? result.errors : undefined,
+        errors: hasErrors ? allErrors : undefined,
         processedAt: new Date(),
       },
     });
@@ -161,7 +188,7 @@ export async function uploadInventory(
       success: true,
       uploadId: upload.id,
       systemsProcessed: result.systemsProcessed,
-      errors: hasErrors ? result.errors : undefined,
+      errors: hasErrors ? allErrors : undefined,
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";

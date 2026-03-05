@@ -7,10 +7,11 @@ vi.mock("next/cache", () => ({
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
-    integration: { findMany: vi.fn() },
-    system: { findUnique: vi.fn() },
-    database: { findMany: vi.fn() },
-    messageTopic: { findMany: vi.fn() },
+    integration: { findMany: vi.fn().mockResolvedValue([]) },
+    system: { findUnique: vi.fn(), findMany: vi.fn().mockResolvedValue([]) },
+    service: { findMany: vi.fn().mockResolvedValue([]) },
+    database: { findMany: vi.fn().mockResolvedValue([]) },
+    messageTopic: { findMany: vi.fn().mockResolvedValue([]) },
     package: { findMany: vi.fn() },
     dependency: { deleteMany: vi.fn(), createMany: vi.fn() },
     $transaction: vi.fn(),

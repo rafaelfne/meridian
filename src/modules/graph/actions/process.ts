@@ -21,57 +21,56 @@ export interface ProcessDependenciesActionResult {
 
 export async function processDependenciesAction(): Promise<ProcessDependenciesActionResult> {
   try {
+    // Batch-load all lookup data upfront to avoid N+1 queries in resolvers
+    const [allSystems, allServices, allIntegrations, allDatabases, allTopics] =
+      await Promise.all([
+        prisma.system.findMany({
+          select: { id: true, slug: true, name: true },
+        }),
+        prisma.service.findMany({
+          select: {
+            slug: true,
+            system: { select: { id: true, slug: true, name: true } },
+          },
+        }),
+        prisma.integration.findMany(),
+        prisma.database.findMany({
+          select: { name: true, provider: true, systemId: true },
+        }),
+        prisma.messageTopic.findMany({
+          select: { name: true, role: true, broker: true, systemId: true },
+        }),
+      ]);
+
+    const systemBySlug = new Map(allSystems.map((s) => [s.slug, s]));
+    const systemByServiceSlug = new Map(
+      allServices.map((s) => [s.slug, s.system]),
+    );
+
     const result = await processDependencies({
       resolveHttp: () =>
         resolveHttpDependencies(
-          () => prisma.integration.findMany(),
-          (slug) =>
-            prisma.system.findUnique({
-              where: { slug },
-              select: { id: true, slug: true, name: true },
-            }),
-          async (serviceSlug) => {
-            const service = await prisma.service.findFirst({
-              where: { slug: serviceSlug },
-              select: { system: { select: { id: true, slug: true, name: true } } },
-            });
-            return service?.system ?? null;
-          },
+          async () => allIntegrations,
+          async (slug) => systemBySlug.get(slug) ?? null,
+          async (slug) => systemByServiceSlug.get(slug) ?? null,
         ),
       resolveDatabase: () =>
         resolveDatabaseDeps({
-          getAllDatabases: () =>
-            prisma.database.findMany({
-              select: { name: true, provider: true, systemId: true },
-            }),
-          getAllIntegrations: () =>
-            prisma.integration.findMany({
-              select: {
-                name: true,
-                type: true,
-                targetSystem: true,
-                systemId: true,
-              },
-            }),
-          getSystemBySlug: (slug) =>
-            prisma.system.findUnique({
-              where: { slug },
-              select: { id: true },
-            }),
-          getSystemByServiceSlug: async (serviceSlug) => {
-            const service = await prisma.service.findFirst({
-              where: { slug: serviceSlug },
-              select: { system: { select: { id: true } } },
-            });
-            return service?.system ?? null;
-          },
+          getAllDatabases: async () => allDatabases,
+          getAllIntegrations: async () =>
+            allIntegrations.map((i) => ({
+              name: i.name,
+              type: i.type,
+              targetSystem: i.targetSystem,
+              systemId: i.systemId,
+            })),
+          getSystemBySlug: async (slug) => systemBySlug.get(slug) ?? null,
+          getSystemByServiceSlug: async (slug) =>
+            systemByServiceSlug.get(slug) ?? null,
         }),
       resolveMessaging: () =>
         resolveMessagingDeps({
-          getAllMessageTopicsWithSystem: () =>
-            prisma.messageTopic.findMany({
-              select: { name: true, role: true, broker: true, systemId: true },
-            }),
+          getAllMessageTopicsWithSystem: async () => allTopics,
         }),
       persistDependencies: (deps) =>
         prisma.$transaction(async (tx) => {

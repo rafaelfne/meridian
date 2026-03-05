@@ -11,9 +11,9 @@ import styles from "./UploadDropzone.module.css";
 import clsx from "clsx";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Upload, FileJson, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
+import { Upload, FileJson, CheckCircle, AlertCircle, Loader2, X } from "lucide-react";
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB per file
 
 const initialState: UploadInventoryResult = { success: false };
 
@@ -24,10 +24,8 @@ export function UploadDropzone({
   workspaceId: string;
   workspaceSlug: string;
 }) {
-  const [file, setFile] = useState<File | null>(null);
-  const [jsonPreview, setJsonPreview] = useState("");
+  const [files, setFiles] = useState<File[]>([]);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
-  const [previewOpen, setPreviewOpen] = useState(false);
 
   const [result, dispatch, isPending] = useActionState(
     uploadInventoryAction,
@@ -36,76 +34,92 @@ export function UploadDropzone({
 
   const onDrop = useCallback(
     (accepted: File[], rejections: FileRejection[]) => {
-      setValidationErrors([]);
-      setFile(null);
-      setJsonPreview("");
+      const errors: string[] = [];
 
-      if (rejections.length > 0) {
-        const errors = rejections.flatMap((r) =>
-          r.errors.map((e) => {
-            if (e.code === "file-too-large")
-              return "File size exceeds 5MB limit";
-            if (e.code === "file-invalid-type")
-              return "Only .json files are accepted";
-            return e.message;
-          }),
-        );
-        setValidationErrors(errors);
-        return;
+      for (const r of rejections) {
+        for (const e of r.errors) {
+          if (e.code === "file-too-large")
+            errors.push(`${r.file.name}: File size exceeds 5MB limit`);
+          else if (e.code === "file-invalid-type")
+            errors.push(`${r.file.name}: Only .json files are accepted`);
+          else errors.push(`${r.file.name}: ${e.message}`);
+        }
       }
 
-      const dropped = accepted[0];
-      if (!dropped) return;
+      // Validate each accepted file asynchronously
+      const validFiles: File[] = [];
 
-      dropped.text().then((text) => {
+      const validationPromises = accepted.map(async (dropped) => {
+        const text = await dropped.text();
         let json: unknown;
         try {
           json = JSON.parse(text);
         } catch {
-          setValidationErrors(["Invalid JSON file"]);
+          errors.push(`${dropped.name}: Invalid JSON file`);
           return;
         }
 
         const validation = InventoryUploadSchema.safeParse(json);
         if (!validation.success) {
-          setValidationErrors(
-            validation.error.issues.map(
-              (issue) => `${issue.path.join(".")}: ${issue.message}`,
-            ),
-          );
+          for (const issue of validation.error.issues) {
+            errors.push(
+              `${dropped.name}: ${issue.path.join(".")}: ${issue.message}`,
+            );
+          }
           return;
         }
 
-        setFile(dropped);
-        setJsonPreview(JSON.stringify(json, null, 2));
+        validFiles.push(dropped);
+      });
+
+      void Promise.all(validationPromises).then(() => {
+        setValidationErrors(errors.length > 0 ? errors : []);
+
+        if (validFiles.length > 0) {
+          setFiles((prev) => {
+            const existingNames = new Set(prev.map((f) => f.name));
+            const newFiles = validFiles.filter(
+              (f) => !existingNames.has(f.name),
+            );
+            return [...prev, ...newFiles];
+          });
+        }
       });
     },
     [],
   );
 
+  const removeFile = useCallback((name: string) => {
+    setFiles((prev) => prev.filter((f) => f.name !== name));
+  }, []);
+
   const [, startTransition] = useTransition();
 
   const handleSubmit = useCallback(() => {
-    if (!file) return;
+    if (files.length === 0) return;
     const formData = new FormData();
-    formData.append("file", file);
+    for (const file of files) {
+      formData.append("files", file);
+    }
     formData.append("workspaceId", workspaceId);
     startTransition(() => dispatch(formData));
-  }, [file, dispatch, startTransition, workspaceId]);
+  }, [files, dispatch, startTransition, workspaceId]);
 
   const isDisabled = isPending || result.success;
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: { "application/json": [".json"] },
-    maxFiles: 1,
     maxSize: MAX_FILE_SIZE,
     disabled: isDisabled,
+    multiple: true,
   });
 
   const hasClientErrors = validationErrors.length > 0;
   const hasServerErrors =
     !result.success && result.errors != null && result.errors.length > 0;
+
+  const totalSize = files.reduce((sum, f) => sum + f.size, 0);
 
   return (
     <div className="flex flex-col gap-4">
@@ -124,24 +138,44 @@ export function UploadDropzone({
             <Loader2 className="size-10 animate-spin" />
             <p className="font-medium">Uploading…</p>
           </>
-        ) : file ? (
-          <>
-            <FileJson className="size-10" />
-            <p className="font-medium">{file.name}</p>
-            <p className="text-xs">
-              {(file.size / 1024).toFixed(1)} KB — Ready to upload
-            </p>
-          </>
         ) : (
           <>
             <Upload className="size-10" />
             <p className="font-medium">
-              Drag &amp; drop a JSON inventory file here, or click to browse
+              Drag &amp; drop JSON inventory files here, or click to browse
             </p>
-            <p className="text-xs">Only .json files up to 5 MB</p>
+            <p className="text-xs">Only .json files up to 5 MB each</p>
           </>
         )}
       </div>
+
+      {files.length > 0 && !result.success && (
+        <div className={styles.fileList}>
+          {files.map((f) => (
+            <div key={f.name} className={styles.fileItem}>
+              <FileJson className="size-4 shrink-0" />
+              <span className={styles.fileName}>{f.name}</span>
+              <span className={styles.fileSize}>
+                {(f.size / 1024).toFixed(1)} KB
+              </span>
+              {!isPending && (
+                <button
+                  type="button"
+                  className={styles.fileRemove}
+                  onClick={() => removeFile(f.name)}
+                  title="Remove file"
+                >
+                  <X className="size-3.5" />
+                </button>
+              )}
+            </div>
+          ))}
+          <div className={styles.fileSummary}>
+            {files.length} file{files.length !== 1 ? "s" : ""} —{" "}
+            {(totalSize / 1024).toFixed(1)} KB total
+          </div>
+        </div>
+      )}
 
       {hasClientErrors && (
         <div
@@ -177,24 +211,12 @@ export function UploadDropzone({
         </div>
       )}
 
-      {jsonPreview && !result.success && (
-        <div>
-          <button
-            type="button"
-            className={styles.previewToggle}
-            aria-expanded={previewOpen}
-            onClick={() => setPreviewOpen((o) => !o)}
-          >
-            {previewOpen ? "▼ Hide" : "▶ Show"} JSON Preview
-          </button>
-          {previewOpen && <pre className={styles.preview}>{jsonPreview}</pre>}
-        </div>
-      )}
-
-      {file && !result.success && (
+      {files.length > 0 && !result.success && (
         <Button onClick={handleSubmit} disabled={isPending}>
           {isPending && <Loader2 className="size-4 animate-spin" />}
-          {isPending ? "Uploading…" : "Upload Inventory"}
+          {isPending
+            ? "Uploading…"
+            : `Upload ${files.length} file${files.length !== 1 ? "s" : ""}`}
         </Button>
       )}
 

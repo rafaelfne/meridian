@@ -3,7 +3,6 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import {
   render,
   screen,
-  fireEvent,
   waitFor,
   act,
   cleanup,
@@ -58,10 +57,10 @@ describe("UploadDropzone", () => {
   it("renders the dropzone with idle state", () => {
     render(<UploadDropzone workspaceId="ws-test-id" workspaceSlug="test-ws" />);
     expect(
-      screen.getByText(/drag & drop a json inventory file/i),
+      screen.getByText(/drag & drop json inventory files/i),
     ).toBeInTheDocument();
     expect(
-      screen.getByText(/only .json files up to 5 mb/i),
+      screen.getByText(/only .json files up to 5 mb each/i),
     ).toBeInTheDocument();
   });
 
@@ -77,7 +76,7 @@ describe("UploadDropzone", () => {
     expect(screen.getByText(/validation error/i)).toBeInTheDocument();
   });
 
-  it("shows preview and submit button for valid JSON", async () => {
+  it("shows file list and submit button for valid JSON", async () => {
     render(<UploadDropzone workspaceId="ws-test-id" workspaceSlug="test-ws" />);
     const file = createJsonFile({
       systems: [{ name: "Auth Service", slug: "auth-service" }],
@@ -92,38 +91,33 @@ describe("UploadDropzone", () => {
     });
 
     expect(
-      screen.getByRole("button", { name: /upload inventory/i }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: /json preview/i }),
+      screen.getByRole("button", { name: /upload 1 file$/i }),
     ).toBeInTheDocument();
   });
 
-  it("toggles JSON preview when clicking the toggle button", async () => {
+  it("shows multiple files when dropping several valid JSONs", async () => {
     render(<UploadDropzone workspaceId="ws-test-id" workspaceSlug="test-ws" />);
+    const file1 = createJsonFile(
+      { systems: [{ name: "Auth", slug: "auth" }] },
+      "auth.json",
+    );
+    const file2 = createJsonFile(
+      { systems: [{ name: "Core", slug: "core" }] },
+      "core.json",
+    );
 
     await act(async () => {
-      capturedOnDrop(
-        [
-          createJsonFile({
-            systems: [{ name: "Auth Service", slug: "auth-service" }],
-          }),
-        ],
-        [],
-      );
+      capturedOnDrop([file1, file2], []);
     });
 
     await waitFor(() => {
-      expect(
-        screen.getByRole("button", { name: /json preview/i }),
-      ).toBeInTheDocument();
+      expect(screen.getByText("auth.json")).toBeInTheDocument();
+      expect(screen.getByText("core.json")).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByRole("button", { name: /json preview/i }));
-    expect(screen.getByText(/"auth-service"/)).toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole("button", { name: /json preview/i }));
-    expect(screen.queryByText(/"auth-service"/)).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /upload 2 files$/i }),
+    ).toBeInTheDocument();
   });
 
   it("shows validation error when systems array is empty", async () => {
@@ -151,7 +145,7 @@ describe("UploadDropzone", () => {
     await waitFor(() => {
       expect(screen.getByRole("alert")).toBeInTheDocument();
     });
-    expect(screen.getByText("Invalid JSON file")).toBeInTheDocument();
+    expect(screen.getByText("bad.json: Invalid JSON file")).toBeInTheDocument();
   });
 
   it("shows rejection error for invalid file type", async () => {
@@ -169,7 +163,7 @@ describe("UploadDropzone", () => {
       expect(screen.getByRole("alert")).toBeInTheDocument();
     });
     expect(
-      screen.getByText("Only .json files are accepted"),
+      screen.getByText("readme.txt: Only .json files are accepted"),
     ).toBeInTheDocument();
   });
 
@@ -188,7 +182,7 @@ describe("UploadDropzone", () => {
       expect(screen.getByRole("alert")).toBeInTheDocument();
     });
     expect(
-      screen.getByText("File size exceeds 5MB limit"),
+      screen.getByText("big.json: File size exceeds 5MB limit"),
     ).toBeInTheDocument();
   });
 });
