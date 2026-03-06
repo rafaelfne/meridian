@@ -23,6 +23,7 @@ import { DomainGroupNode } from "./DomainGroupNode";
 import { CollapsedDomainNode } from "./CollapsedDomainNode";
 import { LayerGroupNode } from "./LayerGroupNode";
 import { GraphHoverContext } from "./GraphHoverContext";
+import type { EdgeOffset } from "./GraphHoverContext";
 import styles from "./DependencyGraph.module.css";
 
 const nodeTypes = {
@@ -43,9 +44,9 @@ interface DependencyGraphProps {
   highlightedSystemId?: string | null;
   focusedNodeId?: string | null;
   onViewportChange?: (viewport: Viewport) => void;
-  initialEdgeOffsets?: Record<string, number>;
+  initialEdgeOffsets?: Record<string, EdgeOffset>;
   onNodePositionsChange?: (positions: Record<string, { x: number; y: number }>) => void;
-  onEdgeOffsetsChange?: (offsets: Record<string, number>) => void;
+  onEdgeOffsetsChange?: (offsets: Record<string, EdgeOffset>) => void;
 }
 
 export function DependencyGraph({
@@ -71,8 +72,8 @@ export function DependencyGraph({
   const [nodes, setNodes, onNodesChange] = useNodesState(data.nodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(data.edges);
 
-  // Per-edge Y offset state (for drag-to-move edge paths)
-  const [edgeOffsets, setEdgeOffsets] = useState<Record<string, number>>(
+  // Per-edge XY offset state (for drag-to-move edge paths)
+  const [edgeOffsets, setEdgeOffsets] = useState<Record<string, EdgeOffset>>(
     initialEdgeOffsets ?? {},
   );
 
@@ -83,7 +84,7 @@ export function DependencyGraph({
     setEdgeOffsets(initialEdgeOffsets ?? {});
   }
 
-  const setEdgeOffset = useCallback((edgeId: string, offset: number) => {
+  const setEdgeOffset = useCallback((edgeId: string, offset: EdgeOffset) => {
     setEdgeOffsets((prev) => ({ ...prev, [edgeId]: offset }));
   }, []);
 

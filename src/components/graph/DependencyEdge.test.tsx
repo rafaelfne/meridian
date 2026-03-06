@@ -8,8 +8,6 @@ vi.mock("@xyflow/react", () => ({
   EdgeLabelRenderer: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="edge-label-renderer">{children}</div>
   ),
-  getSmoothStepPath: () => ["M0,0 L100,100", 50, 50],
-  Position: { Left: "left", Right: "right", Top: "top", Bottom: "bottom" },
   useReactFlow: () => ({ getViewport: () => ({ zoom: 1 }) }),
 }));
 

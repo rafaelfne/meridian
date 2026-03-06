@@ -29,6 +29,7 @@ import {
   type SnapshotMeta,
 } from "./TimeMachineSlider";
 import { HighlightNavigationBar } from "./HighlightNavigationBar";
+import type { EdgeOffset } from "./GraphHoverContext";
 
 interface GraphPageClientProps {
   data: GraphData;
@@ -64,7 +65,7 @@ function GraphPageClientInner({
   const savedPositionsRef = useRef<
     Record<string, Record<string, { x: number; y: number }>>
   >(readFromStorage(POSITIONS_STORAGE_KEY));
-  const savedEdgeOffsetsRef = useRef<Record<string, Record<string, number>>>(
+  const savedEdgeOffsetsRef = useRef<Record<string, Record<string, EdgeOffset>>>(
     readFromStorage(EDGE_OFFSETS_STORAGE_KEY),
   );
 
