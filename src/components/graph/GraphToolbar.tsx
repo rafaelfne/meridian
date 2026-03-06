@@ -176,10 +176,7 @@ export function GraphToolbar({
 
   const depTypeOptions = [...DEPENDENCY_TYPES] as string[];
 
-  const [isMac, setIsMac] = useState(false);
-  useEffect(() => {
-    setIsMac(/Mac|iPhone|iPad|iPod/.test(navigator.userAgent));
-  }, []);
+  const [isMac] = useState(() => typeof navigator !== "undefined" && /Mac|iPhone|iPad|iPod/.test(navigator.userAgent));
 
   return (
     <div className={styles.toolbar} role="toolbar" aria-label="Graph filters">

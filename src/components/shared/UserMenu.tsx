@@ -36,6 +36,7 @@ export function UserMenu() {
       <DropdownMenuTrigger asChild>
         <button type="button" className={styles.trigger} title={user.name ?? "Account"}>
           {user.image ? (
+            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={user.image}
               alt=""

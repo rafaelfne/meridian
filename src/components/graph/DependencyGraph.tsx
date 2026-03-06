@@ -292,7 +292,7 @@ export function DependencyGraph({
       setNodes(data.nodes);
       setEdges(data.edges);
     }
-  }, [data, highlightedSystemId, selectedEdgeId, setNodes, setEdges]);
+  }, [data, highlightedSystemId, selectedEdgeId, setNodes, setEdges, getInternalNode]);
 
   const handleNodeClick: NodeMouseHandler = useCallback(
     (_event, node) => {

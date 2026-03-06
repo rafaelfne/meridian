@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import {
   BaseEdge,
   EdgeLabelRenderer,
@@ -118,11 +118,13 @@ export function DependencyEdge({
 
   // Drag state
   const dragRef = useRef<{ startX: number; startY: number; startOffset: EdgeOffset } | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   const handlePointerDown = (e: React.PointerEvent<SVGElement>) => {
     e.stopPropagation();
     e.currentTarget.setPointerCapture(e.pointerId);
     dragRef.current = { startX: e.clientX, startY: e.clientY, startOffset: userOffset };
+    setIsDragging(true);
   };
 
   const handlePointerMove = (e: React.PointerEvent<SVGElement>) => {
@@ -138,6 +140,7 @@ export function DependencyEdge({
 
   const handlePointerUp = () => {
     dragRef.current = null;
+    setIsDragging(false);
   };
 
   const midX = labelX;
@@ -171,7 +174,7 @@ export function DependencyEdge({
         fill="none"
         stroke="transparent"
         strokeWidth={16}
-        style={{ cursor: dragRef.current ? "grabbing" : "grab" }}
+        style={{ cursor: isDragging ? "grabbing" : "grab" }}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}

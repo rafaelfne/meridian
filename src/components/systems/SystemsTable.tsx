@@ -158,7 +158,8 @@ export function SystemsTable({
     (systemId: string, originalSlug: string, newSlug: string) => {
       setEditedSystemSlugs((prev) => {
         if (newSlug === originalSlug) {
-          const { [systemId]: _, ...rest } = prev;
+          const rest = { ...prev };
+          delete rest[systemId];
           return rest;
         }
         return { ...prev, [systemId]: newSlug };
@@ -171,7 +172,8 @@ export function SystemsTable({
     (serviceId: string, originalSlug: string, newSlug: string) => {
       setEditedServiceSlugs((prev) => {
         if (newSlug === originalSlug) {
-          const { [serviceId]: _, ...rest } = prev;
+          const rest = { ...prev };
+          delete rest[serviceId];
           return rest;
         }
         return { ...prev, [serviceId]: newSlug };
@@ -184,7 +186,8 @@ export function SystemsTable({
     (systemId: string, originalDomainId: string, newDomainId: string) => {
       setEditedDomains((prev) => {
         if (newDomainId === originalDomainId) {
-          const { [systemId]: _, ...rest } = prev;
+          const rest = { ...prev };
+          delete rest[systemId];
           return rest;
         }
         return { ...prev, [systemId]: newDomainId };

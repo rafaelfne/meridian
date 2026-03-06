@@ -7,7 +7,7 @@ import Markdoc, { type Schema, Tag } from "@markdoc/markdoc";
  */
 export const fence: Schema = {
   ...Markdoc.nodes.fence,
-  transform(node, config) {
+  transform(node) {
     const language = (node.attributes["language"] as string) ?? "";
 
     if (language === "mermaid") {

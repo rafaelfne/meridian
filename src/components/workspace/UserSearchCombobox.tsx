@@ -89,6 +89,7 @@ export function UserSearchCombobox({
           {value ? (
             <span className="flex items-center gap-2 truncate">
               {value.image ? (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={value.image}
                   alt=""
@@ -152,6 +153,7 @@ export function UserSearchCombobox({
                   >
                     <div className="flex items-center gap-2">
                       {user.image ? (
+                        // eslint-disable-next-line @next/next/no-img-element
                         <img
                           src={user.image}
                           alt=""
