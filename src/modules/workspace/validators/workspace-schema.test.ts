@@ -57,26 +57,41 @@ describe("CreateWorkspaceSchema", () => {
 });
 
 describe("InviteMemberSchema", () => {
-  it("validates a correct invite", () => {
+  it("validates a correct invite with userId", () => {
     const result = InviteMemberSchema.safeParse({
-      email: "user@example.com",
+      userId: "cm1234567890abcdef12345",
       role: "EDITOR",
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts VIEWER role", () => {
+    const result = InviteMemberSchema.safeParse({
+      userId: "cm1234567890abcdef12345",
+      role: "VIEWER",
     });
     expect(result.success).toBe(true);
   });
 
   it("rejects OWNER role", () => {
     const result = InviteMemberSchema.safeParse({
-      email: "user@example.com",
+      userId: "cm1234567890abcdef12345",
       role: "OWNER",
     });
     expect(result.success).toBe(false);
   });
 
-  it("rejects invalid email", () => {
+  it("rejects invalid userId", () => {
     const result = InviteMemberSchema.safeParse({
-      email: "not-an-email",
+      userId: "not-a-cuid",
       role: "VIEWER",
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects missing userId", () => {
+    const result = InviteMemberSchema.safeParse({
+      role: "EDITOR",
     });
     expect(result.success).toBe(false);
   });
