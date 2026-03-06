@@ -1,0 +1,128 @@
+.page {
+  min-height: 100vh;
+  background-color: var(--meridian-bg);
+  color: var(--meridian-text-primary);
+  position: relative;
+}
+
+/* Ambient glows */
+.glowContainer {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.glowTopLeft {
+  position: absolute;
+  top: -10%;
+  left: -10%;
+  width: 40%;
+  height: 40%;
+  background: radial-gradient(circle, rgba(6, 182, 212, 0.12) 0%, transparent 70%);
+  border-radius: 50%;
+  filter: blur(80px);
+}
+
+.glowBottomRight {
+  position: absolute;
+  bottom: 10%;
+  right: -5%;
+  width: 30%;
+  height: 30%;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.08) 0%, transparent 70%);
+  border-radius: 50%;
+  filter: blur(80px);
+}
+
+/* Two-column layout: TOC sidebar + content */
+.layout {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 4rem;
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 7rem 1.5rem 6rem;
+  position: relative;
+  z-index: 1;
+}
+
+.sidebar {
+  /* sticky handled by child */
+}
+
+.main {
+  min-width: 0;
+}
+
+/* Hero */
+.hero {
+  position: relative;
+  z-index: 1;
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 6rem 1.5rem 0;
+}
+
+.heroLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: 9999px;
+  background-color: rgba(6, 182, 212, 0.08);
+  border: 1px solid rgba(6, 182, 212, 0.2);
+  color: var(--meridian-accent);
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  margin-bottom: 1.25rem;
+}
+
+.heroTitle {
+  font-family: var(--font-body);
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: var(--meridian-text-primary);
+  margin-bottom: 0.75rem;
+}
+
+.heroSubtitle {
+  font-size: 1.0625rem;
+  line-height: 1.7;
+  color: var(--meridian-text-secondary);
+  max-width: 42rem;
+  margin-bottom: 2rem;
+}
+
+.heroDivider {
+  border: none;
+  border-top: 1px solid var(--meridian-border);
+  margin-bottom: 0;
+}
+
+@media (max-width: 1024px) {
+  .layout {
+    grid-template-columns: 180px 1fr;
+    gap: 2.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .layout {
+    grid-template-columns: 1fr;
+    padding-top: 5.5rem;
+  }
+
+  .sidebar {
+    display: none;
+  }
+
+  .hero {
+    padding-top: 5rem;
+  }
+}
