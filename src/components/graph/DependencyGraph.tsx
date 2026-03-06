@@ -60,7 +60,7 @@ export function DependencyGraph({
   onNodePositionsChange,
   onEdgeOffsetsChange,
 }: DependencyGraphProps) {
-  const { getNodes, screenToFlowPosition } = useReactFlow();
+  const { getNodes, screenToFlowPosition, getInternalNode } = useReactFlow();
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
@@ -179,6 +179,20 @@ export function DependencyGraph({
     }
   }, [data.nodes]);
 
+  // ── Pull-to-highlight: enable CSS transition when highlight changes ──
+  const pullingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useLayoutEffect(() => {
+    if (!wrapperRef.current) return;
+    wrapperRef.current.classList.add(styles.pullingNodes!);
+    if (pullingTimeoutRef.current) clearTimeout(pullingTimeoutRef.current);
+    pullingTimeoutRef.current = setTimeout(() => {
+      wrapperRef.current?.classList.remove(styles.pullingNodes!);
+    }, 700);
+    return () => {
+      if (pullingTimeoutRef.current) clearTimeout(pullingTimeoutRef.current);
+    };
+  }, [highlightedSystemId]);
+
   // Sync nodes/edges when data changes (filtering) or highlighting changes
   useEffect(() => {
     if (highlightedSystemId) {
@@ -204,13 +218,36 @@ export function DependencyGraph({
         }
       }
 
+      // Pull connected system nodes toward the highlighted node
+      const hInternal = getInternalNode(highlightedSystemId);
+      const hPos = hInternal?.internals.positionAbsolute;
+
       setNodes(
-        data.nodes.map((node) => ({
-          ...node,
-          style: connectedNodeIds.has(node.id)
-            ? { transition: 'opacity 0.2s ease' }
-            : { opacity: DIMMED_OPACITY, transition: 'opacity 0.2s ease' },
-        })),
+        data.nodes.map((node) => {
+          const isConnected = connectedNodeIds.has(node.id);
+
+          // Shift neighbor system nodes 40% closer in absolute space
+          let position = node.position;
+          if (isConnected && node.id !== highlightedSystemId && node.type === 'system' && hPos) {
+            const nInternal = getInternalNode(node.id);
+            const nPos = nInternal?.internals.positionAbsolute;
+            if (nPos) {
+              const PULL = 0.4;
+              position = {
+                x: node.position.x + (hPos.x - nPos.x) * PULL,
+                y: node.position.y + (hPos.y - nPos.y) * PULL,
+              };
+            }
+          }
+
+          return {
+            ...node,
+            position,
+            style: isConnected
+              ? { transition: 'opacity 0.2s ease' }
+              : { opacity: DIMMED_OPACITY, transition: 'opacity 0.2s ease' },
+          };
+        }),
       );
 
       setEdges(

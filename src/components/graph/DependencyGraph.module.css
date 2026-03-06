@@ -13,6 +13,11 @@
   transition: opacity 0.3s ease;
 }
 
+/* Pull-to-highlight transition — applied when a node is highlighted/cleared */
+.pullingNodes :global(.react-flow__node) {
+  transition: transform 0.55s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
 .empty {
   display: flex;
   flex-direction: column;
