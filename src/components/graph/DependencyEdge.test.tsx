@@ -8,7 +8,10 @@ vi.mock("@xyflow/react", () => ({
   EdgeLabelRenderer: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="edge-label-renderer">{children}</div>
   ),
-  useReactFlow: () => ({ getViewport: () => ({ zoom: 1 }) }),
+  useReactFlow: () => ({
+    getViewport: () => ({ zoom: 1 }),
+    getNode: () => undefined,
+  }),
 }));
 
 vi.mock("./GraphHoverContext", () => ({
@@ -16,6 +19,8 @@ vi.mock("./GraphHoverContext", () => ({
     hoveredEdgeId: null,
     edgeOffsets: {},
     setEdgeOffset: vi.fn(),
+    selectedEdgeId: null,
+    setSelectedEdgeId: vi.fn(),
   }),
 }));
 

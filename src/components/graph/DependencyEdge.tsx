@@ -7,7 +7,8 @@ import {
   useReactFlow,
 } from "@xyflow/react";
 import type { EdgeProps } from "@xyflow/react";
-import type { GraphEdgeData } from "@/modules/graph/types";
+import type { GraphEdgeData, GraphNodeData } from "@/modules/graph/types";
+import { DEPENDENCY_TYPE_CONFIG } from "@/modules/graph/constants";
 import { EdgeParticles } from "./EdgeParticles";
 import { useGraphHover } from "./GraphHoverContext";
 import type { EdgeOffset } from "./GraphHoverContext";
@@ -80,6 +81,8 @@ function buildStepPath(
 
 export function DependencyEdge({
   id,
+  source,
+  target,
   sourceX,
   sourceY,
   targetX,
@@ -88,9 +91,10 @@ export function DependencyEdge({
   markerEnd,
   data,
 }: DependencyEdgeProps) {
-  const { hoveredEdgeId, edgeOffsets, setEdgeOffset } = useGraphHover();
-  const { getViewport } = useReactFlow();
+  const { hoveredEdgeId, edgeOffsets, setEdgeOffset, selectedEdgeId, selectedEdgeClickPos } = useGraphHover();
+  const { getViewport, getNode } = useReactFlow();
   const isHovered = hoveredEdgeId === id;
+  const isSelected = selectedEdgeId === id;
 
   const userOffset: EdgeOffset = edgeOffsets[id] ?? { x: 0, y: 0 };
   const offsetX = userOffset.x;
@@ -102,6 +106,15 @@ export function DependencyEdge({
 
   const strokeColor = (style?.stroke as string) ?? "#94a3b8";
   const baseWidth = (style?.strokeWidth as number) ?? 2;
+
+  // Popup data — resolved once per render so JSX stays clean
+  const sourceNode = getNode(source);
+  const targetNode = getNode(target);
+  const sourceLabel = (sourceNode?.data as GraphNodeData | undefined)?.label ?? source;
+  const targetLabel = (targetNode?.data as GraphNodeData | undefined)?.label ?? target;
+  const typeConfig = DEPENDENCY_TYPE_CONFIG[data.type as keyof typeof DEPENDENCY_TYPE_CONFIG];
+  const popupTypeLabel = typeConfig?.label ?? data.type.replace(/_/g, " ");
+  const popupTypeColor = typeConfig?.color ?? strokeColor;
 
   // Drag state
   const dragRef = useRef<{ startX: number; startY: number; startOffset: EdgeOffset } | null>(null);
@@ -244,6 +257,134 @@ export function DependencyEdge({
         >
           consumed by
         </div>
+        {/* Edge detail popup — shown on click */}
+        {isSelected && selectedEdgeClickPos && (
+          <div
+            className="nodrag nopan"
+            style={{
+              position: "absolute",
+              transform: `translate(-50%, -100%) translate(${selectedEdgeClickPos.x}px,${selectedEdgeClickPos.y - 10}px)`,
+              pointerEvents: "all",
+              backgroundColor: "var(--card)",
+              border: "1px solid var(--border)",
+              borderRadius: 8,
+              boxShadow: "0 4px 20px rgba(0,0,0,0.18)",
+              whiteSpace: "nowrap",
+              zIndex: 1000,
+            }}
+          >
+            {/* Header: type badge */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                padding: "9px 12px",
+                borderBottom: "1px solid var(--border)",
+                backgroundColor: `color-mix(in srgb, ${popupTypeColor} 12%, transparent)`,
+              }}
+            >
+              <span
+                style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: "50%",
+                  backgroundColor: popupTypeColor,
+                  flexShrink: 0,
+                }}
+              />
+              <span
+                style={{
+                  fontSize: "0.6875rem",
+                  fontWeight: 700,
+                  color: popupTypeColor,
+                  flex: 1,
+                  letterSpacing: "0.02em",
+                }}
+              >
+                {popupTypeLabel}
+              </span>
+            </div>
+            {/* Body */}
+            <div style={{ padding: "10px 12px", display: "flex", flexDirection: "column", gap: 4 }}>
+              {/* Column headers: consumes / provides */}
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span
+                  style={{
+                    flex: 1,
+                    fontSize: "0.5rem",
+                    fontWeight: 600,
+                    color: "var(--muted-foreground)",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.07em",
+                  }}
+                >
+                  consumes
+                </span>
+                <span style={{ width: "1rem", flexShrink: 0 }} />
+                <span
+                  style={{
+                    flex: 1,
+                    fontSize: "0.5rem",
+                    fontWeight: 600,
+                    color: "var(--muted-foreground)",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.07em",
+                  }}
+                >
+                  provides
+                </span>
+              </div>
+              {/* System names row */}
+              <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
+                <span
+                  style={{
+                    flex: 1,
+                    fontWeight: 700,
+                    fontSize: "0.875rem",
+                    color: "var(--foreground)",
+                    paddingTop: 1,
+                  }}
+                >
+                  {sourceLabel}
+                </span>
+                <span
+                  style={{
+                    color: popupTypeColor,
+                    fontSize: "0.875rem",
+                    flexShrink: 0,
+                    lineHeight: 1,
+                  }}
+                >
+                  →
+                </span>
+                <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 2 }}>
+                  <span
+                    style={{
+                      fontWeight: 700,
+                      fontSize: "0.875rem",
+                      color: "var(--foreground)",
+                    }}
+                  >
+                    {targetLabel}
+                  </span>
+                  {data.targetServiceSlug && (
+                    <span
+                      style={{
+                        fontSize: "0.625rem",
+                        color: "var(--muted-foreground)",
+                        letterSpacing: "0.02em",
+                        fontWeight: 400,
+                      }}
+                    >
+                      {data.targetServiceSlug}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </EdgeLabelRenderer>
     </>
   );

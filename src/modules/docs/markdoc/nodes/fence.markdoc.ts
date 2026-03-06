@@ -15,7 +15,8 @@ export const fence: Schema = {
       return new Tag("MermaidBlock", { content }, []);
     }
 
-    // Default rendering for all other languages
-    return Markdoc.nodes.fence.transform!(node, config);
+    // All other languages: render with syntax highlighting
+    const content = (node.attributes["content"] as string) ?? "";
+    return new Tag("CodeBlock", { language: language || undefined, content }, []);
   },
 };

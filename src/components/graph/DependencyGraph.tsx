@@ -60,7 +60,7 @@ export function DependencyGraph({
   onNodePositionsChange,
   onEdgeOffsetsChange,
 }: DependencyGraphProps) {
-  const { getNodes } = useReactFlow();
+  const { getNodes, screenToFlowPosition } = useReactFlow();
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
@@ -107,6 +107,9 @@ export function DependencyGraph({
 
   // Edge hover state
   const [hoveredEdgeId, setHoveredEdgeId] = useState<string | null>(null);
+  // Edge selection state (click to show popup)
+  const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
+  const [selectedEdgeClickPos, setSelectedEdgeClickPos] = useState<{ x: number; y: number } | null>(null);
 
   const handleEdgeMouseEnter = useCallback(
     (_event: React.MouseEvent, edge: { id: string }) => {
@@ -119,6 +122,26 @@ export function DependencyGraph({
     setHoveredEdgeId(null);
   }, []);
 
+  const handleEdgeClick = useCallback(
+    (event: React.MouseEvent, edge: { id: string }) => {
+      const pos = screenToFlowPosition({ x: event.clientX, y: event.clientY });
+      setSelectedEdgeId((prev) => {
+        if (prev === edge.id) {
+          setSelectedEdgeClickPos(null);
+          return null;
+        }
+        setSelectedEdgeClickPos(pos);
+        return edge.id;
+      });
+    },
+    [screenToFlowPosition],
+  );
+
+  const handlePaneClick = useCallback(() => {
+    setSelectedEdgeId(null);
+    setSelectedEdgeClickPos(null);
+  }, []);
+
   const hoverContextValue = useMemo(
     () => ({
       hoveredEdgeId,
@@ -127,8 +150,12 @@ export function DependencyGraph({
       onHighlight,
       edgeOffsets,
       setEdgeOffset,
+      selectedEdgeId,
+      setSelectedEdgeId,
+      selectedEdgeClickPos,
+      setSelectedEdgeClickPos,
     }),
-    [hoveredEdgeId, highlightedSystemId, focusedNodeId, onHighlight, edgeOffsets, setEdgeOffset],
+    [hoveredEdgeId, highlightedSystemId, focusedNodeId, onHighlight, edgeOffsets, setEdgeOffset, selectedEdgeId, selectedEdgeClickPos],
   );
 
   // ── Animated layout transition ───────────────────────
@@ -200,11 +227,35 @@ export function DependencyGraph({
           };
         }),
       );
+    } else if (selectedEdgeId) {
+      const sel = data.edges.find((e) => e.id === selectedEdgeId);
+      if (sel) {
+        const connectedNodeIds = new Set([sel.source, sel.target]);
+        setNodes(
+          data.nodes.map((node) => ({
+            ...node,
+            style: connectedNodeIds.has(node.id)
+              ? { transition: 'opacity 0.2s ease' }
+              : { opacity: DIMMED_OPACITY, transition: 'opacity 0.2s ease' },
+          })),
+        );
+        setEdges(
+          data.edges.map((edge) => ({
+            ...edge,
+            style: {
+              ...edge.style,
+              opacity: edge.id === selectedEdgeId ? 1 : DIMMED_OPACITY,
+              strokeWidth: edge.id === selectedEdgeId ? 3.5 : (edge.style.strokeWidth ?? 2),
+              transition: 'opacity 0.2s ease, stroke-width 0.2s ease',
+            },
+          })),
+        );
+      }
     } else {
       setNodes(data.nodes);
       setEdges(data.edges);
     }
-  }, [data, highlightedSystemId, setNodes, setEdges]);
+  }, [data, highlightedSystemId, selectedEdgeId, setNodes, setEdges]);
 
   const handleNodeClick: NodeMouseHandler = useCallback(
     (_event, node) => {
@@ -252,6 +303,8 @@ export function DependencyGraph({
           onMoveEnd={handleMoveEnd}
           onEdgeMouseEnter={handleEdgeMouseEnter}
           onEdgeMouseLeave={handleEdgeMouseLeave}
+          onEdgeClick={handleEdgeClick}
+          onPaneClick={handlePaneClick}
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
           fitView

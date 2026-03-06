@@ -1,0 +1,66 @@
+.wrapper {
+  position: relative;
+  margin: 1.5rem 0;
+  border: 1px solid var(--meridian-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.langBadge {
+  padding: 0.25rem 1rem;
+  font-size: 0.6875rem;
+  color: var(--meridian-text-secondary);
+  background: var(--meridian-bg-elevated);
+  border-bottom: 1px solid var(--meridian-border);
+  font-family: var(--font-mono);
+  letter-spacing: 0.03em;
+}
+
+/* Reset styles inherited from .content pre, then apply shiki */
+.code :global(pre.shiki) {
+  margin: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 1rem 1.25rem !important;
+  overflow-x: auto;
+  font-size: inherit !important;
+  font-family: inherit !important;
+  line-height: inherit !important;
+}
+
+.code :global(pre.shiki code) {
+  padding: 0 !important;
+  background: none !important;
+  border-radius: 0 !important;
+  font-size: inherit !important;
+  color: inherit !important;
+}
+
+/* Light theme: apply --shiki-light color variables */
+.code :global(pre.shiki) {
+  background-color: var(--shiki-light-bg) !important;
+  color: var(--shiki-light) !important;
+}
+
+.code :global(pre.shiki) :global(span) {
+  color: var(--shiki-light) !important;
+  font-style: var(--shiki-light-font-style, normal) !important;
+  font-weight: var(--shiki-light-font-weight, inherit) !important;
+  text-decoration: var(--shiki-light-text-decoration, none) !important;
+}
+
+/* Dark theme: apply --shiki-dark color variables */
+:global(.dark) .code :global(pre.shiki) {
+  background-color: var(--shiki-dark-bg) !important;
+  color: var(--shiki-dark) !important;
+}
+
+:global(.dark) .code :global(pre.shiki) :global(span) {
+  color: var(--shiki-dark) !important;
+  font-style: var(--shiki-dark-font-style, normal) !important;
+  font-weight: var(--shiki-dark-font-weight, inherit) !important;
+  text-decoration: var(--shiki-dark-text-decoration, none) !important;
+}
