@@ -9,7 +9,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -19,6 +18,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { UserSearchCombobox } from "./UserSearchCombobox";
+
+interface UserResult {
+  id: string;
+  name: string | null;
+  email: string | null;
+  image: string | null;
+}
 
 interface InviteMemberFormProps {
   workspaceSlug: string;
@@ -26,7 +33,7 @@ interface InviteMemberFormProps {
 
 export function InviteMemberForm({ workspaceSlug }: InviteMemberFormProps) {
   const [isPending, startTransition] = useTransition();
-  const [email, setEmail] = useState("");
+  const [selectedUser, setSelectedUser] = useState<UserResult | null>(null);
   const [role, setRole] = useState("EDITOR");
   const [errors, setErrors] = useState<Record<string, string[]>>({});
 
@@ -34,14 +41,19 @@ export function InviteMemberForm({ workspaceSlug }: InviteMemberFormProps) {
     (e: React.FormEvent) => {
       e.preventDefault();
 
+      if (!selectedUser) {
+        setErrors({ userId: ["Select a user to invite."] });
+        return;
+      }
+
       const formData = new FormData();
-      formData.set("email", email);
+      formData.set("userId", selectedUser.id);
       formData.set("role", role);
 
       startTransition(async () => {
         const result = await inviteMember(workspaceSlug, formData);
         if (result.success) {
-          setEmail("");
+          setSelectedUser(null);
           setErrors({});
           toast.success("Member added");
         } else {
@@ -49,7 +61,7 @@ export function InviteMemberForm({ workspaceSlug }: InviteMemberFormProps) {
         }
       });
     },
-    [email, role, workspaceSlug],
+    [selectedUser, role, workspaceSlug],
   );
 
   return (
@@ -57,28 +69,20 @@ export function InviteMemberForm({ workspaceSlug }: InviteMemberFormProps) {
       <CardHeader>
         <CardTitle>Invite member</CardTitle>
         <CardDescription>
-          Add a team member by their email address. They must already have an
-          account.
+          Search for a user by name or email to add them to this workspace.
         </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-3">
           <div className="grid grid-cols-[1fr_7rem_auto] items-end gap-3">
             <div className="space-y-1">
-              <label
-                htmlFor="invite-email"
-                className="text-sm font-medium text-foreground"
-              >
-                Email
+              <label className="text-sm font-medium text-foreground">
+                User
               </label>
-              <Input
-                id="invite-email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="user@example.com"
-                required
-                className="mb-1"
+              <UserSearchCombobox
+                workspaceSlug={workspaceSlug}
+                value={selectedUser}
+                onChange={setSelectedUser}
               />
             </div>
             <div className="space-y-1">
@@ -95,12 +99,16 @@ export function InviteMemberForm({ workspaceSlug }: InviteMemberFormProps) {
                 </SelectContent>
               </Select>
             </div>
-            <Button type="submit" disabled={isPending} className="mb-1">
+            <Button
+              type="submit"
+              disabled={isPending || !selectedUser}
+              className="mb-1"
+            >
               {isPending ? "Inviting..." : "Invite"}
             </Button>
           </div>
-          {errors.email && (
-            <p className="text-sm text-destructive">{errors.email[0]}</p>
+          {errors.userId && (
+            <p className="text-sm text-destructive">{errors.userId[0]}</p>
           )}
         </form>
       </CardContent>

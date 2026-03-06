@@ -4,9 +4,13 @@ import { render, screen, fireEvent, cleanup } from "@testing-library/react";
 import { SystemsTable } from "./SystemsTable";
 import type { SystemListItemWithServices } from "@/modules/system/types";
 
-// Mock server action
+// Mock server actions
 vi.mock("@/modules/system/actions/update-slugs", () => ({
   updateSlugsAction: vi.fn(),
+}));
+
+vi.mock("@/modules/system/actions/create-domain", () => ({
+  createDomainAction: vi.fn(),
 }));
 
 // Mock sonner toast
@@ -133,7 +137,7 @@ describe("SystemsTable", () => {
     expect(link).toHaveAttribute("href", "/w/test-ws/systems/auth-service");
   });
 
-  it("renders domain selects for each system", () => {
+  it("renders domain combobox for each system", () => {
     render(
       <SystemsTable
         systems={mockSystems}
@@ -141,9 +145,15 @@ describe("SystemsTable", () => {
         workspaceSlug="test-ws"
       />,
     );
-    expect(screen.getByLabelText("Domain for Auth Service")).toBeInTheDocument();
-    expect(screen.getByLabelText("Domain for Payment Gateway")).toBeInTheDocument();
-    expect(screen.getByLabelText("Domain for Billing Engine")).toBeInTheDocument();
+    // Each system row renders a DomainCombobox (Button with role="combobox")
+    const comboboxButtons = screen.getAllByRole("combobox").filter(
+      (el) => el.tagName === "BUTTON",
+    );
+    expect(comboboxButtons).toHaveLength(mockSystems.length);
+    // Verify domain names are shown in combobox triggers
+    expect(comboboxButtons[0]).toHaveTextContent("Identity");
+    expect(comboboxButtons[1]).toHaveTextContent("Payments");
+    expect(comboboxButtons[2]).toHaveTextContent("Payments");
   });
 
   it("renders dash for null language", () => {

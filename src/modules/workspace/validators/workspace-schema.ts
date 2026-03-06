@@ -14,7 +14,7 @@ export const CreateWorkspaceSchema = z.object({
 });
 
 export const InviteMemberSchema = z.object({
-  email: z.string().email(),
+  userId: z.string().cuid(),
   role: z.enum(["EDITOR", "VIEWER"]),
 });
 

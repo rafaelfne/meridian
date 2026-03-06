@@ -9,7 +9,7 @@ export async function inviteMember(workspaceSlug: string, formData: FormData) {
   const ctx = await requireWorkspaceAccess(workspaceSlug, "OWNER");
 
   const parsed = InviteMemberSchema.safeParse({
-    email: formData.get("email"),
+    userId: formData.get("userId"),
     role: formData.get("role"),
   });
   if (!parsed.success) {
@@ -17,12 +17,12 @@ export async function inviteMember(workspaceSlug: string, formData: FormData) {
   }
 
   const targetUser = await prisma.user.findUnique({
-    where: { email: parsed.data.email },
+    where: { id: parsed.data.userId },
   });
   if (!targetUser) {
     return {
       success: false as const,
-      error: { email: ["User not found. They must have an account first."] },
+      error: { userId: ["User not found."] },
     };
   }
 
@@ -37,7 +37,7 @@ export async function inviteMember(workspaceSlug: string, formData: FormData) {
   if (existingMember) {
     return {
       success: false as const,
-      error: { email: ["User is already a member of this workspace"] },
+      error: { userId: ["User is already a member of this workspace."] },
     };
   }
 

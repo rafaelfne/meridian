@@ -13,6 +13,11 @@ export default defineConfig({
     environment: "happy-dom",
     setupFiles: ["./vitest.setup.ts"],
     include: ["src/**/*.test.{ts,tsx}"],
+    server: {
+      deps: {
+        inline: ["next-auth"],
+      },
+    },
     coverage: {
       provider: "v8",
       reporter: ["text", "lcov"],
