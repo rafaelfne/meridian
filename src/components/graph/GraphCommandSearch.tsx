@@ -36,8 +36,15 @@ export function GraphCommandSearch({
         setOpen((prev) => !prev);
       }
     }
+    function handleOpenSearch() {
+      setOpen(true);
+    }
     document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
+    document.addEventListener("open-graph-search", handleOpenSearch);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("open-graph-search", handleOpenSearch);
+    };
   }, []);
 
   const handleSelect = useCallback(

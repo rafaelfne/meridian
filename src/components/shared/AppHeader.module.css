@@ -24,6 +24,22 @@
   user-select: none;
 }
 
+.hamburger {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem;
+  border: none;
+  background: none;
+  color: var(--foreground);
+  cursor: pointer;
+  border-radius: var(--radius-md);
+}
+
+.hamburger:hover {
+  background-color: var(--accent);
+}
+
 .nav {
   display: flex;
   align-items: center;
@@ -59,4 +75,60 @@
   align-items: center;
   gap: 0.5rem;
   margin-left: auto;
+}
+
+/* ── Mobile sheet nav ─────────────────────── */
+
+.mobileSheet {
+  padding-top: 1rem;
+}
+
+.mobileNav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.5rem 0;
+}
+
+.mobileNavLink {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  border-radius: var(--radius-md);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--muted-foreground);
+  text-decoration: none;
+  transition: color 0.15s, background-color 0.15s;
+}
+
+.mobileNavLink:hover {
+  color: var(--foreground);
+  background-color: var(--accent);
+}
+
+.mobileNavLinkActive {
+  color: var(--foreground);
+  background-color: var(--accent);
+}
+
+/* ── Responsive ───────────────────────────── */
+
+@media (max-width: 767px) {
+  .header {
+    padding: 0 1rem;
+  }
+
+  .hamburger {
+    display: inline-flex;
+  }
+
+  .nav {
+    display: none;
+  }
+
+  .separator {
+    display: none;
+  }
 }

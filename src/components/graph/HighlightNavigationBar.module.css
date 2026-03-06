@@ -116,3 +116,22 @@
   color: var(--muted-foreground);
   white-space: nowrap;
 }
+
+/* ── Responsive ──────────────────────────────────────── */
+
+@media (max-width: 767px) {
+  .bar {
+    max-width: calc(100% - 2rem);
+    left: 1rem;
+    right: 1rem;
+    transform: none;
+  }
+
+  .originName {
+    max-width: 5rem;
+  }
+
+  .nodeName {
+    max-width: 7rem;
+  }
+}

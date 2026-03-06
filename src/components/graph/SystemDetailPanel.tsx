@@ -35,6 +35,8 @@ import {
   FileText,
 } from "lucide-react";
 import clsx from "clsx";
+import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-media-query";
 import styles from "./SystemDetailPanel.module.css";
 
 /* ────────────────────────────────────────────────────────── */
@@ -186,6 +188,7 @@ export function SystemDetailPanel({
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("deps");
   const [copied, setCopied] = useState(false);
+  const isMobile = useIsMobile();
 
   /* ── Fetch system detail when systemId changes ────────── */
   useEffect(() => {
@@ -255,7 +258,13 @@ export function SystemDetailPanel({
 
   return (
     <Sheet open={systemId !== null} onOpenChange={handleOpenChange}>
-      <SheetContent side="right" className="flex flex-col sm:max-w-lg">
+      <SheetContent
+        side={isMobile ? "bottom" : "right"}
+        className={cn(
+          "flex flex-col",
+          isMobile ? "max-h-[85vh]" : "sm:max-w-lg",
+        )}
+      >
         {/* ── Loading state ──────────────────────────────── */}
         {loading && (
           <>

@@ -1,13 +1,19 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback, useTransition } from "react";
-import { Search, ChevronDown, RotateCcw, Eye, EyeOff, Zap, Layers, Group, Loader2 } from "lucide-react";
+import { Search, ChevronDown, RotateCcw, Eye, EyeOff, Zap, Layers, Group, Loader2, SlidersHorizontal } from "lucide-react";
 import clsx from "clsx";
 import {
   DEPENDENCY_TYPE_CONFIG,
   DEPENDENCY_TYPES,
   type DependencyTypeName,
 } from "@/modules/graph/constants";
+import {
+  Sheet,
+  SheetContent,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { useIsMobile } from "@/hooks/use-media-query";
 import { useGraphFilters } from "./useGraphFilters";
 import styles from "./GraphToolbar.module.css";
 
@@ -54,12 +60,14 @@ function MultiSelect({
   selected,
   onChange,
   renderOption,
+  inline,
 }: {
   label: string;
   options: string[];
   selected: string[];
   onChange: (next: string[]) => void;
   renderOption?: (option: string) => React.ReactNode;
+  inline?: boolean;
 }) {
   const { open, setOpen, ref } = useDropdown();
 
@@ -74,6 +82,34 @@ function MultiSelect({
     [selected, onChange],
   );
 
+  /* ── Inline mode — used inside the mobile filter sheet ── */
+  if (inline) {
+    return (
+      <div className={styles.inlineSection}>
+        <div className={styles.inlineSectionHeader}>
+          <span className={styles.inlineSectionLabel}>{label}</span>
+          {selected.length > 0 && (
+            <span className={styles.badge}>{selected.length}</span>
+          )}
+        </div>
+        <div className={styles.inlineOptions}>
+          {options.map((option) => (
+            <label key={option} className={styles.inlineOption}>
+              <input
+                type="checkbox"
+                className={styles.filterCheckbox}
+                checked={selected.includes(option)}
+                onChange={() => toggle(option)}
+              />
+              {renderOption ? renderOption(option) : option}
+            </label>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  /* ── Dropdown mode — desktop toolbar ──────────────────── */
   return (
     <div className={styles.filterGroup} ref={ref}>
       <button
@@ -163,41 +199,39 @@ export function GraphToolbar({
 }: GraphToolbarProps) {
   const { filters, setFilters, resetFilters } = useGraphFilters();
   const [isClusterPending, startClusterTransition] = useTransition();
+  const isMobile = useIsMobile();
+  const [filterSheetOpen, setFilterSheetOpen] = useState(false);
 
   const hasActiveFilters =
     filters.domains.length > 0 ||
     filters.dependencyTypes.length > 0 ||
     filters.languages.length > 0 ||
-    filters.search.trim() !== "" ||
     !filters.showIsolated ||
     !filters.showParticles ||
     filters.layoutMode !== "default" ||
     filters.clustering;
 
+  const activeFilterCount =
+    filters.domains.length +
+    filters.dependencyTypes.length +
+    filters.languages.length +
+    (filters.showIsolated ? 0 : 1) +
+    (filters.showParticles ? 0 : 1) +
+    (filters.layoutMode !== "default" ? 1 : 0) +
+    (filters.clustering ? 1 : 0);
+
   const depTypeOptions = [...DEPENDENCY_TYPES] as string[];
 
-  const [isMac] = useState(() => typeof navigator !== "undefined" && /Mac|iPhone|iPad|iPod/.test(navigator.userAgent));
+  const openSearch = useCallback(() => {
+    document.dispatchEvent(new CustomEvent("open-graph-search"));
+  }, []);
 
-  return (
-    <div className={styles.toolbar} role="toolbar" aria-label="Graph filters">
-      {/* Search */}
-      <div className={styles.searchWrapper}>
-        <Search size={14} className={styles.searchIcon} />
-        <input
-          type="text"
-          className={styles.searchInput}
-          placeholder="Search systems…"
-          value={filters.search}
-          onChange={(e) => setFilters({ search: e.target.value })}
-          aria-label="Search systems"
-        />
-        <kbd className={styles.kbd}>
-          <span>{isMac ? "⌘" : "Ctrl"}</span>K
-        </kbd>
-      </div>
+  const counterText = `${filteredNodes} / ${totalNodes} systems · ${filteredEdges} / ${totalEdges} deps`;
 
-      <span className={styles.separator} />
+  /* ── Shared filter controls ─────────────────────────────── */
 
+  const filterControls = (
+    <>
       {/* Domain multi-select */}
       {availableDomains.length > 0 && (
         <MultiSelect
@@ -208,7 +242,7 @@ export function GraphToolbar({
         />
       )}
 
-      {/* Dependency type multi-select with colored checkboxes */}
+      {/* Dependency type multi-select */}
       <MultiSelect
         label="Dependency Type"
         options={depTypeOptions}
@@ -226,9 +260,11 @@ export function GraphToolbar({
           onChange={(languages) => setFilters({ languages })}
         />
       )}
+    </>
+  );
 
-      <span className={styles.separator} />
-
+  const toggleControls = (
+    <>
       {/* Toggle isolated systems */}
       <button
         type="button"
@@ -313,6 +349,210 @@ export function GraphToolbar({
         )}
         Cluster
       </button>
+    </>
+  );
+
+  /* ── Mobile layout ──────────────────────────────────────── */
+
+  if (isMobile) {
+    return (
+      <div className={styles.toolbar} role="toolbar" aria-label="Graph filters">
+        {/* Search button */}
+        <button
+          type="button"
+          className={styles.searchButton}
+          onClick={openSearch}
+          aria-label="Search systems"
+        >
+          <Search size={14} />
+        </button>
+
+        {/* Counter */}
+        <span className={styles.counter} aria-live="polite">
+          {counterText}
+        </span>
+
+        {/* Filters button */}
+        <button
+          type="button"
+          className={clsx(styles.filterButton, styles.filtersToggle)}
+          onClick={() => setFilterSheetOpen(true)}
+          aria-label="Open filters"
+        >
+          <SlidersHorizontal size={14} />
+          {activeFilterCount > 0 && (
+            <span className={styles.badge}>{activeFilterCount}</span>
+          )}
+        </button>
+
+        {/* Reset */}
+        {hasActiveFilters && (
+          <button
+            type="button"
+            className={styles.resetButton}
+            onClick={resetFilters}
+            aria-label="Reset all filters"
+          >
+            <RotateCcw size={14} />
+          </button>
+        )}
+
+        {/* Filter bottom sheet */}
+        <Sheet open={filterSheetOpen} onOpenChange={setFilterSheetOpen}>
+          <SheetContent side="bottom" className={styles.filterSheet}>
+            <SheetTitle className="sr-only">Filters</SheetTitle>
+            <div className={styles.filterSheetBody}>
+              {/* ── Filter sections ─────────────────────── */}
+              {availableDomains.length > 0 && (
+                <MultiSelect
+                  label="Domain"
+                  options={availableDomains}
+                  selected={filters.domains}
+                  onChange={(domains) => setFilters({ domains })}
+                  inline
+                />
+              )}
+
+              <MultiSelect
+                label="Dependency Type"
+                options={depTypeOptions}
+                selected={filters.dependencyTypes}
+                onChange={(dependencyTypes) => setFilters({ dependencyTypes })}
+                renderOption={(option) => <DepTypeOption type={option} />}
+                inline
+              />
+
+              {availableLanguages.length > 0 && (
+                <MultiSelect
+                  label="Language"
+                  options={availableLanguages}
+                  selected={filters.languages}
+                  onChange={(languages) => setFilters({ languages })}
+                  inline
+                />
+              )}
+
+              {/* ── Toggles ────────────────────────────── */}
+              <div className={styles.inlineSection}>
+                <span className={styles.inlineSectionLabel}>Display</span>
+                <div className={styles.mobileToggles}>
+                  <button
+                    type="button"
+                    className={clsx(styles.mobileToggle, {
+                      [styles.mobileToggleActive ?? ""]: !filters.showIsolated,
+                    })}
+                    onClick={() => setFilters({ showIsolated: !filters.showIsolated })}
+                    aria-pressed={!filters.showIsolated}
+                  >
+                    {filters.showIsolated ? <Eye size={16} /> : <EyeOff size={16} />}
+                    <span className={styles.mobileToggleText}>
+                      <span className={styles.mobileToggleName}>Isolated Systems</span>
+                      <span className={styles.mobileToggleDesc}>
+                        {filters.showIsolated ? "Showing" : "Hidden"}
+                      </span>
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    className={clsx(styles.mobileToggle, {
+                      [styles.mobileToggleActive ?? ""]: filters.showParticles,
+                    })}
+                    onClick={() => setFilters({ showParticles: !filters.showParticles })}
+                    aria-pressed={filters.showParticles}
+                  >
+                    <Zap size={16} />
+                    <span className={styles.mobileToggleText}>
+                      <span className={styles.mobileToggleName}>Flow Animation</span>
+                      <span className={styles.mobileToggleDesc}>
+                        {filters.showParticles ? "Enabled" : "Disabled"}
+                      </span>
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    className={clsx(styles.mobileToggle, {
+                      [styles.mobileToggleActive ?? ""]: filters.layoutMode === "layered",
+                    })}
+                    onClick={() =>
+                      setFilters({
+                        layoutMode: filters.layoutMode === "layered" ? "default" : "layered",
+                      })
+                    }
+                    aria-pressed={filters.layoutMode === "layered"}
+                  >
+                    <Layers size={16} />
+                    <span className={styles.mobileToggleText}>
+                      <span className={styles.mobileToggleName}>Layered Layout</span>
+                      <span className={styles.mobileToggleDesc}>
+                        {filters.layoutMode === "layered" ? "Active" : "Default"}
+                      </span>
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    className={clsx(styles.mobileToggle, {
+                      [styles.mobileToggleActive ?? ""]: filters.clustering,
+                    })}
+                    onClick={() =>
+                      startClusterTransition(() =>
+                        setFilters({ clustering: !filters.clustering }),
+                      )
+                    }
+                    disabled={isClusterPending}
+                    aria-pressed={filters.clustering}
+                  >
+                    {isClusterPending ? (
+                      <Loader2 size={16} className={styles.spinning} />
+                    ) : (
+                      <Group size={16} />
+                    )}
+                    <span className={styles.mobileToggleText}>
+                      <span className={styles.mobileToggleName}>Domain Clustering</span>
+                      <span className={styles.mobileToggleDesc}>
+                        {filters.clustering ? "Active" : "Off"}
+                      </span>
+                    </span>
+                  </button>
+                </div>
+              </div>
+
+              {/* ── Legend ──────────────────────────────── */}
+              <div className={styles.inlineSection}>
+                <span className={styles.inlineSectionLabel}>Legend</span>
+                <ColorLegend visibleTypes={filters.dependencyTypes} />
+              </div>
+            </div>
+          </SheetContent>
+        </Sheet>
+      </div>
+    );
+  }
+
+  /* ── Desktop layout ─────────────────────────────────────── */
+
+  return (
+    <div className={styles.toolbar} role="toolbar" aria-label="Graph filters">
+      {/* Search */}
+      <button
+        type="button"
+        className={styles.searchButton}
+        onClick={openSearch}
+        aria-label="Search systems"
+        title="Search systems (⌘K)"
+      >
+        <Search size={14} />
+      </button>
+
+      <span className={styles.separator} />
+
+      {filterControls}
+
+      <span className={styles.separator} />
+
+      {toggleControls}
 
       {/* Reset */}
       {hasActiveFilters && (

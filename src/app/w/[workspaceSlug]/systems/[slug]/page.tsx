@@ -158,6 +158,7 @@ export default async function SystemDetailPage({
           <CardDescription>{system.services.length} service(s)</CardDescription>
         </CardHeader>
         <CardContent>
+          <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -176,6 +177,7 @@ export default async function SystemDetailPage({
               ))}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>,
     );
@@ -189,6 +191,7 @@ export default async function SystemDetailPage({
           <CardDescription>{system.databases.length} database(s)</CardDescription>
         </CardHeader>
         <CardContent>
+          <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -209,6 +212,7 @@ export default async function SystemDetailPage({
               ))}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>,
     );
@@ -222,6 +226,7 @@ export default async function SystemDetailPage({
           <CardDescription>{system.integrations.length} integration(s)</CardDescription>
         </CardHeader>
         <CardContent>
+          <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -242,6 +247,7 @@ export default async function SystemDetailPage({
               ))}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>,
     );
@@ -255,6 +261,7 @@ export default async function SystemDetailPage({
           <CardDescription>{system.messageTopics.length} topic(s)</CardDescription>
         </CardHeader>
         <CardContent>
+          <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -277,6 +284,7 @@ export default async function SystemDetailPage({
               ))}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>,
     );
@@ -290,6 +298,7 @@ export default async function SystemDetailPage({
           <CardDescription>Top packages used</CardDescription>
         </CardHeader>
         <CardContent>
+          <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -310,6 +319,7 @@ export default async function SystemDetailPage({
               ))}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>,
     );
@@ -336,6 +346,7 @@ export default async function SystemDetailPage({
           <CardDescription>{system.risks.length} risk(s)</CardDescription>
         </CardHeader>
         <CardContent>
+          <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -356,6 +367,7 @@ export default async function SystemDetailPage({
               ))}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
     ) : null;

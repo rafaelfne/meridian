@@ -34,3 +34,11 @@
   font-size: 0.875rem;
   line-height: 1.4;
 }
+
+/* ── Responsive ──────────────────────────────────────── */
+
+@media (max-width: 767px) {
+  .wrapper :global(.react-flow__minimap) {
+    display: none;
+  }
+}

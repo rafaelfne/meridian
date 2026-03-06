@@ -101,3 +101,10 @@
   color: var(--muted-foreground);
   font-size: 0.875rem;
 }
+
+@media (max-width: 640px) {
+  .barLabel {
+    width: 5rem;
+    font-size: 0.75rem;
+  }
+}

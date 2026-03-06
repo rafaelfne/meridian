@@ -45,7 +45,7 @@ describe("GraphToolbar", () => {
     renderToolbar();
 
     expect(screen.getByRole("toolbar")).toBeInTheDocument();
-    expect(screen.getByPlaceholderText("Search systems…")).toBeInTheDocument();
+    expect(screen.getByLabelText("Search systems")).toBeInTheDocument();
     expect(screen.getByText("Domain")).toBeInTheDocument();
     expect(screen.getByText("Dependency Type")).toBeInTheDocument();
     expect(screen.getByText("Language")).toBeInTheDocument();
@@ -67,16 +67,16 @@ describe("GraphToolbar", () => {
     expect(screen.getByText("gRPC")).toBeInTheDocument();
   });
 
-  it("updates search param when typing in the search box", () => {
+  it("dispatches open-graph-search event when clicking search button", () => {
     renderToolbar();
 
-    const input = screen.getByPlaceholderText("Search systems…");
-    fireEvent.change(input, { target: { value: "auth" } });
+    const handler = vi.fn();
+    document.addEventListener("open-graph-search", handler);
 
-    expect(mockReplace).toHaveBeenCalledWith(
-      expect.stringContaining("search=auth"),
-      { scroll: false },
-    );
+    fireEvent.click(screen.getByLabelText("Search systems"));
+
+    expect(handler).toHaveBeenCalledTimes(1);
+    document.removeEventListener("open-graph-search", handler);
   });
 
   it("opens domain dropdown when clicking the Domain button", () => {
@@ -135,7 +135,7 @@ describe("GraphToolbar", () => {
   });
 
   it("shows reset button when filters are active", () => {
-    currentSearchParams = new URLSearchParams("search=auth");
+    currentSearchParams = new URLSearchParams("showIsolated=false");
     renderToolbar();
 
     expect(screen.getByLabelText("Reset all filters")).toBeInTheDocument();
@@ -148,7 +148,7 @@ describe("GraphToolbar", () => {
   });
 
   it("resets all filters when clicking the reset button", () => {
-    currentSearchParams = new URLSearchParams("search=auth&domains=Auth");
+    currentSearchParams = new URLSearchParams("domains=Auth&showIsolated=false");
     renderToolbar();
 
     fireEvent.click(screen.getByLabelText("Reset all filters"));
@@ -157,13 +157,11 @@ describe("GraphToolbar", () => {
   });
 
   it("reads initial filter state from URL search params", () => {
-    currentSearchParams = new URLSearchParams("search=billing");
+    currentSearchParams = new URLSearchParams("domains=Auth");
     renderToolbar();
 
-    const input = screen.getByPlaceholderText(
-      "Search systems…",
-    ) as HTMLInputElement;
-    expect(input.value).toBe("billing");
+    // Domain badge should show "1" indicating one domain is selected
+    expect(screen.getByText("1")).toBeInTheDocument();
   });
 
   it("shows badge count when domains are selected", () => {

@@ -151,3 +151,28 @@
   font-size: 0.875rem;
   color: var(--muted-foreground);
 }
+
+/* ── Responsive ──────────────────────────────────────── */
+
+@media (max-width: 767px) {
+  .filters {
+    flex-direction: column;
+  }
+
+  .searchInput {
+    max-width: 100%;
+  }
+
+  .tableWrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .hideOnMobile {
+    display: none;
+  }
+
+  .servicesCell {
+    padding-left: 1.5rem;
+  }
+}

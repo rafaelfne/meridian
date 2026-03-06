@@ -291,7 +291,7 @@ export function SystemsTable({
                   Domain {renderSortIcon("domain")}
                 </button>
               </TableHead>
-              <TableHead>
+              <TableHead className={styles.hideOnMobile}>
                 <button
                   type="button"
                   className={styles.sortButton}
@@ -301,7 +301,7 @@ export function SystemsTable({
                   Language {renderSortIcon("language")}
                 </button>
               </TableHead>
-              <TableHead>
+              <TableHead className={styles.hideOnMobile}>
                 <button
                   type="button"
                   className={styles.sortButton}
@@ -312,8 +312,8 @@ export function SystemsTable({
                 </button>
               </TableHead>
               <TableHead className="text-right">Services</TableHead>
-              <TableHead className="text-right">Databases</TableHead>
-              <TableHead className="text-right">Integrations</TableHead>
+              <TableHead className={clsx("text-right", styles.hideOnMobile)}>Databases</TableHead>
+              <TableHead className={clsx("text-right", styles.hideOnMobile)}>Integrations</TableHead>
               <TableHead className="text-right">Docs</TableHead>
             </TableRow>
           </TableHeader>
@@ -394,15 +394,15 @@ export function SystemsTable({
                         }
                       />
                     </TableCell>
-                    <TableCell>{system.language ?? "—"}</TableCell>
-                    <TableCell>{system.framework ?? "—"}</TableCell>
+                    <TableCell className={styles.hideOnMobile}>{system.language ?? "—"}</TableCell>
+                    <TableCell className={styles.hideOnMobile}>{system.framework ?? "—"}</TableCell>
                     <TableCell className="text-right">
                       {system._count.services}
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className={clsx("text-right", styles.hideOnMobile)}>
                       {system._count.databases}
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className={clsx("text-right", styles.hideOnMobile)}>
                       {system._count.integrations}
                     </TableCell>
                     <TableCell className="text-right">

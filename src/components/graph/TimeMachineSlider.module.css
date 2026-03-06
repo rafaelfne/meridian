@@ -49,3 +49,18 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
+
+/* ── Responsive ──────────────────────────────────────── */
+
+@media (max-width: 767px) {
+  .container {
+    min-width: unset;
+    width: calc(100% - 2rem);
+    left: 1rem;
+    right: 1rem;
+    transform: none;
+    bottom: 1rem;
+    padding: 0.5rem 1rem;
+    gap: 0.5rem;
+  }
+}
