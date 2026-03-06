@@ -179,7 +179,7 @@ function GraphPageClientInner({
   );
 
   const handleEdgeOffsetsChange = useCallback(
-    (offsets: Record<string, number>) => {
+    (offsets: Record<string, EdgeOffset>) => {
       savedEdgeOffsetsRef.current[layoutKey] = offsets;
       try {
         localStorage.setItem(
