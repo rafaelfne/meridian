@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import type { NodeProps } from "@xyflow/react";
 import type { GraphNodeData } from "@/modules/graph/types";
 import styles from "./LayerGroupNode.module.css";
@@ -8,7 +9,7 @@ type LayerGroupNodeProps = NodeProps & {
   data: GraphNodeData & { width?: number; height?: number };
 };
 
-export function LayerGroupNode({ data }: LayerGroupNodeProps) {
+function LayerGroupNodeInner({ data }: LayerGroupNodeProps) {
   return (
     <div
       className={styles.group}
@@ -30,3 +31,6 @@ export function LayerGroupNode({ data }: LayerGroupNodeProps) {
     </div>
   );
 }
+
+export const LayerGroupNode = memo(LayerGroupNodeInner);
+LayerGroupNode.displayName = "LayerGroupNode";

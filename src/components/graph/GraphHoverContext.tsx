@@ -7,11 +7,26 @@ export interface EdgeOffset {
   y: number;
 }
 
-interface GraphHoverState {
-  hoveredEdgeId: string | null;
+// ── Node Highlight Context ──────────────────────────────────
+// Consumed by SystemNode only — changes when highlight/focus state changes.
+
+interface NodeHighlightState {
   highlightedSystemId?: string | null;
   focusedNodeId?: string | null;
   onHighlight?: (nodeId: string) => void;
+}
+
+export const NodeHighlightContext = createContext<NodeHighlightState>({});
+
+export function useNodeHighlight() {
+  return useContext(NodeHighlightContext);
+}
+
+// ── Edge Interaction Context ────────────────────────────────
+// Consumed by DependencyEdge only — changes on hover, drag, and selection.
+
+interface EdgeInteractionState {
+  hoveredEdgeId: string | null;
   edgeOffsets: Record<string, EdgeOffset>;
   setEdgeOffset: (edgeId: string, offset: EdgeOffset) => void;
   selectedEdgeId: string | null;
@@ -22,7 +37,7 @@ interface GraphHoverState {
 
 const noop = () => { };
 
-export const GraphHoverContext = createContext<GraphHoverState>({
+export const EdgeInteractionContext = createContext<EdgeInteractionState>({
   hoveredEdgeId: null,
   edgeOffsets: {},
   setEdgeOffset: noop,
@@ -32,6 +47,6 @@ export const GraphHoverContext = createContext<GraphHoverState>({
   setSelectedEdgeClickPos: noop,
 });
 
-export function useGraphHover() {
-  return useContext(GraphHoverContext);
+export function useEdgeInteraction() {
+  return useContext(EdgeInteractionContext);
 }

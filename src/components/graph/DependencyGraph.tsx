@@ -22,7 +22,7 @@ import { LayerLabelNode } from "./LayerLabelNode";
 import { DomainGroupNode } from "./DomainGroupNode";
 import { CollapsedDomainNode } from "./CollapsedDomainNode";
 import { LayerGroupNode } from "./LayerGroupNode";
-import { GraphHoverContext } from "./GraphHoverContext";
+import { NodeHighlightContext, EdgeInteractionContext } from "./GraphHoverContext";
 import type { EdgeOffset } from "./GraphHoverContext";
 import styles from "./DependencyGraph.module.css";
 
@@ -142,12 +142,18 @@ export function DependencyGraph({
     setSelectedEdgeClickPos(null);
   }, []);
 
-  const hoverContextValue = useMemo(
+  const nodeHighlightValue = useMemo(
     () => ({
-      hoveredEdgeId,
       highlightedSystemId,
       focusedNodeId,
       onHighlight,
+    }),
+    [highlightedSystemId, focusedNodeId, onHighlight],
+  );
+
+  const edgeInteractionValue = useMemo(
+    () => ({
+      hoveredEdgeId,
       edgeOffsets,
       setEdgeOffset,
       selectedEdgeId,
@@ -155,7 +161,7 @@ export function DependencyGraph({
       selectedEdgeClickPos,
       setSelectedEdgeClickPos,
     }),
-    [hoveredEdgeId, highlightedSystemId, focusedNodeId, onHighlight, edgeOffsets, setEdgeOffset, selectedEdgeId, selectedEdgeClickPos],
+    [hoveredEdgeId, edgeOffsets, setEdgeOffset, selectedEdgeId, selectedEdgeClickPos],
   );
 
   // ── Animated layout transition ───────────────────────
@@ -328,37 +334,39 @@ export function DependencyGraph({
 
   return (
     <div ref={wrapperRef} className={styles.wrapper}>
-      <GraphHoverContext.Provider value={hoverContextValue}>
-        <ReactFlow
-          colorMode={isDark ? "dark" : "light"}
-          nodes={nodes}
-          edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onNodeClick={handleNodeClick}
-          onNodeDragStop={handleNodeDragStop}
-          onMoveEnd={handleMoveEnd}
-          onEdgeMouseEnter={handleEdgeMouseEnter}
-          onEdgeMouseLeave={handleEdgeMouseLeave}
-          onEdgeClick={handleEdgeClick}
-          onPaneClick={handlePaneClick}
-          nodeTypes={nodeTypes}
-          edgeTypes={edgeTypes}
-          fitView
-          nodesDraggable
-          nodesConnectable={false}
-          edgesReconnectable={false}
-        >
-          <MiniMap pannable zoomable />
-          <Controls />
-          <Background
-            variant={BackgroundVariant.Dots}
-            color={isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.15)"}
-            gap={20}
-            size={1.5}
-          />
-        </ReactFlow>
-      </GraphHoverContext.Provider>
+      <NodeHighlightContext.Provider value={nodeHighlightValue}>
+        <EdgeInteractionContext.Provider value={edgeInteractionValue}>
+          <ReactFlow
+            colorMode={isDark ? "dark" : "light"}
+            nodes={nodes}
+            edges={edges}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            onNodeClick={handleNodeClick}
+            onNodeDragStop={handleNodeDragStop}
+            onMoveEnd={handleMoveEnd}
+            onEdgeMouseEnter={handleEdgeMouseEnter}
+            onEdgeMouseLeave={handleEdgeMouseLeave}
+            onEdgeClick={handleEdgeClick}
+            onPaneClick={handlePaneClick}
+            nodeTypes={nodeTypes}
+            edgeTypes={edgeTypes}
+            fitView
+            nodesDraggable
+            nodesConnectable={false}
+            edgesReconnectable={false}
+          >
+            <MiniMap pannable zoomable />
+            <Controls />
+            <Background
+              variant={BackgroundVariant.Dots}
+              color={isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.15)"}
+              gap={20}
+              size={1.5}
+            />
+          </ReactFlow>
+        </EdgeInteractionContext.Provider>
+      </NodeHighlightContext.Provider>
     </div>
   );
 }

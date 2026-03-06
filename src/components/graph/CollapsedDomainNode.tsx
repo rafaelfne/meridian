@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { Handle, Position } from "@xyflow/react";
 import type { NodeProps } from "@xyflow/react";
 import type { GraphNodeData } from "@/modules/graph/types";
@@ -7,7 +8,7 @@ import styles from "./CollapsedDomainNode.module.css";
 
 type CollapsedDomainNodeProps = NodeProps & { data: GraphNodeData };
 
-export function CollapsedDomainNode({ data }: CollapsedDomainNodeProps) {
+function CollapsedDomainNodeInner({ data }: CollapsedDomainNodeProps) {
   return (
     <div
       className={styles.collapsed}
@@ -24,3 +25,6 @@ export function CollapsedDomainNode({ data }: CollapsedDomainNodeProps) {
     </div>
   );
 }
+
+export const CollapsedDomainNode = memo(CollapsedDomainNodeInner);
+CollapsedDomainNode.displayName = "CollapsedDomainNode";

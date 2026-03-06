@@ -30,7 +30,7 @@ export function WorkspacesSection() {
       </p>
       <ul>
         <li>
-          <strong>Name</strong> — human-readable display name (e.g., "My Platform")
+          <strong>Name</strong> — human-readable display name (e.g., &ldquo;My Platform&rdquo;)
         </li>
         <li>
           <strong>Slug</strong> — URL-safe identifier, auto-generated from the name but editable

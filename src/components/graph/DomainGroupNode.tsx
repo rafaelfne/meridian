@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import type { NodeProps } from "@xyflow/react";
 import type { GraphNodeData } from "@/modules/graph/types";
 import styles from "./DomainGroupNode.module.css";
@@ -8,7 +9,7 @@ type DomainGroupNodeProps = NodeProps & {
   data: GraphNodeData & { width?: number; height?: number };
 };
 
-export function DomainGroupNode({ data }: DomainGroupNodeProps) {
+function DomainGroupNodeInner({ data }: DomainGroupNodeProps) {
   return (
     <div
       className={styles.group}
@@ -26,3 +27,6 @@ export function DomainGroupNode({ data }: DomainGroupNodeProps) {
     </div>
   );
 }
+
+export const DomainGroupNode = memo(DomainGroupNodeInner);
+DomainGroupNode.displayName = "DomainGroupNode";

@@ -15,12 +15,14 @@ vi.mock("@xyflow/react", () => ({
 }));
 
 vi.mock("./GraphHoverContext", () => ({
-  useGraphHover: () => ({
+  useEdgeInteraction: () => ({
     hoveredEdgeId: null,
     edgeOffsets: {},
     setEdgeOffset: vi.fn(),
     selectedEdgeId: null,
     setSelectedEdgeId: vi.fn(),
+    selectedEdgeClickPos: null,
+    setSelectedEdgeClickPos: vi.fn(),
   }),
 }));
 

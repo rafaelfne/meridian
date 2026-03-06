@@ -1,9 +1,10 @@
 "use client";
 
+import { memo } from "react";
 import { Handle, Position } from "@xyflow/react";
 import type { NodeProps } from "@xyflow/react";
 import type { GraphNodeData } from "@/modules/graph/types";
-import { useGraphHover } from "./GraphHoverContext";
+import { useNodeHighlight } from "./GraphHoverContext";
 import styles from "./SystemNode.module.css";
 import clsx from "clsx";
 import { AlertTriangle, Waypoints } from "lucide-react";
@@ -26,8 +27,8 @@ function svcTypeLabel(type: string): string {
   }
 }
 
-export function SystemNode({ id, data, selected }: SystemNodeProps) {
-  const { onHighlight, highlightedSystemId, focusedNodeId } = useGraphHover();
+function SystemNodeInner({ id, data, selected }: SystemNodeProps) {
+  const { onHighlight, highlightedSystemId, focusedNodeId } = useNodeHighlight();
 
   const isHighlighted = highlightedSystemId === id;
   const isFocused = focusedNodeId === id;
@@ -105,3 +106,6 @@ export function SystemNode({ id, data, selected }: SystemNodeProps) {
     </div>
   );
 }
+
+export const SystemNode = memo(SystemNodeInner);
+SystemNode.displayName = "SystemNode";

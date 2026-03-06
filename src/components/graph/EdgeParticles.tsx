@@ -1,5 +1,7 @@
 "use client";
 
+import { memo } from "react";
+
 interface EdgeParticlesProps {
   edgePath: string;
   color?: string;
@@ -7,7 +9,7 @@ interface EdgeParticlesProps {
   duration?: number;
 }
 
-export function EdgeParticles({
+function EdgeParticlesInner({
   edgePath,
   color = "#94a3b8",
   count = 2,
@@ -31,3 +33,6 @@ export function EdgeParticles({
     </g>
   );
 }
+
+export const EdgeParticles = memo(EdgeParticlesInner);
+EdgeParticles.displayName = "EdgeParticles";

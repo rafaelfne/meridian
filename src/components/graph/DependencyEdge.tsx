@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, memo, useMemo } from "react";
 import {
   BaseEdge,
   EdgeLabelRenderer,
@@ -10,7 +10,7 @@ import type { EdgeProps } from "@xyflow/react";
 import type { GraphEdgeData, GraphNodeData } from "@/modules/graph/types";
 import { DEPENDENCY_TYPE_CONFIG } from "@/modules/graph/constants";
 import { EdgeParticles } from "./EdgeParticles";
-import { useGraphHover } from "./GraphHoverContext";
+import { useEdgeInteraction } from "./GraphHoverContext";
 import type { EdgeOffset } from "./GraphHoverContext";
 import edgeStyles from "./DependencyEdge.module.css";
 
@@ -79,7 +79,159 @@ function buildStepPath(
   return [path, (qX1 + qX2) / 2, midY];
 }
 
-export function DependencyEdge({
+/** Edge detail popup — only mounted when an edge is selected. */
+function EdgePopup({
+  source,
+  target,
+  data,
+  strokeColor,
+  clickPos,
+}: {
+  source: string;
+  target: string;
+  data: GraphEdgeData;
+  strokeColor: string;
+  clickPos: { x: number; y: number };
+}) {
+  const { getNode } = useReactFlow();
+  const sourceNode = getNode(source);
+  const targetNode = getNode(target);
+  const sourceLabel = (sourceNode?.data as GraphNodeData | undefined)?.label ?? source;
+  const targetLabel = (targetNode?.data as GraphNodeData | undefined)?.label ?? target;
+  const typeConfig = DEPENDENCY_TYPE_CONFIG[data.type as keyof typeof DEPENDENCY_TYPE_CONFIG];
+  const popupTypeLabel = typeConfig?.label ?? data.type.replace(/_/g, " ");
+  const popupTypeColor = typeConfig?.color ?? strokeColor;
+
+  return (
+    <div
+      className="nodrag nopan"
+      style={{
+        position: "absolute",
+        transform: `translate(-50%, -100%) translate(${clickPos.x}px,${clickPos.y - 10}px)`,
+        pointerEvents: "all",
+        backgroundColor: "var(--card)",
+        border: "1px solid var(--border)",
+        borderRadius: 8,
+        boxShadow: "0 4px 20px rgba(0,0,0,0.18)",
+        whiteSpace: "nowrap",
+        zIndex: 1000,
+      }}
+    >
+      {/* Header: type badge */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          padding: "9px 12px",
+          borderBottom: "1px solid var(--border)",
+          backgroundColor: `color-mix(in srgb, ${popupTypeColor} 12%, transparent)`,
+        }}
+      >
+        <span
+          style={{
+            width: 8,
+            height: 8,
+            borderRadius: "50%",
+            backgroundColor: popupTypeColor,
+            flexShrink: 0,
+          }}
+        />
+        <span
+          style={{
+            fontSize: "0.6875rem",
+            fontWeight: 700,
+            color: popupTypeColor,
+            flex: 1,
+            letterSpacing: "0.02em",
+          }}
+        >
+          {popupTypeLabel}
+        </span>
+      </div>
+      {/* Body */}
+      <div style={{ padding: "10px 12px", display: "flex", flexDirection: "column", gap: 4 }}>
+        {/* Column headers: consumes / provides */}
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span
+            style={{
+              flex: 1,
+              fontSize: "0.5rem",
+              fontWeight: 600,
+              color: "var(--muted-foreground)",
+              textTransform: "uppercase",
+              letterSpacing: "0.07em",
+            }}
+          >
+            consumes
+          </span>
+          <span style={{ width: "1rem", flexShrink: 0 }} />
+          <span
+            style={{
+              flex: 1,
+              fontSize: "0.5rem",
+              fontWeight: 600,
+              color: "var(--muted-foreground)",
+              textTransform: "uppercase",
+              letterSpacing: "0.07em",
+            }}
+          >
+            provides
+          </span>
+        </div>
+        {/* System names row */}
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
+          <span
+            style={{
+              flex: 1,
+              fontWeight: 700,
+              fontSize: "0.875rem",
+              color: "var(--foreground)",
+              paddingTop: 1,
+            }}
+          >
+            {sourceLabel}
+          </span>
+          <span
+            style={{
+              color: popupTypeColor,
+              fontSize: "0.875rem",
+              flexShrink: 0,
+              lineHeight: 1,
+            }}
+          >
+            →
+          </span>
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 2 }}>
+            <span
+              style={{
+                fontWeight: 700,
+                fontSize: "0.875rem",
+                color: "var(--foreground)",
+              }}
+            >
+              {targetLabel}
+            </span>
+            {data.targetServiceSlug && (
+              <span
+                style={{
+                  fontSize: "0.625rem",
+                  color: "var(--muted-foreground)",
+                  letterSpacing: "0.02em",
+                  fontWeight: 400,
+                }}
+              >
+                {data.targetServiceSlug}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DependencyEdgeInner({
   id,
   source,
   target,
@@ -91,8 +243,8 @@ export function DependencyEdge({
   markerEnd,
   data,
 }: DependencyEdgeProps) {
-  const { hoveredEdgeId, edgeOffsets, setEdgeOffset, selectedEdgeId, selectedEdgeClickPos } = useGraphHover();
-  const { getViewport, getNode } = useReactFlow();
+  const { hoveredEdgeId, edgeOffsets, setEdgeOffset, selectedEdgeId, selectedEdgeClickPos } = useEdgeInteraction();
+  const { getViewport } = useReactFlow();
   const isHovered = hoveredEdgeId === id;
   const isSelected = selectedEdgeId === id;
 
@@ -100,21 +252,13 @@ export function DependencyEdge({
   const offsetX = userOffset.x;
   const offsetY = (data.parallelOffset ?? 0) + userOffset.y;
 
-  const [edgePath, labelX, labelY] = buildStepPath(
-    sourceX, sourceY, targetX, targetY, offsetX, offsetY,
+  const [edgePath, labelX, labelY] = useMemo(
+    () => buildStepPath(sourceX, sourceY, targetX, targetY, offsetX, offsetY),
+    [sourceX, sourceY, targetX, targetY, offsetX, offsetY],
   );
 
   const strokeColor = (style?.stroke as string) ?? "#94a3b8";
   const baseWidth = (style?.strokeWidth as number) ?? 2;
-
-  // Popup data — resolved once per render so JSX stays clean
-  const sourceNode = getNode(source);
-  const targetNode = getNode(target);
-  const sourceLabel = (sourceNode?.data as GraphNodeData | undefined)?.label ?? source;
-  const targetLabel = (targetNode?.data as GraphNodeData | undefined)?.label ?? target;
-  const typeConfig = DEPENDENCY_TYPE_CONFIG[data.type as keyof typeof DEPENDENCY_TYPE_CONFIG];
-  const popupTypeLabel = typeConfig?.label ?? data.type.replace(/_/g, " ");
-  const popupTypeColor = typeConfig?.color ?? strokeColor;
 
   // Drag state
   const dragRef = useRef<{ startX: number; startY: number; startOffset: EdgeOffset } | null>(null);
@@ -218,177 +362,63 @@ export function DependencyEdge({
         >
           {data.label}
         </div>
-        {/* "depends on" label near source tip */}
-        <div
-          style={{
-            position: "absolute",
-            transform: `translate(-50%, -50%) translate(${sourceX + 48}px,${sourceY - 10}px)`,
-            pointerEvents: "none",
-            fontSize: "0.5rem",
-            fontWeight: 600,
-            color: strokeColor,
-            backgroundColor: "color-mix(in srgb, var(--card) 90%, transparent)",
-            padding: "1px 4px",
-            borderRadius: 3,
-            opacity: (style?.opacity != null ? Number(style.opacity) : 1) * (isHovered ? 1 : 0.45),
-            transition: "opacity 0.2s ease",
-            letterSpacing: "0.03em",
-            whiteSpace: "nowrap",
-          }}
-          className="nodrag nopan"
-        >
-          depends on
-        </div>
-        {/* "consumed by" label near target tip (arrowhead) */}
-        <div
-          style={{
-            position: "absolute",
-            transform: `translate(-50%, -50%) translate(${targetX - 48}px,${targetY - 10}px)`,
-            pointerEvents: "none",
-            fontSize: "0.5rem",
-            fontWeight: 600,
-            color: strokeColor,
-            backgroundColor: "color-mix(in srgb, var(--card) 90%, transparent)",
-            padding: "1px 4px",
-            borderRadius: 3,
-            opacity: (style?.opacity != null ? Number(style.opacity) : 1) * (isHovered ? 1 : 0.45),
-            transition: "opacity 0.2s ease",
-            letterSpacing: "0.03em",
-            whiteSpace: "nowrap",
-          }}
-          className="nodrag nopan"
-        >
-          consumed by
-        </div>
-        {/* Edge detail popup — shown on click */}
-        {isSelected && selectedEdgeClickPos && (
-          <div
-            className="nodrag nopan"
-            style={{
-              position: "absolute",
-              transform: `translate(-50%, -100%) translate(${selectedEdgeClickPos.x}px,${selectedEdgeClickPos.y - 10}px)`,
-              pointerEvents: "all",
-              backgroundColor: "var(--card)",
-              border: "1px solid var(--border)",
-              borderRadius: 8,
-              boxShadow: "0 4px 20px rgba(0,0,0,0.18)",
-              whiteSpace: "nowrap",
-              zIndex: 1000,
-            }}
-          >
-            {/* Header: type badge */}
+        {/* "depends on" / "consumed by" labels — only mounted on hover/select */}
+        {(isHovered || isSelected) && (
+          <>
             <div
               style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                padding: "9px 12px",
-                borderBottom: "1px solid var(--border)",
-                backgroundColor: `color-mix(in srgb, ${popupTypeColor} 12%, transparent)`,
+                position: "absolute",
+                transform: `translate(-50%, -50%) translate(${sourceX + 48}px,${sourceY - 10}px)`,
+                pointerEvents: "none",
+                fontSize: "0.5rem",
+                fontWeight: 600,
+                color: strokeColor,
+                backgroundColor: "color-mix(in srgb, var(--card) 90%, transparent)",
+                padding: "1px 4px",
+                borderRadius: 3,
+                opacity: style?.opacity != null ? Number(style.opacity) : 1,
+                letterSpacing: "0.03em",
+                whiteSpace: "nowrap",
               }}
+              className="nodrag nopan"
             >
-              <span
-                style={{
-                  width: 8,
-                  height: 8,
-                  borderRadius: "50%",
-                  backgroundColor: popupTypeColor,
-                  flexShrink: 0,
-                }}
-              />
-              <span
-                style={{
-                  fontSize: "0.6875rem",
-                  fontWeight: 700,
-                  color: popupTypeColor,
-                  flex: 1,
-                  letterSpacing: "0.02em",
-                }}
-              >
-                {popupTypeLabel}
-              </span>
+              depends on
             </div>
-            {/* Body */}
-            <div style={{ padding: "10px 12px", display: "flex", flexDirection: "column", gap: 4 }}>
-              {/* Column headers: consumes / provides */}
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <span
-                  style={{
-                    flex: 1,
-                    fontSize: "0.5rem",
-                    fontWeight: 600,
-                    color: "var(--muted-foreground)",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.07em",
-                  }}
-                >
-                  consumes
-                </span>
-                <span style={{ width: "1rem", flexShrink: 0 }} />
-                <span
-                  style={{
-                    flex: 1,
-                    fontSize: "0.5rem",
-                    fontWeight: 600,
-                    color: "var(--muted-foreground)",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.07em",
-                  }}
-                >
-                  provides
-                </span>
-              </div>
-              {/* System names row */}
-              <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
-                <span
-                  style={{
-                    flex: 1,
-                    fontWeight: 700,
-                    fontSize: "0.875rem",
-                    color: "var(--foreground)",
-                    paddingTop: 1,
-                  }}
-                >
-                  {sourceLabel}
-                </span>
-                <span
-                  style={{
-                    color: popupTypeColor,
-                    fontSize: "0.875rem",
-                    flexShrink: 0,
-                    lineHeight: 1,
-                  }}
-                >
-                  →
-                </span>
-                <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 2 }}>
-                  <span
-                    style={{
-                      fontWeight: 700,
-                      fontSize: "0.875rem",
-                      color: "var(--foreground)",
-                    }}
-                  >
-                    {targetLabel}
-                  </span>
-                  {data.targetServiceSlug && (
-                    <span
-                      style={{
-                        fontSize: "0.625rem",
-                        color: "var(--muted-foreground)",
-                        letterSpacing: "0.02em",
-                        fontWeight: 400,
-                      }}
-                    >
-                      {data.targetServiceSlug}
-                    </span>
-                  )}
-                </div>
-              </div>
+            <div
+              style={{
+                position: "absolute",
+                transform: `translate(-50%, -50%) translate(${targetX - 48}px,${targetY - 10}px)`,
+                pointerEvents: "none",
+                fontSize: "0.5rem",
+                fontWeight: 600,
+                color: strokeColor,
+                backgroundColor: "color-mix(in srgb, var(--card) 90%, transparent)",
+                padding: "1px 4px",
+                borderRadius: 3,
+                opacity: style?.opacity != null ? Number(style.opacity) : 1,
+                letterSpacing: "0.03em",
+                whiteSpace: "nowrap",
+              }}
+              className="nodrag nopan"
+            >
+              consumed by
             </div>
-          </div>
+          </>
+        )}
+        {/* Edge detail popup — shown on click */}
+        {isSelected && selectedEdgeClickPos && (
+          <EdgePopup
+            source={source}
+            target={target}
+            data={data}
+            strokeColor={strokeColor}
+            clickPos={selectedEdgeClickPos}
+          />
         )}
       </EdgeLabelRenderer>
     </>
   );
 }
+
+export const DependencyEdge = memo(DependencyEdgeInner);
+DependencyEdge.displayName = "DependencyEdge";
