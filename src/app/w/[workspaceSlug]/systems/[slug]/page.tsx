@@ -47,7 +47,7 @@ export default async function SystemDetailPage({
       repositoryUrl: true,
       domain: { select: { name: true, workspaceId: true } },
       services: {
-        select: { id: true, name: true, type: true },
+        select: { id: true, name: true, type: true, datadogStatus: true },
       },
       databases: {
         select: {
@@ -151,11 +151,24 @@ export default async function SystemDetailPage({
   const archSections: React.ReactNode[] = [];
 
   if (system.services.length > 0) {
+    const monitored = system.services.filter(
+      (s) => s.datadogStatus && s.datadogStatus !== "NOT_FOUND",
+    ).length;
+    const total = system.services.length;
+    const hasAnyStatus = system.services.some((s) => s.datadogStatus != null);
+
     archSections.push(
       <Card key="services">
         <CardHeader>
           <CardTitle>Services</CardTitle>
-          <CardDescription>{system.services.length} service(s)</CardDescription>
+          <CardDescription>
+            {system.services.length} service(s)
+            {hasAnyStatus && (
+              <span className="ml-2">
+                — {monitored} of {total} monitored in Datadog
+              </span>
+            )}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
@@ -164,6 +177,7 @@ export default async function SystemDetailPage({
               <TableRow>
                 <TableHead>Name</TableHead>
                 <TableHead>Type</TableHead>
+                {hasAnyStatus && <TableHead>Datadog</TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -173,6 +187,33 @@ export default async function SystemDetailPage({
                   <TableCell>
                     <TagBadge category="service-type" value={service.type} />
                   </TableCell>
+                  {hasAnyStatus && (
+                    <TableCell>
+                      {service.datadogStatus === "NOT_FOUND" ? (
+                        <Badge variant="outline" className="text-yellow-600 border-yellow-400">
+                          Not monitored
+                        </Badge>
+                      ) : service.datadogStatus === "OK" ? (
+                        <Badge variant="outline" className="text-green-600 border-green-400">
+                          OK
+                        </Badge>
+                      ) : service.datadogStatus === "WARN" ? (
+                        <Badge variant="outline" className="text-yellow-600 border-yellow-400">
+                          Warn
+                        </Badge>
+                      ) : service.datadogStatus === "ALERT" ? (
+                        <Badge variant="destructive">
+                          Alert
+                        </Badge>
+                      ) : service.datadogStatus === "NO_DATA" ? (
+                        <Badge variant="secondary">
+                          No Data
+                        </Badge>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">—</span>
+                      )}
+                    </TableCell>
+                  )}
                 </TableRow>
               ))}
             </TableBody>
