@@ -503,7 +503,7 @@ export default async function SystemDetailPage({
                         </TableCell>
                         <TableCell className="text-sm text-muted-foreground">
                           {service.datadogStatusUpdatedAt
-                            ? timeAgo(service.datadogStatusUpdatedAt)
+                            ? `Updated ${timeAgo(service.datadogStatusUpdatedAt)}`
                             : "—"}
                         </TableCell>
                         <TableCell>
@@ -513,7 +513,7 @@ export default async function SystemDetailPage({
                             rel="noopener noreferrer"
                             className="inline-flex items-center gap-1 text-sm whitespace-nowrap hover:underline"
                           >
-                            {isNotFound ? "Search in Datadog" : "View"}
+                            {isNotFound ? "Search in Datadog →" : "View"}
                             <ExternalLink className="h-3 w-3" />
                           </a>
                         </TableCell>
