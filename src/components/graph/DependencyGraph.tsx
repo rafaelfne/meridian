@@ -24,6 +24,7 @@ import { CollapsedDomainNode } from "./CollapsedDomainNode";
 import { LayerGroupNode } from "./LayerGroupNode";
 import { NodeHighlightContext, EdgeInteractionContext } from "./GraphHoverContext";
 import type { EdgeOffset } from "./GraphHoverContext";
+import type { NodeRect } from "./GraphHoverContext";
 import styles from "./DependencyGraph.module.css";
 
 const nodeTypes = {
@@ -161,6 +162,36 @@ export function DependencyGraph({
     [highlightedSystemId, focusedNodeId, onHighlight],
   );
 
+  // ── Node obstacle rects for edge routing ─────────────
+  // Compute absolute bounding box for every system node so edges can route
+  // around them. For grouped nodes (layered / clustered), the absolute
+  // position = parent.position + child.position.
+  const NODE_W = 250;
+  const NODE_BASE_H = 100;
+  const SVC_PORT_H = 24;
+
+  const nodeRects: NodeRect[] = useMemo(() => {
+    const rects: NodeRect[] = [];
+    // Build parent lookup for grouped nodes
+    const parentMap = new Map<string, { x: number; y: number }>();
+    for (const n of nodes) {
+      if (n.type === "layerGroup" || n.type === "domainGroup") {
+        parentMap.set(n.id, n.position);
+      }
+    }
+    for (const n of nodes) {
+      if (n.type !== "system") continue;
+      const parentId = (n as GraphNode & { parentId?: string }).parentId;
+      const parent = parentId ? parentMap.get(parentId) : undefined;
+      const absX = parent ? parent.x + n.position.x : n.position.x;
+      const absY = parent ? parent.y + n.position.y : n.position.y;
+      const svcCount = (n.data as GraphNode["data"]).services?.length ?? 0;
+      const h = svcCount === 0 ? NODE_BASE_H : NODE_BASE_H + svcCount * SVC_PORT_H;
+      rects.push({ id: n.id, x: absX, y: absY, w: NODE_W, h });
+    }
+    return rects;
+  }, [nodes]);
+
   const edgeInteractionValue = useMemo(
     () => ({
       hoveredEdgeId,
@@ -170,8 +201,9 @@ export function DependencyGraph({
       setSelectedEdgeId,
       selectedEdgeClickPos,
       setSelectedEdgeClickPos,
+      nodeRects,
     }),
-    [hoveredEdgeId, edgeOffsets, setEdgeOffset, selectedEdgeId, selectedEdgeClickPos],
+    [hoveredEdgeId, edgeOffsets, setEdgeOffset, selectedEdgeId, selectedEdgeClickPos, nodeRects],
   );
 
   // ── Animated layout transition ───────────────────────

@@ -8,6 +8,24 @@
   --xy-background-color: var(--background);
 }
 
+/*
+ * Z-index stacking: nodes must always render above edge labels and lines.
+ * React Flow renders siblings in order: edges SVG → edgelabel-renderer → nodes.
+ * We boost individual nodes so they always sit above edge labels (z-index: auto).
+ * Edge popups (z-index: 1000) intentionally remain above nodes.
+ */
+.wrapper :global(.react-flow__node) {
+  z-index: 10 !important;
+}
+
+.wrapper :global(.react-flow__node.selected) {
+  z-index: 11 !important;
+}
+
+.wrapper :global(.react-flow__node.dragging) {
+  z-index: 12 !important;
+}
+
 /* Animated layout transition — applied temporarily when node structure changes */
 .animatingLayout :global(.react-flow__node) {
   transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);

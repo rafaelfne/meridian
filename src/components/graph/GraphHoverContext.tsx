@@ -25,6 +25,15 @@ export function useNodeHighlight() {
 // ── Edge Interaction Context ────────────────────────────────
 // Consumed by DependencyEdge only — changes on hover, drag, and selection.
 
+/** Axis-aligned bounding box for a node (absolute coordinates). */
+export interface NodeRect {
+  id: string;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
 interface EdgeInteractionState {
   hoveredEdgeId: string | null;
   edgeOffsets: Record<string, EdgeOffset>;
@@ -33,6 +42,8 @@ interface EdgeInteractionState {
   setSelectedEdgeId: (edgeId: string | null) => void;
   selectedEdgeClickPos: { x: number; y: number } | null;
   setSelectedEdgeClickPos: (pos: { x: number; y: number } | null) => void;
+  /** Bounding boxes for all system nodes (absolute coords). */
+  nodeRects: NodeRect[];
 }
 
 const noop = () => { };
@@ -45,6 +56,7 @@ export const EdgeInteractionContext = createContext<EdgeInteractionState>({
   setSelectedEdgeId: noop,
   selectedEdgeClickPos: null,
   setSelectedEdgeClickPos: noop,
+  nodeRects: [],
 });
 
 export function useEdgeInteraction() {

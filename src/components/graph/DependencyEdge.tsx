@@ -12,25 +12,116 @@ import type { GraphEdgeData, GraphNodeData } from "@/modules/graph/types";
 import { DEPENDENCY_TYPE_CONFIG } from "@/modules/graph/constants";
 import { EdgeParticles } from "./EdgeParticles";
 import { useEdgeInteraction } from "./GraphHoverContext";
-import type { EdgeOffset } from "./GraphHoverContext";
+import type { EdgeOffset, NodeRect } from "./GraphHoverContext";
 import edgeStyles from "./DependencyEdge.module.css";
 
 type DependencyEdgeProps = EdgeProps & { data: GraphEdgeData };
 
+// ── Obstacle avoidance helpers ──────────────────────────
+
+/** Minimum clearance (px) between a routing channel and a node edge. */
+const ROUTE_PAD = 12;
+
 /**
- * Builds an orthogonal (step-style) SVG path between two handles.
+ * Find a clear Y for a horizontal routing channel that spans [xLo..xHi].
+ * Returns `defaultY` when it's already clear; otherwise shifts just
+ * above or below the nearest blocking node.
+ */
+function clearY(
+  defaultY: number,
+  xLo: number,
+  xHi: number,
+  obstacles: NodeRect[],
+): number {
+  const lo = Math.min(xLo, xHi);
+  const hi = Math.max(xLo, xHi);
+
+  const rel = obstacles.filter(
+    (r) => hi >= r.x - ROUTE_PAD && lo <= r.x + r.w + ROUTE_PAD,
+  );
+  if (rel.length === 0) return defaultY;
+
+  const isClear = (y: number) =>
+    rel.every((r) => y < r.y - ROUTE_PAD || y > r.y + r.h + ROUTE_PAD);
+
+  if (isClear(defaultY)) return defaultY;
+
+  // Candidates: edges of each blocking rect
+  let best = defaultY;
+  let bestDist = Infinity;
+  for (const r of rel) {
+    for (const cy of [r.y - ROUTE_PAD - 1, r.y + r.h + ROUTE_PAD + 1]) {
+      if (isClear(cy) && Math.abs(cy - defaultY) < bestDist) {
+        bestDist = Math.abs(cy - defaultY);
+        best = cy;
+      }
+    }
+  }
+
+  // Fallback: go fully above or below all blockers
+  if (bestDist === Infinity) {
+    const above = Math.min(...rel.map((r) => r.y)) - ROUTE_PAD - 30;
+    const below = Math.max(...rel.map((r) => r.y + r.h)) + ROUTE_PAD + 30;
+    best =
+      Math.abs(above - defaultY) < Math.abs(below - defaultY)
+        ? above
+        : below;
+  }
+
+  return best;
+}
+
+/** Same logic transposed — find a clear X for a vertical channel [yLo..yHi]. */
+function clearX(
+  defaultX: number,
+  yLo: number,
+  yHi: number,
+  obstacles: NodeRect[],
+): number {
+  const lo = Math.min(yLo, yHi);
+  const hi = Math.max(yLo, yHi);
+
+  const rel = obstacles.filter(
+    (r) => hi >= r.y - ROUTE_PAD && lo <= r.y + r.h + ROUTE_PAD,
+  );
+  if (rel.length === 0) return defaultX;
+
+  const isClear = (x: number) =>
+    rel.every((r) => x < r.x - ROUTE_PAD || x > r.x + r.w + ROUTE_PAD);
+
+  if (isClear(defaultX)) return defaultX;
+
+  let best = defaultX;
+  let bestDist = Infinity;
+  for (const r of rel) {
+    for (const cx of [r.x - ROUTE_PAD - 1, r.x + r.w + ROUTE_PAD + 1]) {
+      if (isClear(cx) && Math.abs(cx - defaultX) < bestDist) {
+        bestDist = Math.abs(cx - defaultX);
+        best = cx;
+      }
+    }
+  }
+
+  if (bestDist === Infinity) {
+    const left = Math.min(...rel.map((r) => r.x)) - ROUTE_PAD - 30;
+    const right = Math.max(...rel.map((r) => r.x + r.w)) + ROUTE_PAD + 30;
+    best =
+      Math.abs(left - defaultX) < Math.abs(right - defaultX) ? left : right;
+  }
+
+  return best;
+}
+
+// ── Path builder ────────────────────────────────────────
+
+/**
+ * Builds an orthogonal (step-style) SVG path between two handles,
+ * routing around intermediate nodes so lines never cross over them.
  *
- * Adapts routing based on which sides of the nodes the handles are on:
- *
- *  - Both horizontal (Right→Left, Left→Right, etc.): Z-routing via a
- *    vertical middle channel.
- *  - Both vertical (Bottom→Top, Top→Bottom, etc.): Z-routing via a
- *    horizontal middle channel.
- *  - Mixed (horizontal→vertical or vertical→horizontal): L-routing with
- *    a single turn.
- *
- * offsetX / offsetY shift the intermediate routing channels (for user drag
- * and parallel-edge spreading).
+ * Routing shape depends on handle sides:
+ *  - Both horizontal → Z-routing (H–V–H–V–H)
+ *  - Both vertical   → Z-routing rotated 90° (V–H–V–H–V)
+ *  - Mixed           → L-routing (3 segments)
  */
 function buildStepPath(
   sourceX: number,
@@ -39,8 +130,9 @@ function buildStepPath(
   targetY: number,
   sourcePos: Position,
   targetPos: Position,
-  offsetX = 0,
-  offsetY = 0,
+  offsetX: number,
+  offsetY: number,
+  obstacles: NodeRect[],
 ): [path: string, labelX: number, labelY: number] {
   const sHoriz =
     sourcePos === Position.Left || sourcePos === Position.Right;
@@ -53,14 +145,17 @@ function buildStepPath(
     const absDx = Math.abs(dx) || 1;
     const gap = Math.max(30, absDx / 3);
 
-    const sx =
-      sourcePos === Position.Right ? sourceX + gap : sourceX - gap;
-    const tx =
-      targetPos === Position.Left ? targetX - gap : targetX + gap;
+    let qX1 =
+      (sourcePos === Position.Right ? sourceX + gap : sourceX - gap) + offsetX;
+    let qX2 =
+      (targetPos === Position.Left ? targetX - gap : targetX + gap) + offsetX;
+    let midY = (sourceY + targetY) / 2 + offsetY;
 
-    const qX1 = sx + offsetX;
-    const qX2 = tx + offsetX;
-    const midY = (sourceY + targetY) / 2 + offsetY;
+    // Shift horizontal channel to a clear row
+    midY = clearY(midY, qX1, qX2, obstacles);
+    // Shift vertical turns to clear columns
+    qX1 = clearX(qX1, sourceY, midY, obstacles);
+    qX2 = clearX(qX2, midY, targetY, obstacles);
 
     const path = [
       `M ${sourceX},${sourceY}`,
@@ -80,14 +175,15 @@ function buildStepPath(
     const absDy = Math.abs(dy) || 1;
     const gap = Math.max(30, absDy / 3);
 
-    const sy =
-      sourcePos === Position.Bottom ? sourceY + gap : sourceY - gap;
-    const ty =
-      targetPos === Position.Top ? targetY - gap : targetY + gap;
+    let qY1 =
+      (sourcePos === Position.Bottom ? sourceY + gap : sourceY - gap) + offsetY;
+    let qY2 =
+      (targetPos === Position.Top ? targetY - gap : targetY + gap) + offsetY;
+    let midX = (sourceX + targetX) / 2 + offsetX;
 
-    const qY1 = sy + offsetY;
-    const qY2 = ty + offsetY;
-    const midX = (sourceX + targetX) / 2 + offsetX;
+    midX = clearX(midX, qY1, qY2, obstacles);
+    qY1 = clearY(qY1, sourceX, midX, obstacles);
+    qY2 = clearY(qY2, midX, targetX, obstacles);
 
     const path = [
       `M ${sourceX},${sourceY}`,
@@ -103,37 +199,43 @@ function buildStepPath(
 
   if (sHoriz && !tHoriz) {
     // ── Source horizontal, target vertical: L-routing ─────
-    const sx =
-      sourcePos === Position.Right ? sourceX + 30 : sourceX - 30;
-    const ty =
-      targetPos === Position.Top ? targetY - 30 : targetY + 30;
+    let sx =
+      (sourcePos === Position.Right ? sourceX + 30 : sourceX - 30) + offsetX;
+    let ty =
+      (targetPos === Position.Top ? targetY - 30 : targetY + 30) + offsetY;
+
+    sx = clearX(sx, sourceY, ty, obstacles);
+    ty = clearY(ty, sx, targetX, obstacles);
 
     const path = [
       `M ${sourceX},${sourceY}`,
-      `L ${sx + offsetX},${sourceY}`,
-      `L ${sx + offsetX},${ty + offsetY}`,
-      `L ${targetX},${ty + offsetY}`,
+      `L ${sx},${sourceY}`,
+      `L ${sx},${ty}`,
+      `L ${targetX},${ty}`,
       `L ${targetX},${targetY}`,
     ].join(" ");
 
-    return [path, (sx + offsetX + targetX) / 2, (sourceY + ty + offsetY) / 2];
+    return [path, (sx + targetX) / 2, (sourceY + ty) / 2];
   }
 
   // ── Source vertical, target horizontal: L-routing ───────
-  const sy =
-    sourcePos === Position.Bottom ? sourceY + 30 : sourceY - 30;
-  const tx =
-    targetPos === Position.Left ? targetX - 30 : targetX + 30;
+  let sy =
+    (sourcePos === Position.Bottom ? sourceY + 30 : sourceY - 30) + offsetY;
+  let tx =
+    (targetPos === Position.Left ? targetX - 30 : targetX + 30) + offsetX;
+
+  sy = clearY(sy, sourceX, tx, obstacles);
+  tx = clearX(tx, sy, targetY, obstacles);
 
   const path = [
     `M ${sourceX},${sourceY}`,
-    `L ${sourceX},${sy + offsetY}`,
-    `L ${tx + offsetX},${sy + offsetY}`,
-    `L ${tx + offsetX},${targetY}`,
+    `L ${sourceX},${sy}`,
+    `L ${tx},${sy}`,
+    `L ${tx},${targetY}`,
     `L ${targetX},${targetY}`,
   ].join(" ");
 
-  return [path, (sourceX + tx + offsetX) / 2, (sy + offsetY + targetY) / 2];
+  return [path, (sourceX + tx) / 2, (sy + targetY) / 2];
 }
 
 /** Edge detail popup — only mounted when an edge is selected. */
@@ -302,7 +404,7 @@ function DependencyEdgeInner({
   markerEnd,
   data,
 }: DependencyEdgeProps) {
-  const { hoveredEdgeId, edgeOffsets, setEdgeOffset, selectedEdgeId, selectedEdgeClickPos } = useEdgeInteraction();
+  const { hoveredEdgeId, edgeOffsets, setEdgeOffset, selectedEdgeId, selectedEdgeClickPos, nodeRects } = useEdgeInteraction();
   const { getViewport } = useReactFlow();
   const isHovered = hoveredEdgeId === id;
   const isSelected = selectedEdgeId === id;
@@ -311,9 +413,15 @@ function DependencyEdgeInner({
   const offsetX = userOffset.x;
   const offsetY = (data.parallelOffset ?? 0) + userOffset.y;
 
+  // Obstacles = all system nodes except the source and target of this edge
+  const obstacles = useMemo(
+    () => nodeRects.filter((r) => r.id !== source && r.id !== target),
+    [nodeRects, source, target],
+  );
+
   const [edgePath, labelX, labelY] = useMemo(
-    () => buildStepPath(sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, offsetX, offsetY),
-    [sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, offsetX, offsetY],
+    () => buildStepPath(sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, offsetX, offsetY, obstacles),
+    [sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, offsetX, offsetY, obstacles],
   );
 
   const strokeColor = (style?.stroke as string) ?? "#94a3b8";
@@ -417,7 +525,6 @@ function DependencyEdgeInner({
             backgroundColor: "var(--background)",
             padding: "2px 6px",
             borderRadius: 4,
-            zIndex: 1,
             opacity: style?.opacity != null ? Number(style.opacity) : 1,
             transition: "opacity 0.2s ease",
           }}

@@ -24,6 +24,7 @@ vi.mock("./GraphHoverContext", () => ({
     setSelectedEdgeId: vi.fn(),
     selectedEdgeClickPos: null,
     setSelectedEdgeClickPos: vi.fn(),
+    nodeRects: [],
   }),
 }));
 
