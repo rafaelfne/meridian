@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Image from "next/image";
 import { GitHubSignInButton } from "./GitHubSignInButton";
 import styles from "./Navbar.module.css";
 
@@ -38,10 +39,13 @@ export function Navbar() {
         <nav className={styles.nav} data-scrolled={scrolled || menuOpen}>
             <div className={styles.inner}>
                 <a href="#" className={styles.logo}>
-                    <div className={styles.logoMark}>
-                        <span>M</span>
-                    </div>
-                    <span className={styles.logoText}>MERIDIAN</span>
+                    <Image
+                        src="/icon.png"
+                        alt="Meridian"
+                        width={32}
+                        height={32}
+                        className={styles.logoIcon}
+                    />
                 </a>
 
                 <div className={styles.links}>
