@@ -184,6 +184,16 @@
   border-radius: var(--radius-sm);
 }
 
+/* Hidden handles — invisible but still functional as connection points */
+.hiddenHandle {
+  width: 1px !important;
+  height: 1px !important;
+  min-width: 1px !important;
+  min-height: 1px !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
 .serviceName {
   font-size: 0.625rem;
   line-height: 1.2;

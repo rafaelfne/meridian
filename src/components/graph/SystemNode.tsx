@@ -87,7 +87,11 @@ function SystemNodeInner({ id, data, selected }: SystemNodeProps) {
       )}
       style={{ "--node-domain-color": data.domainColor } as React.CSSProperties}
     >
-      <Handle type="target" position={Position.Left} />
+      {/* Target handles on all 4 sides */}
+      <Handle type="target" position={Position.Top} id="target-top" className={styles.hiddenHandle} />
+      <Handle type="target" position={Position.Right} id="target-right" className={styles.hiddenHandle} />
+      <Handle type="target" position={Position.Bottom} id="target-bottom" className={styles.hiddenHandle} />
+      <Handle type="target" position={Position.Left} id="target-left" className={styles.hiddenHandle} />
 
       <div className={styles.header}>
         <span className={styles.name} title={data.label}>
@@ -183,7 +187,11 @@ function SystemNodeInner({ id, data, selected }: SystemNodeProps) {
         </div>
       )}
 
-      <Handle type="source" position={Position.Right} />
+      {/* Source handles on all 4 sides */}
+      <Handle type="source" position={Position.Top} id="source-top" className={styles.hiddenHandle} />
+      <Handle type="source" position={Position.Right} id="source-right" className={styles.hiddenHandle} />
+      <Handle type="source" position={Position.Bottom} id="source-bottom" className={styles.hiddenHandle} />
+      <Handle type="source" position={Position.Left} id="source-left" className={styles.hiddenHandle} />
     </div>
   );
 }

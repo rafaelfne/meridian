@@ -5,6 +5,7 @@ import {
   BaseEdge,
   EdgeLabelRenderer,
   useReactFlow,
+  Position,
 } from "@xyflow/react";
 import type { EdgeProps } from "@xyflow/react";
 import type { GraphEdgeData, GraphNodeData } from "@/modules/graph/types";
@@ -17,43 +18,51 @@ import edgeStyles from "./DependencyEdge.module.css";
 type DependencyEdgeProps = EdgeProps & { data: GraphEdgeData };
 
 /**
- * Builds an orthogonal (step-style) SVG path with rounded corners.
- * offsetX shifts the two bend columns, offsetY shifts the middle row.
- * Arrow tips stay anchored to node handles.
+ * Builds an orthogonal (step-style) SVG path between two handles.
  *
- *  source ─╮         ╭─ target
- *           │ offsetY │
- *           ╰─────────╯
- *          ← offsetX →
+ * Adapts routing based on which sides of the nodes the handles are on:
+ *
+ *  - Both horizontal (Right→Left, Left→Right, etc.): Z-routing via a
+ *    vertical middle channel.
+ *  - Both vertical (Bottom→Top, Top→Bottom, etc.): Z-routing via a
+ *    horizontal middle channel.
+ *  - Mixed (horizontal→vertical or vertical→horizontal): L-routing with
+ *    a single turn.
+ *
+ * offsetX / offsetY shift the intermediate routing channels (for user drag
+ * and parallel-edge spreading).
  */
 function buildStepPath(
   sourceX: number,
   sourceY: number,
   targetX: number,
   targetY: number,
+  sourcePos: Position,
+  targetPos: Position,
   offsetX = 0,
   offsetY = 0,
-  borderRadius = 0,
 ): [path: string, labelX: number, labelY: number] {
-  const dx = targetX - sourceX;
-  const qX1 = sourceX + dx / 3 + offsetX;
-  const qX2 = sourceX + (dx * 2) / 3 + offsetX;
-  const midY = (sourceY + targetY) / 2 + offsetY;
+  const sHoriz =
+    sourcePos === Position.Left || sourcePos === Position.Right;
+  const tHoriz =
+    targetPos === Position.Left || targetPos === Position.Right;
 
-  const dy1 = midY - sourceY;
-  const dy2 = targetY - midY;
-  const sgnY1 = Math.sign(dy1) || 1;
-  const sgnY2 = Math.sign(dy2) || 1;
+  if (sHoriz && tHoriz) {
+    // ── Both exits horizontal: classic Z-routing ──────────
+    const dx = targetX - sourceX;
+    const absDx = Math.abs(dx) || 1;
+    const gap = Math.max(30, absDx / 3);
 
-  const r = Math.max(
-    0,
-    Math.min(borderRadius, Math.abs(dy1) / 2, Math.abs(dy2) / 2, Math.abs(dx) / 6),
-  );
+    const sx =
+      sourcePos === Position.Right ? sourceX + gap : sourceX - gap;
+    const tx =
+      targetPos === Position.Left ? targetX - gap : targetX + gap;
 
-  let path: string;
+    const qX1 = sx + offsetX;
+    const qX2 = tx + offsetX;
+    const midY = (sourceY + targetY) / 2 + offsetY;
 
-  if (r < 0.5) {
-    path = [
+    const path = [
       `M ${sourceX},${sourceY}`,
       `L ${qX1},${sourceY}`,
       `L ${qX1},${midY}`,
@@ -61,22 +70,70 @@ function buildStepPath(
       `L ${qX2},${targetY}`,
       `L ${targetX},${targetY}`,
     ].join(" ");
-  } else {
-    path = [
-      `M ${sourceX},${sourceY}`,
-      `L ${qX1 - r},${sourceY}`,
-      `Q ${qX1},${sourceY} ${qX1},${sourceY + sgnY1 * r}`,
-      `L ${qX1},${midY - sgnY1 * r}`,
-      `Q ${qX1},${midY} ${qX1 + r},${midY}`,
-      `L ${qX2 - r},${midY}`,
-      `Q ${qX2},${midY} ${qX2},${midY + sgnY2 * r}`,
-      `L ${qX2},${targetY - sgnY2 * r}`,
-      `Q ${qX2},${targetY} ${qX2 + r},${targetY}`,
-      `L ${targetX},${targetY}`,
-    ].join(" ");
+
+    return [path, (qX1 + qX2) / 2, midY];
   }
 
-  return [path, (qX1 + qX2) / 2, midY];
+  if (!sHoriz && !tHoriz) {
+    // ── Both exits vertical: rotated Z-routing ────────────
+    const dy = targetY - sourceY;
+    const absDy = Math.abs(dy) || 1;
+    const gap = Math.max(30, absDy / 3);
+
+    const sy =
+      sourcePos === Position.Bottom ? sourceY + gap : sourceY - gap;
+    const ty =
+      targetPos === Position.Top ? targetY - gap : targetY + gap;
+
+    const qY1 = sy + offsetY;
+    const qY2 = ty + offsetY;
+    const midX = (sourceX + targetX) / 2 + offsetX;
+
+    const path = [
+      `M ${sourceX},${sourceY}`,
+      `L ${sourceX},${qY1}`,
+      `L ${midX},${qY1}`,
+      `L ${midX},${qY2}`,
+      `L ${targetX},${qY2}`,
+      `L ${targetX},${targetY}`,
+    ].join(" ");
+
+    return [path, midX, (qY1 + qY2) / 2];
+  }
+
+  if (sHoriz && !tHoriz) {
+    // ── Source horizontal, target vertical: L-routing ─────
+    const sx =
+      sourcePos === Position.Right ? sourceX + 30 : sourceX - 30;
+    const ty =
+      targetPos === Position.Top ? targetY - 30 : targetY + 30;
+
+    const path = [
+      `M ${sourceX},${sourceY}`,
+      `L ${sx + offsetX},${sourceY}`,
+      `L ${sx + offsetX},${ty + offsetY}`,
+      `L ${targetX},${ty + offsetY}`,
+      `L ${targetX},${targetY}`,
+    ].join(" ");
+
+    return [path, (sx + offsetX + targetX) / 2, (sourceY + ty + offsetY) / 2];
+  }
+
+  // ── Source vertical, target horizontal: L-routing ───────
+  const sy =
+    sourcePos === Position.Bottom ? sourceY + 30 : sourceY - 30;
+  const tx =
+    targetPos === Position.Left ? targetX - 30 : targetX + 30;
+
+  const path = [
+    `M ${sourceX},${sourceY}`,
+    `L ${sourceX},${sy + offsetY}`,
+    `L ${tx + offsetX},${sy + offsetY}`,
+    `L ${tx + offsetX},${targetY}`,
+    `L ${targetX},${targetY}`,
+  ].join(" ");
+
+  return [path, (sourceX + tx + offsetX) / 2, (sy + offsetY + targetY) / 2];
 }
 
 /** Edge detail popup — only mounted when an edge is selected. */
@@ -239,6 +296,8 @@ function DependencyEdgeInner({
   sourceY,
   targetX,
   targetY,
+  sourcePosition,
+  targetPosition,
   style,
   markerEnd,
   data,
@@ -253,8 +312,8 @@ function DependencyEdgeInner({
   const offsetY = (data.parallelOffset ?? 0) + userOffset.y;
 
   const [edgePath, labelX, labelY] = useMemo(
-    () => buildStepPath(sourceX, sourceY, targetX, targetY, offsetX, offsetY),
-    [sourceX, sourceY, targetX, targetY, offsetX, offsetY],
+    () => buildStepPath(sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, offsetX, offsetY),
+    [sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, offsetX, offsetY],
   );
 
   const strokeColor = (style?.stroke as string) ?? "#94a3b8";
@@ -372,7 +431,15 @@ function DependencyEdgeInner({
             <div
               style={{
                 position: "absolute",
-                transform: `translate(-50%, -50%) translate(${sourceX + 48}px,${sourceY - 10}px)`,
+                transform: `translate(-50%, -50%) translate(${
+                  sourcePosition === Position.Right ? sourceX + 48
+                    : sourcePosition === Position.Left ? sourceX - 48
+                    : sourceX
+                }px,${
+                  sourcePosition === Position.Bottom ? sourceY + 16
+                    : sourcePosition === Position.Top ? sourceY - 16
+                    : sourceY - 10
+                }px)`,
                 pointerEvents: "none",
                 fontSize: "0.5rem",
                 fontWeight: 600,
@@ -391,7 +458,15 @@ function DependencyEdgeInner({
             <div
               style={{
                 position: "absolute",
-                transform: `translate(-50%, -50%) translate(${targetX - 48}px,${targetY - 10}px)`,
+                transform: `translate(-50%, -50%) translate(${
+                  targetPosition === Position.Left ? targetX - 48
+                    : targetPosition === Position.Right ? targetX + 48
+                    : targetX
+                }px,${
+                  targetPosition === Position.Top ? targetY - 16
+                    : targetPosition === Position.Bottom ? targetY + 16
+                    : targetY - 10
+                }px)`,
                 pointerEvents: "none",
                 fontSize: "0.5rem",
                 fontWeight: 600,

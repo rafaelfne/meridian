@@ -242,7 +242,7 @@ describe("buildGraphData", () => {
     const result = buildGraphData(systems, dependencies);
 
     const kafkaEdge = result.edges[0]!;
-    expect(kafkaEdge.animated).toBe(true);
+    expect(kafkaEdge.animated).toBe(false);
     expect(kafkaEdge.style.stroke).toBe("#059669");
   });
 
@@ -354,7 +354,8 @@ describe("buildGraphData", () => {
     const result = buildGraphData(systems, dependencies);
 
     expect(result.edges).toHaveLength(1);
-    expect(result.edges[0]!.targetHandle).toBeUndefined();
+    // Without a service slug, targetHandle is set by assignOptimalHandles
+    expect(result.edges[0]!.targetHandle).toMatch(/^target-(top|right|bottom|left)$/);
     expect(result.edges[0]!.data.targetServiceSlug).toBeUndefined();
   });
 

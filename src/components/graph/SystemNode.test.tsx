@@ -5,10 +5,10 @@ import { SystemNode } from "./SystemNode";
 import type { GraphNodeData } from "@/modules/graph/types";
 
 vi.mock("@xyflow/react", () => ({
-  Handle: ({ type }: { type: string }) => (
-    <div data-testid={`handle-${type}`} />
+  Handle: ({ type, id }: { type: string; id?: string }) => (
+    <div data-testid={id ? `handle-${id}` : `handle-${type}`} />
   ),
-  Position: { Left: "left", Right: "right" },
+  Position: { Left: "left", Right: "right", Top: "top", Bottom: "bottom" },
 }));
 
 function createNodeProps(overrides: Partial<GraphNodeData> = {}) {
@@ -63,10 +63,18 @@ describe("SystemNode", () => {
     expect(screen.queryByTitle(/risk/)).not.toBeInTheDocument();
   });
 
-  it("renders source and target handles", () => {
+  it("renders source and target handles on all 4 sides", () => {
     render(<SystemNode {...createNodeProps()} />);
-    expect(screen.getByTestId("handle-target")).toBeInTheDocument();
-    expect(screen.getByTestId("handle-source")).toBeInTheDocument();
+    // 4 target handles (top, right, bottom, left)
+    expect(screen.getByTestId("handle-target-top")).toBeInTheDocument();
+    expect(screen.getByTestId("handle-target-right")).toBeInTheDocument();
+    expect(screen.getByTestId("handle-target-bottom")).toBeInTheDocument();
+    expect(screen.getByTestId("handle-target-left")).toBeInTheDocument();
+    // 4 source handles (top, right, bottom, left)
+    expect(screen.getByTestId("handle-source-top")).toBeInTheDocument();
+    expect(screen.getByTestId("handle-source-right")).toBeInTheDocument();
+    expect(screen.getByTestId("handle-source-bottom")).toBeInTheDocument();
+    expect(screen.getByTestId("handle-source-left")).toBeInTheDocument();
   });
 
   it("applies domain color as inline style on badge", () => {

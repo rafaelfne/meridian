@@ -11,6 +11,7 @@ import {
   DEFAULT_EDGE_STYLE,
   type DependencyTypeName,
 } from "../constants";
+import { assignOptimalHandles } from "./assign-optimal-handles";
 
 const NODE_WIDTH = 250;
 const NODE_HEIGHT = 100;
@@ -214,7 +215,7 @@ export function buildGraphData(
     };
   });
 
-  return { nodes: layoutNodes, edges };
+  return { nodes: layoutNodes, edges: assignOptimalHandles(layoutNodes, edges) };
 }
 
 /**

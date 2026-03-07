@@ -1,5 +1,6 @@
 import dagre from "dagre";
 import type { GraphData, GraphNode } from "../types";
+import { assignOptimalHandles } from "./assign-optimal-handles";
 
 const GROUP_PADDING_X = 40;
 const GROUP_PADDING_Y = 60;
@@ -200,8 +201,24 @@ export function buildClusteredGraphData(data: GraphData): GraphData {
   // Non-system nodes (e.g., layer labels) kept as-is
   const otherNodes = data.nodes.filter((n) => n.type !== "system");
 
+  const allNodes = [...groupNodes, ...childNodes, ...otherNodes];
+
+  // Compute absolute positions for system nodes inside domain groups
+  const absolutePos = new Map<string, { x: number; y: number }>();
+  for (const node of childNodes) {
+    const parent = groupNodes.find((g) => g.id === (node as GraphNode & { parentId?: string }).parentId);
+    if (parent) {
+      absolutePos.set(node.id, {
+        x: parent.position.x + node.position.x,
+        y: parent.position.y + node.position.y,
+      });
+    } else {
+      absolutePos.set(node.id, node.position);
+    }
+  }
+
   return {
-    nodes: [...groupNodes, ...childNodes, ...otherNodes],
-    edges: data.edges,
+    nodes: allNodes,
+    edges: assignOptimalHandles(allNodes, data.edges, absolutePos),
   };
 }

@@ -12,6 +12,7 @@ vi.mock("@xyflow/react", () => ({
     getViewport: () => ({ zoom: 1 }),
     getNode: () => undefined,
   }),
+  Position: { Left: "left", Right: "right", Top: "top", Bottom: "bottom" },
 }));
 
 vi.mock("./GraphHoverContext", () => ({
@@ -59,9 +60,9 @@ describe("DependencyEdge", () => {
     expect(screen.getByText("http api")).toBeInTheDocument();
   });
 
-  it("renders edge label with correct color", () => {
+  it("renders edge label with correct styling", () => {
     render(<DependencyEdge {...createEdgeProps()} />);
     const label = screen.getByText("http api");
-    expect(label).toHaveStyle({ color: "#4f46e5" });
+    expect(label.style.color).toBe("var(--edge-label-color)");
   });
 });

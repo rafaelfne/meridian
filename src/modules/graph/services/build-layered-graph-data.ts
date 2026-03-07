@@ -14,6 +14,7 @@ import {
   type DependencyTypeName,
 } from "../constants";
 import { inferLayers } from "./infer-layers";
+import { assignOptimalHandles } from "./assign-optimal-handles";
 
 const NODE_WIDTH = 250;
 const NODE_HEIGHT = 100;
@@ -289,7 +290,22 @@ export function buildLayeredGraphData(
     currentY += groupHeight + LAYER_GAP;
   }
 
-  return { nodes: allNodes, edges };
+  // Compute absolute positions for system nodes inside layer groups
+  const absolutePos = new Map<string, { x: number; y: number }>();
+  for (const node of allNodes) {
+    if (node.type !== "system") continue;
+    const parent = allNodes.find((n) => n.id === (node as GraphNode & { parentId?: string }).parentId);
+    if (parent) {
+      absolutePos.set(node.id, {
+        x: parent.position.x + node.position.x,
+        y: parent.position.y + node.position.y,
+      });
+    } else {
+      absolutePos.set(node.id, node.position);
+    }
+  }
+
+  return { nodes: allNodes, edges: assignOptimalHandles(allNodes, edges, absolutePos) };
 }
 
 /**
