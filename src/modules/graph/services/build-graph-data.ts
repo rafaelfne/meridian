@@ -107,6 +107,20 @@ export function buildGraphData(
       ? system.services.filter((s) => targeted.has(s.slug))
       : undefined;
 
+    // Build Datadog service breakdown for tooltip
+    const allServices = system.services ?? [];
+    const polledServices = allServices.filter((s) => s.datadogStatus != null);
+    const datadogServices = polledServices.length > 0
+      ? polledServices.map((s) => ({ name: s.name, slug: s.slug, status: s.datadogStatus! }))
+      : undefined;
+
+    // Find most recent poll timestamp
+    const latestUpdate = polledServices.reduce<Date | null>((latest, s) => {
+      const ts = s.datadogStatusUpdatedAt;
+      if (!ts) return latest;
+      return !latest || ts > latest ? ts : latest;
+    }, null);
+
     return {
       id: system.id,
       type: "system",
@@ -122,6 +136,9 @@ export function buildGraphData(
         domainColor: getDomainColor(system.domain.name),
         layer: system.layer ?? undefined,
         services: filteredServices?.length ? filteredServices : undefined,
+        datadogStatus: system.datadogStatus ?? undefined,
+        datadogStatusUpdatedAt: latestUpdate?.toISOString() ?? undefined,
+        datadogServices,
       },
     };
   });

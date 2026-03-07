@@ -163,7 +163,7 @@ function EdgePopup({
               letterSpacing: "0.07em",
             }}
           >
-            consumes
+            consumer
           </span>
           <span style={{ width: "1rem", flexShrink: 0 }} />
           <span
@@ -176,7 +176,7 @@ function EdgePopup({
               letterSpacing: "0.07em",
             }}
           >
-            provides
+            provider
           </span>
         </div>
         {/* System names row */}

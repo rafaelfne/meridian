@@ -87,6 +87,7 @@ export interface GraphServiceInfo {
   slug: string;
   name: string;
   type: string;
+  datadogStatus?: string | null;
 }
 
 /** Data payload for a system node rendered in React Flow. */
@@ -102,6 +103,12 @@ export interface GraphNodeData extends Record<string, unknown> {
   layer?: LayerName;
   /** Services belonging to this system (for sub-service port rendering). */
   services?: GraphServiceInfo[];
+  /** Derived Datadog status for the system (worst of its services, excluding NOT_FOUND). */
+  datadogStatus?: string | null;
+  /** Timestamp of the most recent service poll. */
+  datadogStatusUpdatedAt?: string | null;
+  /** All services with their individual Datadog statuses (for tooltip breakdown). */
+  datadogServices?: { name: string; slug: string; status: string }[];
 }
 
 /** Data payload for a dependency edge rendered in React Flow. */
@@ -159,8 +166,9 @@ export interface SystemWithCounts {
   framework: string | null;
   layer?: LayerName | null;
   domain: { name: string };
+  datadogStatus?: string | null;
   _count: { services: number; risks: number };
-  services?: { slug: string; name: string; type: string }[];
+  services?: { slug: string; name: string; type: string; datadogStatus?: string | null; datadogStatusUpdatedAt?: Date | null }[];
 }
 
 /** Raw dependency data as received from the data source. */

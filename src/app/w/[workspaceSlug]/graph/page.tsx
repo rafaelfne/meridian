@@ -25,8 +25,9 @@ export default async function GraphPage({
         framework: true,
         layer: true,
         domain: { select: { name: true } },
+        datadogStatus: true,
         _count: { select: { services: true, risks: true } },
-        services: { select: { slug: true, name: true, type: true } },
+        services: { select: { slug: true, name: true, type: true, datadogStatus: true, datadogStatusUpdatedAt: true } },
       },
     }),
     prisma.dependency.findMany({
