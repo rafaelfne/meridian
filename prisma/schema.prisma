@@ -80,6 +80,7 @@ model Workspace {
   domains            Domain[]
   inventoryUploads   InventoryUpload[]
   datadogIntegration DatadogIntegration?
+  products           Product[]
 }
 
 model WorkspaceMember {
@@ -145,6 +146,7 @@ model System {
   dependsOn        Dependency[] @relation("DependencySource")
   dependedBy       Dependency[] @relation("DependencyTarget")
   documents        Document[]
+  products         ProductSystem[]
 
   @@unique([domainId, name])
 }
@@ -393,4 +395,42 @@ model DatadogIntegration {
   updatedAt   DateTime          @updatedAt
 
   workspace   Workspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+}
+
+// ── Product Models ──────────────────────────────────────
+
+enum ProductTier {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+}
+
+model Product {
+  id          String      @id @default(cuid())
+  name        String
+  slug        String
+  description String?
+  tier        ProductTier @default(MEDIUM)
+  workspaceId String
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  workspace   Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  systems     ProductSystem[]
+
+  @@unique([workspaceId, slug])
+  @@unique([workspaceId, name])
+}
+
+model ProductSystem {
+  id        String   @id @default(cuid())
+  productId String
+  systemId  String
+  createdAt DateTime @default(now())
+
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  system    System   @relation(fields: [systemId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, systemId])
 }

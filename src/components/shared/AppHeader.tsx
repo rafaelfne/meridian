@@ -7,6 +7,7 @@ import {
   LayoutDashboard,
   Network,
   Server,
+  Package,
   Upload,
   Settings,
   Menu,
@@ -27,6 +28,7 @@ const NAV_SUFFIXES = [
   { suffix: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { suffix: "/graph", label: "Graph", icon: Network },
   { suffix: "/systems", label: "Systems", icon: Server },
+  { suffix: "/products", label: "Products", icon: Package },
   { suffix: "/upload", label: "Upload", icon: Upload },
 ] as const;
 
