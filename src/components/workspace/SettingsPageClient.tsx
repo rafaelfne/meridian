@@ -3,6 +3,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { GeneralSettingsSection } from "./GeneralSettingsSection";
 import { MembersSection } from "./MembersSection";
+import { DatadogIntegrationSection } from "./DatadogIntegrationSection";
 
 interface SettingsPageClientProps {
   workspace: {
@@ -24,6 +25,13 @@ interface SettingsPageClientProps {
   currentUserId: string;
   userRole: string;
   workspaceSlug: string;
+  datadogIntegration: {
+    site: string;
+    status: "connected" | "invalid" | "revoked";
+    connectedAt: string;
+    apiKeyLast4: string;
+    appKeyLast4: string;
+  } | null;
 }
 
 export function SettingsPageClient({
@@ -32,6 +40,7 @@ export function SettingsPageClient({
   currentUserId,
   userRole,
   workspaceSlug,
+  datadogIntegration,
 }: SettingsPageClientProps) {
   return (
     <div className="container mx-auto max-w-4xl space-y-8 py-8 px-4">
@@ -45,6 +54,9 @@ export function SettingsPageClient({
           <TabsTrigger value="general">General</TabsTrigger>
           {userRole === "OWNER" && (
             <TabsTrigger value="members">Members</TabsTrigger>
+          )}
+          {userRole === "OWNER" && (
+            <TabsTrigger value="integrations">Integrations</TabsTrigger>
           )}
         </TabsList>
 
@@ -61,6 +73,15 @@ export function SettingsPageClient({
               members={members}
               workspaceSlug={workspaceSlug}
               currentUserId={currentUserId}
+            />
+          </TabsContent>
+        )}
+
+        {userRole === "OWNER" && (
+          <TabsContent value="integrations" className="mt-6">
+            <DatadogIntegrationSection
+              workspaceSlug={workspaceSlug}
+              existing={datadogIntegration}
             />
           </TabsContent>
         )}

@@ -76,9 +76,10 @@ model Workspace {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  members          WorkspaceMember[]
-  domains          Domain[]
-  inventoryUploads InventoryUpload[]
+  members            WorkspaceMember[]
+  domains            Domain[]
+  inventoryUploads   InventoryUpload[]
+  datadogIntegration DatadogIntegration?
 }
 
 model WorkspaceMember {
@@ -349,4 +350,34 @@ model DocumentRevision {
   authorId   String
   author     User     @relation(fields: [authorId], references: [id])
   createdAt  DateTime @default(now())
+}
+
+// ── Datadog Integration ───────────────────────────────
+
+enum DatadogSite {
+  DATADOGHQ_COM
+  DATADOGHQ_EU
+  US3_DATADOGHQ_COM
+  US5_DATADOGHQ_COM
+}
+
+enum IntegrationStatus {
+  CONNECTED
+  INVALID
+  REVOKED
+}
+
+model DatadogIntegration {
+  id          String            @id @default(cuid())
+  workspaceId String            @unique
+  apiKey      String            @db.Text
+  appKey      String            @db.Text
+  site        DatadogSite
+  status      IntegrationStatus @default(CONNECTED)
+  connectedAt DateTime          @default(now())
+  revokedAt   DateTime?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  workspace   Workspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 }
