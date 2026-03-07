@@ -4,6 +4,10 @@
   min-height: 0;
 }
 
+.wrapper :global(.react-flow) {
+  --xy-background-color: var(--background);
+}
+
 /* Animated layout transition — applied temporarily when node structure changes */
 .animatingLayout :global(.react-flow__node) {
   transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);

@@ -122,6 +122,10 @@ export interface GraphEdgeData extends Record<string, unknown> {
   parallelOffset?: number;
   /** When the dependency targets a specific service inside a monolith. */
   targetServiceSlug?: string;
+  /** True when edge is connected to a highlighted node — renders solid (no dash). */
+  solid?: boolean;
+  /** True when edge is dimmed (not connected to highlighted node) — disables interaction. */
+  dimmed?: boolean;
 }
 
 /** A React Flow node representing a system. */

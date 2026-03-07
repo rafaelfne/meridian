@@ -31,9 +31,9 @@ export const DEPENDENCY_TYPE_CONFIG: Record<
   DependencyTypeConfig
 > = {
   HTTP_API: { label: "HTTP API", color: "#4f46e5", animated: false },
-  KAFKA_TOPIC: { label: "Kafka Topic", color: "#059669", animated: true },
-  RABBITMQ_QUEUE: { label: "RabbitMQ Queue", color: "#A855F7", animated: true },
-  SQS_QUEUE: { label: "SQS Queue", color: "#EAB308", animated: true },
+  KAFKA_TOPIC: { label: "Kafka Topic", color: "#059669", animated: false },
+  RABBITMQ_QUEUE: { label: "RabbitMQ Queue", color: "#A855F7", animated: false },
+  SQS_QUEUE: { label: "SQS Queue", color: "#EAB308", animated: false },
   SHARED_DATABASE: {
     label: "Shared Database",
     color: "#d97706",

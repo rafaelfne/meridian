@@ -113,9 +113,14 @@ export function DependencyGraph({
 
   const handleEdgeMouseEnter = useCallback(
     (_event: React.MouseEvent, edge: { id: string }) => {
+      // Prevent hover on dimmed edges during highlight
+      if (highlightedSystemId) {
+        const e = data.edges.find((x) => x.id === edge.id);
+        if (e && e.source !== highlightedSystemId && e.target !== highlightedSystemId) return;
+      }
       setHoveredEdgeId(edge.id);
     },
-    [],
+    [data.edges, highlightedSystemId],
   );
 
   const handleEdgeMouseLeave = useCallback(() => {
@@ -124,6 +129,11 @@ export function DependencyGraph({
 
   const handleEdgeClick = useCallback(
     (event: React.MouseEvent, edge: { id: string }) => {
+      // Prevent click on dimmed edges during highlight
+      if (highlightedSystemId) {
+        const e = data.edges.find((x) => x.id === edge.id);
+        if (e && e.source !== highlightedSystemId && e.target !== highlightedSystemId) return;
+      }
       const pos = screenToFlowPosition({ x: event.clientX, y: event.clientY });
       setSelectedEdgeId((prev) => {
         if (prev === edge.id) {
@@ -134,7 +144,7 @@ export function DependencyGraph({
         return edge.id;
       });
     },
-    [screenToFlowPosition],
+    [screenToFlowPosition, data.edges, highlightedSystemId],
   );
 
   const handlePaneClick = useCallback(() => {
@@ -251,7 +261,7 @@ export function DependencyGraph({
             position,
             style: isConnected
               ? { transition: 'opacity 0.2s ease' }
-              : { opacity: DIMMED_OPACITY, transition: 'opacity 0.2s ease' },
+              : { opacity: DIMMED_OPACITY, pointerEvents: 'none' as const, transition: 'opacity 0.2s ease' },
           };
         }),
       );
@@ -266,6 +276,11 @@ export function DependencyGraph({
               opacity: isConnected ? 1 : DIMMED_OPACITY,
               strokeWidth: isConnected ? 3.5 : (edge.style.strokeWidth ?? 2),
               transition: 'opacity 0.2s ease, stroke-width 0.2s ease',
+            },
+            data: {
+              ...edge.data,
+              solid: isConnected,
+              dimmed: !isConnected,
             },
           };
         }),

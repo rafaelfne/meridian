@@ -292,7 +292,7 @@ function DependencyEdgeInner({
 
   return (
     <>
-      {isHovered && (
+      {isHovered && !data.dimmed && (
         <path
           d={edgePath}
           fill="none"
@@ -308,23 +308,26 @@ function DependencyEdgeInner({
         markerEnd={markerEnd}
         style={{
           ...style,
-          strokeWidth: isHovered ? baseWidth + 1 : baseWidth,
+          ...(data.solid ? {} : { strokeDasharray: "2 10" }),
+          strokeWidth: isHovered && !data.dimmed ? baseWidth + 1 : baseWidth,
           transition: "stroke-width 0.15s ease",
         }}
       />
       {/* Wide transparent hit area over the full edge path for dragging */}
-      <path
-        d={edgePath}
-        fill="none"
-        stroke="transparent"
-        strokeWidth={16}
-        style={{ cursor: isDragging ? "grabbing" : "grab" }}
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
-        onPointerCancel={handlePointerUp}
-        className="nodrag nopan"
-      />
+      {!data.dimmed && (
+        <path
+          d={edgePath}
+          fill="none"
+          stroke="transparent"
+          strokeWidth={16}
+          style={{ cursor: isDragging ? "grabbing" : "grab" }}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerCancel={handlePointerUp}
+          className="nodrag nopan"
+        />
+      )}
       {/* Visual indicator dot at midpoint — shows when hovered or offset active */}
       <circle
         cx={midX}
@@ -351,10 +354,11 @@ function DependencyEdgeInner({
             pointerEvents: "all",
             fontSize: "0.625rem",
             fontWeight: 500,
-            color: strokeColor,
-            backgroundColor: "color-mix(in srgb, var(--card) 85%, transparent)",
+            color: "var(--edge-label-color)",
+            backgroundColor: "var(--background)",
             padding: "2px 6px",
             borderRadius: 4,
+            zIndex: 1,
             opacity: style?.opacity != null ? Number(style.opacity) : 1,
             transition: "opacity 0.2s ease",
           }}

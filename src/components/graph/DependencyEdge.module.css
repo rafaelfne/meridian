@@ -1,3 +1,11 @@
+:root {
+  --edge-label-color: #545454;
+}
+
+:global(.dark) {
+  --edge-label-color: #ffffff;
+}
+
 .glowPath {
   pointer-events: none;
   filter: blur(3px);
