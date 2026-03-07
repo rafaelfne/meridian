@@ -5,6 +5,7 @@ import { ExternalLink, FileText, Plus } from "lucide-react";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { requireWorkspaceAccess } from "@/lib/workspace-context";
+import { ENUM_TO_SITE } from "@/modules/workspace/validators/datadog-integration-schema";
 import { Badge } from "@/components/ui/badge";
 import { TagBadge } from "@/components/shared/TagBadge";
 import {
@@ -23,6 +24,34 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { SystemDetailTabs, type SystemTab } from "@/components/systems/SystemDetailTabs";
+
+function timeAgo(date: Date): string {
+  const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
+  if (seconds < 60) return "just now";
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
+}
+
+function DatadogStatusBadge({ status }: { status: string | null }) {
+  switch (status) {
+    case "OK":
+      return <Badge variant="outline" className="text-green-600 border-green-400">OK</Badge>;
+    case "WARN":
+      return <Badge variant="outline" className="text-yellow-600 border-yellow-400">Warn</Badge>;
+    case "ALERT":
+      return <Badge variant="destructive">Alert</Badge>;
+    case "NO_DATA":
+      return <Badge variant="secondary">No Data</Badge>;
+    case "NOT_FOUND":
+      return <Badge variant="outline" className="text-yellow-600 border-yellow-400">Not monitored</Badge>;
+    default:
+      return <span className="text-sm text-muted-foreground">—</span>;
+  }
+}
 
 
 
@@ -47,7 +76,16 @@ export default async function SystemDetailPage({
       repositoryUrl: true,
       domain: { select: { name: true, workspaceId: true } },
       services: {
-        select: { id: true, name: true, type: true, datadogStatus: true },
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          type: true,
+          datadogServiceTag: true,
+          datadogStatus: true,
+          datadogStatusUpdatedAt: true,
+          datadogMonitorIds: true,
+        },
       },
       databases: {
         select: {
@@ -99,6 +137,11 @@ export default async function SystemDetailPage({
       author: { select: { name: true } },
     },
     orderBy: { updatedAt: "desc" },
+  });
+
+  const datadogIntegration = await prisma.datadogIntegration.findUnique({
+    where: { workspaceId: ctx.workspaceId },
+    select: { site: true, status: true },
   });
 
   const canEdit = ctx.role === "EDITOR" || ctx.role === "OWNER";
@@ -189,29 +232,7 @@ export default async function SystemDetailPage({
                   </TableCell>
                   {hasAnyStatus && (
                     <TableCell>
-                      {service.datadogStatus === "NOT_FOUND" ? (
-                        <Badge variant="outline" className="text-yellow-600 border-yellow-400">
-                          Not monitored
-                        </Badge>
-                      ) : service.datadogStatus === "OK" ? (
-                        <Badge variant="outline" className="text-green-600 border-green-400">
-                          OK
-                        </Badge>
-                      ) : service.datadogStatus === "WARN" ? (
-                        <Badge variant="outline" className="text-yellow-600 border-yellow-400">
-                          Warn
-                        </Badge>
-                      ) : service.datadogStatus === "ALERT" ? (
-                        <Badge variant="destructive">
-                          Alert
-                        </Badge>
-                      ) : service.datadogStatus === "NO_DATA" ? (
-                        <Badge variant="secondary">
-                          No Data
-                        </Badge>
-                      ) : (
-                        <span className="text-sm text-muted-foreground">—</span>
-                      )}
+                      <DatadogStatusBadge status={service.datadogStatus} />
                     </TableCell>
                   )}
                 </TableRow>
@@ -413,6 +434,101 @@ export default async function SystemDetailPage({
       </Card>
     ) : null;
 
+  /* ── Tab: Monitoring ─────────────────────────────────────── */
+  const ddConnected = datadogIntegration?.status === "CONNECTED";
+  const siteHost = datadogIntegration ? ENUM_TO_SITE[datadogIntegration.site] ?? "datadoghq.com" : null;
+  const monitoredCount = system.services.filter(
+    (s) => s.datadogStatus && s.datadogStatus !== "NOT_FOUND",
+  ).length;
+
+  let monitoringContent: React.ReactNode = null;
+
+  if (system.services.length > 0) {
+    if (!ddConnected) {
+      monitoringContent = (
+        <Card>
+          <CardHeader>
+            <CardTitle>Monitoring</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm font-medium">Datadog integration not connected</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              Connect Datadog in workspace settings to monitor service health.
+            </p>
+          </CardContent>
+        </Card>
+      );
+    } else {
+      monitoringContent = (
+        <Card>
+          <CardHeader>
+            <CardTitle>Monitoring</CardTitle>
+            <CardDescription>
+              {monitoredCount} of {system.services.length} services monitored
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Service</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Monitors</TableHead>
+                    <TableHead>Last Updated</TableHead>
+                    <TableHead className="w-[1%]" />
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {system.services.map((service) => {
+                    const tag = service.datadogServiceTag ?? service.slug;
+                    const ddUrl = `https://app.${siteHost}/apm/services?query=service%3A${encodeURIComponent(tag)}`;
+                    const monitorIds = Array.isArray(service.datadogMonitorIds)
+                      ? service.datadogMonitorIds
+                      : [];
+                    const isNotFound = service.datadogStatus === "NOT_FOUND";
+
+                    return (
+                      <TableRow key={service.id}>
+                        <TableCell className="font-medium font-mono text-xs">
+                          {tag}
+                        </TableCell>
+                        <TableCell>
+                          <DatadogStatusBadge status={service.datadogStatus} />
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {monitorIds.length > 0
+                            ? `${monitorIds.length} monitor${monitorIds.length !== 1 ? "s" : ""}`
+                            : "—"}
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {service.datadogStatusUpdatedAt
+                            ? timeAgo(service.datadogStatusUpdatedAt)
+                            : "—"}
+                        </TableCell>
+                        <TableCell>
+                          <a
+                            href={ddUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-sm whitespace-nowrap hover:underline"
+                          >
+                            {isNotFound ? "Search in Datadog" : "View"}
+                            <ExternalLink className="h-3 w-3" />
+                          </a>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
+      );
+    }
+  }
+
   /* ── Tab: Documentation ────────────────────────────────────── */
   const docsContent = (
     <Card>
@@ -467,6 +583,9 @@ export default async function SystemDetailPage({
   const tabs: SystemTab[] = [
     ...(architectureContent
       ? [{ value: "architecture", label: "Architecture", count: archItemCount, content: architectureContent }]
+      : []),
+    ...(monitoringContent
+      ? [{ value: "monitoring", label: "Monitoring", count: monitoredCount, content: monitoringContent }]
       : []),
     ...(risksContent
       ? [{ value: "risks", label: "Risks", count: system.risks.length, content: risksContent }]
