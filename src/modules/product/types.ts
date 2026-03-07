@@ -27,4 +27,12 @@ export interface ProductDetail {
   createdAt: Date;
   updatedAt: Date;
   systems: ProductDetailSystem[];
+  features: FeatureItem[];
+}
+
+export interface FeatureItem {
+  id: string;
+  name: string;
+  description: string | null;
+  systems: { id: string; name: string; slug: string }[];
 }

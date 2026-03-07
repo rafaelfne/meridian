@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/table";
 import type { ProductTier } from "@/modules/product/types";
 import { ProductDetailActions } from "./ProductDetailActions";
+import { FeaturesCard } from "@/components/products/FeaturesCard";
 
 const TIER_VARIANT: Record<ProductTier, "destructive" | "default" | "secondary" | "outline"> = {
   CRITICAL: "destructive",
@@ -67,6 +68,21 @@ export default async function ProductDetailPage({
         },
         orderBy: { system: { name: "asc" } },
       },
+      features: {
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          systems: {
+            select: {
+              system: {
+                select: { id: true, name: true, slug: true },
+              },
+            },
+          },
+        },
+        orderBy: { name: "asc" },
+      },
     },
   });
 
@@ -75,6 +91,10 @@ export default async function ProductDetailPage({
   }
 
   const systems = product.systems.map((ps) => ps.system);
+  const features = product.features.map((f) => ({
+    ...f,
+    systems: f.systems.map((fs) => fs.system),
+  }));
   const tier = product.tier as ProductTier;
 
   // Fetch all workspace systems for the edit dialog
@@ -93,6 +113,7 @@ export default async function ProductDetailPage({
     createdAt: product.createdAt,
     updatedAt: product.updatedAt,
     systems,
+    features,
   };
 
   return (
@@ -163,6 +184,14 @@ export default async function ProductDetailPage({
           )}
         </CardContent>
       </Card>
+
+      <FeaturesCard
+        workspaceSlug={workspaceSlug}
+        productId={product.id}
+        features={features}
+        allSystems={allSystems}
+        canEdit={ctx.role === "OWNER" || ctx.role === "EDITOR"}
+      />
     </div>
   );
 }

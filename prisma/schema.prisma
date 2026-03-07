@@ -147,6 +147,7 @@ model System {
   dependedBy       Dependency[] @relation("DependencyTarget")
   documents        Document[]
   products         ProductSystem[]
+  features         FeatureSystem[]
 
   @@unique([domainId, name])
 }
@@ -418,6 +419,7 @@ model Product {
 
   workspace   Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   systems     ProductSystem[]
+  features    Feature[]
 
   @@unique([workspaceId, slug])
   @@unique([workspaceId, name])
@@ -433,4 +435,30 @@ model ProductSystem {
   system    System   @relation(fields: [systemId], references: [id], onDelete: Cascade)
 
   @@unique([productId, systemId])
+}
+
+model Feature {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  productId   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  product     Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  systems     FeatureSystem[]
+
+  @@unique([productId, name])
+}
+
+model FeatureSystem {
+  id        String   @id @default(cuid())
+  featureId String
+  systemId  String
+  createdAt DateTime @default(now())
+
+  feature   Feature  @relation(fields: [featureId], references: [id], onDelete: Cascade)
+  system    System   @relation(fields: [systemId], references: [id], onDelete: Cascade)
+
+  @@unique([featureId, systemId])
 }
