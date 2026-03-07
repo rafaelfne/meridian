@@ -3,6 +3,7 @@ export interface SystemDetailService {
   name: string;
   slug: string;
   type: "API" | "WORKER" | "CRONJOB" | "BACKGROUND_SERVICE";
+  datadogServiceTag: string | null;
 }
 
 export interface SystemDetailDatabase {
@@ -91,6 +92,7 @@ export interface ServiceListItem {
   name: string;
   slug: string;
   type: "API" | "WORKER" | "CRONJOB" | "BACKGROUND_SERVICE";
+  datadogServiceTag: string | null;
 }
 
 export interface SystemListItem {

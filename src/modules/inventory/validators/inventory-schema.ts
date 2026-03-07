@@ -12,6 +12,7 @@ export const ServiceSchema = z.object({
   type: z.enum(["API", "WORKER", "CRONJOB", "BACKGROUND_SERVICE"]),
   port: z.number().int().positive().optional(),
   path: z.string().optional(),
+  datadogServiceTag: z.string().max(200).optional(),
 });
 
 export const DatabaseSchema = z.object({

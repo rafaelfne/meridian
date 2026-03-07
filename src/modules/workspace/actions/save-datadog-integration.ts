@@ -8,35 +8,7 @@ import {
   DatadogIntegrationSchema,
   SITE_TO_ENUM,
 } from "../validators/datadog-integration-schema";
-import type { DatadogSite, IntegrationStatus } from "@/generated/prisma/enums";
-
-async function validateCredentials(
-  apiKey: string,
-  appKey: string,
-  site: string,
-): Promise<boolean> {
-  // Step 1: Validate API key
-  const apiResponse = await fetch(`https://api.${site}/api/v1/validate`, {
-    method: "GET",
-    headers: { "DD-API-KEY": apiKey },
-  });
-  if (!apiResponse.ok) return false;
-  const apiBody = await apiResponse.json();
-  if (apiBody.valid !== true) return false;
-
-  // Step 2: Validate app key via an endpoint that requires both
-  const appResponse = await fetch(
-    `https://api.${site}/api/v1/monitor?page=0&page_size=1`,
-    {
-      method: "GET",
-      headers: {
-        "DD-API-KEY": apiKey,
-        "DD-APPLICATION-KEY": appKey,
-      },
-    },
-  );
-  return appResponse.ok;
-}
+import type { DatadogSite } from "@/generated/prisma/enums";
 
 export async function saveDatadogIntegration(
   workspaceSlug: string,
@@ -59,15 +31,6 @@ export async function saveDatadogIntegration(
 
   const { apiKey, appKey, site } = parsed.data;
   const siteEnum = SITE_TO_ENUM[site] as DatadogSite;
-
-  let isValid = false;
-  try {
-    isValid = await validateCredentials(apiKey, appKey, site);
-  } catch {
-    // Network failure — save as invalid
-  }
-
-  const status: IntegrationStatus = isValid ? "CONNECTED" : "INVALID";
   const encryptedApiKey = encrypt(apiKey);
   const encryptedAppKey = encrypt(appKey);
 
@@ -78,15 +41,15 @@ export async function saveDatadogIntegration(
       apiKey: encryptedApiKey,
       appKey: encryptedAppKey,
       site: siteEnum,
-      status,
+      status: "CONNECTED",
       connectedAt: new Date(),
     },
     update: {
       apiKey: encryptedApiKey,
       appKey: encryptedAppKey,
       site: siteEnum,
-      status,
-      connectedAt: isValid ? new Date() : undefined,
+      status: "CONNECTED",
+      connectedAt: new Date(),
       revokedAt: null,
     },
   });
@@ -94,6 +57,6 @@ export async function saveDatadogIntegration(
   revalidatePath(`/w/${workspaceSlug}/settings`);
   return {
     success: true as const,
-    status: isValid ? ("connected" as const) : ("invalid" as const),
+    status: "connected" as const,
   };
 }

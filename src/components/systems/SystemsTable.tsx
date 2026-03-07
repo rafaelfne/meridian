@@ -78,6 +78,9 @@ export function SystemsTable({
   const [editedServiceSlugs, setEditedServiceSlugs] = useState<
     Record<string, string>
   >({});
+  const [editedDatadogTags, setEditedDatadogTags] = useState<
+    Record<string, string>
+  >({});
   const [editedDomains, setEditedDomains] = useState<
     Record<string, string>
   >({});
@@ -86,6 +89,7 @@ export function SystemsTable({
   const isDirty =
     Object.keys(editedSystemSlugs).length > 0 ||
     Object.keys(editedServiceSlugs).length > 0 ||
+    Object.keys(editedDatadogTags).length > 0 ||
     Object.keys(editedDomains).length > 0;
 
   const handleSort = (field: SortField) => {
@@ -182,6 +186,20 @@ export function SystemsTable({
     [],
   );
 
+  const handleDatadogTagChange = useCallback(
+    (serviceId: string, originalTag: string, newTag: string) => {
+      setEditedDatadogTags((prev) => {
+        if (newTag === originalTag) {
+          const rest = { ...prev };
+          delete rest[serviceId];
+          return rest;
+        }
+        return { ...prev, [serviceId]: newTag };
+      });
+    },
+    [],
+  );
+
   const handleDomainChange = useCallback(
     (systemId: string, originalDomainId: string, newDomainId: string) => {
       setEditedDomains((prev) => {
@@ -207,6 +225,10 @@ export function SystemsTable({
           id,
           slug,
         })),
+        serviceDatadogTags: Object.entries(editedDatadogTags).map(([id, datadogServiceTag]) => ({
+          id,
+          datadogServiceTag,
+        })),
         systemDomains: Object.entries(editedDomains).map(([id, domainId]) => ({
           id,
           domainId,
@@ -217,12 +239,13 @@ export function SystemsTable({
         toast.success("Changes saved and dependencies reprocessed");
         setEditedSystemSlugs({});
         setEditedServiceSlugs({});
+        setEditedDatadogTags({});
         setEditedDomains({});
       } else {
         toast.error(result.error ?? "Failed to update slugs");
       }
     });
-  }, [workspaceSlug, editedSystemSlugs, editedServiceSlugs, editedDomains]);
+  }, [workspaceSlug, editedSystemSlugs, editedServiceSlugs, editedDatadogTags, editedDomains]);
 
   const renderSortIcon = (field: SortField) => {
     if (sortField !== field) {
@@ -311,9 +334,9 @@ export function SystemsTable({
                   Framework {renderSortIcon("framework")}
                 </button>
               </TableHead>
-              <TableHead className="text-right">Services</TableHead>
-              <TableHead className={clsx("text-right", styles.hideOnMobile)}>Databases</TableHead>
-              <TableHead className={clsx("text-right", styles.hideOnMobile)}>Integrations</TableHead>
+              <TableHead className="text-right">Svc</TableHead>
+              <TableHead className={clsx("text-right", styles.hideOnMobile)}>DB</TableHead>
+              <TableHead className={clsx("text-right", styles.hideOnMobile)}>Int</TableHead>
               <TableHead className="text-right">Docs</TableHead>
             </TableRow>
           </TableHeader>
@@ -435,6 +458,7 @@ export function SystemsTable({
                                 <TableHead>Service Name</TableHead>
                                 <TableHead>Type</TableHead>
                                 <TableHead>Alias</TableHead>
+                                <TableHead>Datadog Tag</TableHead>
                               </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -444,6 +468,11 @@ export function SystemsTable({
                                   service.slug;
                                 const isServiceSlugDirty =
                                   service.id in editedServiceSlugs;
+                                const originalTag = service.datadogServiceTag ?? service.slug;
+                                const currentTag =
+                                  editedDatadogTags[service.id] ?? originalTag;
+                                const isTagDirty =
+                                  service.id in editedDatadogTags;
 
                                 return (
                                   <TableRow
@@ -474,6 +503,25 @@ export function SystemsTable({
                                         aria-label={`Alias for service ${service.name}`}
                                       />
                                     </TableCell>
+                                    <TableCell>
+                                      <Input
+                                        value={currentTag}
+                                        onChange={(e) =>
+                                          handleDatadogTagChange(
+                                            service.id,
+                                            originalTag,
+                                            e.target.value,
+                                          )
+                                        }
+                                        className={clsx(
+                                          styles.slugInput,
+                                          isTagDirty &&
+                                            styles.slugInputDirty,
+                                        )}
+                                        placeholder={service.slug}
+                                        aria-label={`Datadog tag for service ${service.name}`}
+                                      />
+                                    </TableCell>
                                   </TableRow>
                                 );
                               })}
@@ -502,6 +550,7 @@ export function SystemsTable({
           <span className={styles.changesSummary}>
             {Object.keys(editedSystemSlugs).length +
               Object.keys(editedServiceSlugs).length +
+              Object.keys(editedDatadogTags).length +
               Object.keys(editedDomains).length}{" "}
             change(s) pending
           </span>

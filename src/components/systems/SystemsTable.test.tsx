@@ -74,8 +74,8 @@ function createSystem(
     domain: { id: "d1", name: "Identity" },
     _count: { services: 2, databases: 1, integrations: 3, documents: 0 },
     services: [
-      { id: "svc1", name: "Auth API", slug: "auth-api", type: "API" },
-      { id: "svc2", name: "Auth Worker", slug: "auth-worker", type: "WORKER" },
+      { id: "svc1", name: "Auth API", slug: "auth-api", type: "API", datadogServiceTag: null },
+      { id: "svc2", name: "Auth Worker", slug: "auth-worker", type: "WORKER", datadogServiceTag: null },
     ],
     ...overrides,
   };
@@ -92,7 +92,7 @@ const mockSystems: SystemListItemWithServices[] = [
     domain: { id: "d2", name: "Payments" },
     _count: { services: 1, databases: 2, integrations: 1, documents: 1 },
     services: [
-      { id: "svc3", name: "Payment API", slug: "payment-api", type: "API" },
+      { id: "svc3", name: "Payment API", slug: "payment-api", type: "API", datadogServiceTag: null },
     ],
   }),
   createSystem({

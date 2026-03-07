@@ -228,6 +228,7 @@ async function createSystemChildren(
             name: s.name,
             slug: s.slug ?? generateServiceSlug(s.name),
             type: s.type,
+            datadogServiceTag: s.datadogServiceTag ?? undefined,
             systemId,
           })),
         ),

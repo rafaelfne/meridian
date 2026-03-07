@@ -25,7 +25,7 @@ export default async function SystemsPage({
         framework: true,
         domain: { select: { id: true, name: true } },
         services: {
-          select: { id: true, name: true, slug: true, type: true },
+          select: { id: true, name: true, slug: true, type: true, datadogServiceTag: true },
           orderBy: { name: "asc" },
         },
         _count: {

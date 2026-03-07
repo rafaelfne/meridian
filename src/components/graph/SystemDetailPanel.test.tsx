@@ -191,8 +191,8 @@ const mockSystemDetail: SystemDetail = {
   layer: null,
   domain: { name: "Identity" },
   services: [
-    { id: "svc-1", name: "Auth API", slug: "auth-api", type: "API" as const },
-    { id: "svc-2", name: "Token Worker", slug: "token-worker", type: "WORKER" as const },
+    { id: "svc-1", name: "Auth API", slug: "auth-api", type: "API" as const, datadogServiceTag: null },
+    { id: "svc-2", name: "Token Worker", slug: "token-worker", type: "WORKER" as const, datadogServiceTag: null },
   ],
   databases: [
     {

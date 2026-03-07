@@ -133,6 +133,7 @@ model System {
   inventoryRaw     Json?
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
+  datadogStatus    DatadogMonitorStatus?
 
   services         Service[]
   databases        Database[]
@@ -149,12 +150,16 @@ model System {
 }
 
 model Service {
-  id       String      @id @default(cuid())
-  name     String
-  slug     String
-  type     ServiceType
-  systemId String
-  system   System      @relation(fields: [systemId], references: [id], onDelete: Cascade)
+  id                     String                @id @default(cuid())
+  name                   String
+  slug                   String
+  type                   ServiceType
+  systemId               String
+  system                 System                @relation(fields: [systemId], references: [id], onDelete: Cascade)
+  datadogServiceTag      String?
+  datadogStatus          DatadogMonitorStatus?
+  datadogStatusUpdatedAt DateTime?
+  datadogMonitorIds      Json?
 
   @@unique([systemId, slug])
 }
@@ -365,6 +370,14 @@ enum IntegrationStatus {
   CONNECTED
   INVALID
   REVOKED
+}
+
+enum DatadogMonitorStatus {
+  OK
+  WARN
+  ALERT
+  NO_DATA
+  NOT_FOUND
 }
 
 model DatadogIntegration {

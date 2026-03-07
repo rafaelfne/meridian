@@ -29,6 +29,12 @@ const UpdateSlugsSchema = z.object({
         .regex(slugPattern, "Slug must be lowercase alphanumeric with hyphens"),
     }),
   ),
+  serviceDatadogTags: z.array(
+    z.object({
+      id: z.string(),
+      datadogServiceTag: z.string().max(200),
+    }),
+  ).optional().default([]),
   systemDomains: z.array(
     z.object({
       id: z.string(),
@@ -47,6 +53,7 @@ export async function updateSlugsAction(
   payload: {
     systemSlugs: { id: string; slug: string }[];
     serviceSlugs: { id: string; slug: string }[];
+    serviceDatadogTags?: { id: string; datadogServiceTag: string }[];
     systemDomains?: { id: string; domainId: string }[];
   },
 ): Promise<UpdateSlugsResult> {
@@ -58,9 +65,9 @@ export async function updateSlugsAction(
     return { success: false, error: firstError?.message ?? "Invalid payload" };
   }
 
-  const { systemSlugs, serviceSlugs, systemDomains } = parsed.data;
+  const { systemSlugs, serviceSlugs, serviceDatadogTags, systemDomains } = parsed.data;
 
-  if (systemSlugs.length === 0 && serviceSlugs.length === 0 && systemDomains.length === 0) {
+  if (systemSlugs.length === 0 && serviceSlugs.length === 0 && serviceDatadogTags.length === 0 && systemDomains.length === 0) {
     return { success: true };
   }
 
@@ -71,6 +78,12 @@ export async function updateSlugsAction(
       }
       for (const { id, slug } of serviceSlugs) {
         await tx.service.update({ where: { id }, data: { slug } });
+      }
+      for (const { id, datadogServiceTag } of serviceDatadogTags) {
+        await tx.service.update({
+          where: { id },
+          data: { datadogServiceTag: datadogServiceTag || null },
+        });
       }
       for (const { id, domainId } of systemDomains) {
         await tx.system.update({ where: { id }, data: { domainId } });
