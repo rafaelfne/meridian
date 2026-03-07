@@ -6,8 +6,8 @@
   font-family: var(--font-body);
   font-size: 0.875rem;
   font-weight: 500;
-  color: var(--meridian-bg);
-  background-color: var(--meridian-accent);
+  color: #09090b;
+  background-color: #fafafa;
   border: none;
   border-radius: 0.5rem;
   cursor: pointer;
@@ -16,9 +16,9 @@
 }
 
 .button:hover {
-  background-color: var(--meridian-accent-hover);
+  background-color: #fff;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3);
+  box-shadow: 0 4px 16px rgba(255, 255, 255, 0.15);
 }
 
 .button:active {
@@ -32,7 +32,7 @@
 }
 
 .button[data-size="large"]:hover {
-  box-shadow: 0 4px 20px rgba(6, 182, 212, 0.4);
+  box-shadow: 0 4px 24px rgba(255, 255, 255, 0.2);
 }
 
 @media (prefers-reduced-motion: reduce) {

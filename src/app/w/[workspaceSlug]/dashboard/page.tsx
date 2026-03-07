@@ -224,6 +224,7 @@ export default async function DashboardPage({
           </CardHeader>
           <CardContent>
             {metrics.topConnectedSystems.length > 0 ? (
+              <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -249,6 +250,7 @@ export default async function DashboardPage({
                   ))}
                 </TableBody>
               </Table>
+              </div>
             ) : (
               <div className={styles.emptyState}>No connected systems</div>
             )}
@@ -264,6 +266,7 @@ export default async function DashboardPage({
           </CardHeader>
           <CardContent>
             {metrics.recentRisks.length > 0 ? (
+              <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -292,6 +295,7 @@ export default async function DashboardPage({
                   ))}
                 </TableBody>
               </Table>
+              </div>
             ) : (
               <div className={styles.emptyState}>
                 No high-severity risks found

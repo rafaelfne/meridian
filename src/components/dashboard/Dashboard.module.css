@@ -29,6 +29,10 @@
   gap: 1rem;
 }
 
+.chartSection > * {
+  min-width: 0;
+}
+
 @media (max-width: 768px) {
   .chartSection {
     grid-template-columns: 1fr;
@@ -39,6 +43,10 @@
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 1rem;
+}
+
+.twoCol > * {
+  min-width: 0;
 }
 
 @media (max-width: 768px) {
