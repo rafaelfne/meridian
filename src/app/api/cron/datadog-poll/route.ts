@@ -6,6 +6,7 @@ import {
   pollWorkspace,
   fetchApmServiceList,
 } from "@/modules/datadog/services/poll-datadog-monitors";
+import { reconcileIncidents } from "@/modules/status-page/services/reconcile-incidents";
 import type { DatadogMonitorStatus } from "@/generated/prisma/enums";
 
 export const dynamic = "force-dynamic";
@@ -112,6 +113,12 @@ export async function GET(request: NextRequest) {
 
       fetchApmServices: fetchApmServiceList,
     });
+
+    try {
+      await reconcileIncidents(workspaceId);
+    } catch (err) {
+      console.error("Incident reconciliation failed:", err);
+    }
 
     return NextResponse.json({ success: true, summary });
   } catch (error) {

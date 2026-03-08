@@ -101,11 +101,16 @@ export function buildGraphData(
     }
   }
 
-  // Build nodes — only include services that are targeted by edges
+  // Build nodes — only include services that are targeted by edges and actively monitored
   const nodes: GraphNode[] = systems.map((system) => {
     const targeted = targetedServiceSlugs.get(system.id);
     const filteredServices = targeted && system.services
-      ? system.services.filter((s) => targeted.has(s.slug))
+      ? system.services.filter(
+          (s) =>
+            targeted.has(s.slug) &&
+            s.datadogStatus != null &&
+            s.datadogStatus !== "NOT_FOUND",
+        )
       : undefined;
 
     // Build Datadog service breakdown for tooltip

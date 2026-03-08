@@ -204,6 +204,15 @@
   min-width: 0;
 }
 
+.svcStatusDot {
+  flex-shrink: 0;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  margin-left: auto;
+  background-color: var(--muted-foreground);
+}
+
 /* ── Status Indicator ─────────────────────── */
 
 .statusContainer {

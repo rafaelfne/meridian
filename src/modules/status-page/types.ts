@@ -26,6 +26,19 @@ export interface StatusPageConfigData {
   whiteLabel: WhiteLabelConfig;
 }
 
+export interface StatusOverrideItem {
+  id: string;
+  targetType: "product" | "feature";
+  targetId: string;
+  targetName: string;
+  status: "investigating" | "identified" | "monitoring" | "resolved";
+  message: string | null;
+  setByName: string | null;
+  expiresAt: string;
+  createdAt: string;
+  isExpired: boolean;
+}
+
 export interface StatusPageSettingsProps {
   workspaceSlug: string;
   workspaceName: string;
@@ -35,4 +48,5 @@ export interface StatusPageSettingsProps {
     name: string;
     features: Array<{ id: string; name: string }>;
   }>;
+  overrides: StatusOverrideItem[];
 }

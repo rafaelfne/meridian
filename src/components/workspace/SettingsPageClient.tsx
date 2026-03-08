@@ -5,7 +5,7 @@ import { GeneralSettingsSection } from "./GeneralSettingsSection";
 import { MembersSection } from "./MembersSection";
 import { DatadogIntegrationSection } from "./DatadogIntegrationSection";
 import { StatusPageSection } from "./StatusPageSection";
-import type { StatusPageConfigData } from "@/modules/status-page/types";
+import type { StatusPageConfigData, StatusOverrideItem } from "@/modules/status-page/types";
 
 interface SettingsPageClientProps {
   workspace: {
@@ -40,6 +40,7 @@ interface SettingsPageClientProps {
     name: string;
     features: Array<{ id: string; name: string }>;
   }>;
+  overrides: StatusOverrideItem[];
 }
 
 export function SettingsPageClient({
@@ -51,6 +52,7 @@ export function SettingsPageClient({
   datadogIntegration,
   statusPageConfig,
   availableProducts,
+  overrides,
 }: SettingsPageClientProps) {
   return (
     <div className="container mx-auto max-w-4xl space-y-8 py-8 px-4">
@@ -106,6 +108,7 @@ export function SettingsPageClient({
               workspaceName={workspace.name}
               config={statusPageConfig}
               availableProducts={availableProducts}
+              overrides={overrides}
             />
           </TabsContent>
         )}

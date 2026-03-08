@@ -11,8 +11,14 @@ import {
   Globe,
   RefreshCcw,
   ShieldCheck,
+  History,
+  Clock,
 } from "lucide-react";
-import type { StatusPageData } from "@/app/status/[slug]/page";
+import type {
+  StatusPageData,
+  IncidentItem,
+  StatusOverrideData,
+} from "@/app/status/[slug]/page";
 import type { HealthStatus } from "@/modules/status-page/health";
 import { overallBanner, statusLabel } from "@/modules/status-page/health";
 
@@ -105,6 +111,43 @@ function formatRelativeTime(iso: string): string {
   const diffH = Math.floor(diffMin / 60);
   if (diffH === 1) return "1 hour ago";
   return `${diffH} hours ago`;
+}
+
+function formatIncidentTime(iso: string): string {
+  return new Date(iso).toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function formatDuration(minutes: number): string {
+  if (minutes < 60) return `${minutes}m`;
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return m > 0 ? `${h}h ${m}m` : `${h}h`;
+}
+
+function incidentStatusToHealth(
+  status: IncidentItem["status"],
+): HealthStatus {
+  return status === "degraded" ? "partial_outage" : "major_outage";
+}
+
+function overrideDisplayLabel(status: StatusOverrideData["status"]): string {
+  switch (status) {
+    case "investigating":
+      return "Investigating";
+    case "identified":
+      return "Identified";
+    case "monitoring":
+      return "Monitoring";
+  }
+}
+
+function overrideToHealth(status: StatusOverrideData["status"]): HealthStatus {
+  return status === "monitoring" ? "partial_outage" : "major_outage";
 }
 
 /* ── Component ───────────────────────────────── */
@@ -280,9 +323,16 @@ export function StatusPageClient({ data }: { data: StatusPageData }) {
                             <ChevronRight className="size-4" />
                           )}
                         </div>
-                        <span className="font-semibold">
-                          {product.publicName}
-                        </span>
+                        <div>
+                          <span className="font-semibold">
+                            {product.publicName}
+                          </span>
+                          {product.override?.message && (
+                            <p className={`text-[11px] mt-0.5 ${pColors.text} opacity-80`}>
+                              {product.override.message}
+                            </p>
+                          )}
+                        </div>
                       </div>
                       <div
                         className={`flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider ${pUsePrimary ? "" : pColors.text}`}
@@ -299,7 +349,9 @@ export function StatusPageClient({ data }: { data: StatusPageData }) {
                               : undefined
                           }
                         />
-                        {statusLabel(product.status)}
+                        {product.override
+                          ? overrideDisplayLabel(product.override.status)
+                          : statusLabel(product.status)}
                       </div>
                     </div>
 
@@ -351,16 +403,25 @@ export function StatusPageClient({ data }: { data: StatusPageData }) {
                               key={feature.id}
                               className="px-4 py-3 flex items-center justify-between"
                             >
-                              <span className="text-xs text-muted-foreground">
-                                {feature.publicName}
-                              </span>
+                              <div className="min-w-0">
+                                <span className="text-xs text-muted-foreground">
+                                  {feature.publicName}
+                                </span>
+                                {feature.override?.message && (
+                                  <p className={`text-[10px] mt-0.5 ${fColors.text} opacity-80`}>
+                                    {feature.override.message}
+                                  </p>
+                                )}
+                              </div>
                               <span
-                                className={`text-[10px] font-bold uppercase tracking-tight ${fUsePrimary ? "" : fColors.text}`}
+                                className={`text-[10px] font-bold uppercase tracking-tight shrink-0 ${fUsePrimary ? "" : fColors.text}`}
                                 style={
                                   fUsePrimary ? { color: pc! } : undefined
                                 }
                               >
-                                {statusLabel(feature.status)}
+                                {feature.override
+                                  ? overrideDisplayLabel(feature.override.status)
+                                  : statusLabel(feature.status)}
                               </span>
                             </div>
                           );
@@ -372,6 +433,92 @@ export function StatusPageClient({ data }: { data: StatusPageData }) {
               );
             })}
           </div>
+        </section>
+
+        {/* Incident History */}
+        <section className="space-y-4">
+          <div className="flex items-center justify-between px-2 text-[11px] uppercase tracking-widest font-bold text-muted-foreground">
+            <span className="flex items-center gap-1.5">
+              <History className="size-3" /> Incident History
+            </span>
+            <span>Past 90 days</span>
+          </div>
+
+          {data.incidentHistory.length === 0 ? (
+            <div className="bg-card border rounded-2xl p-8 flex flex-col items-center gap-2 text-center">
+              <CheckCircle2 className="size-6 text-emerald-400" />
+              <p className="text-sm text-muted-foreground">
+                No incidents in the past 90 days
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {data.incidentHistory.map((group) => (
+                <div key={group.label} className="space-y-2">
+                  <h3 className="text-xs font-bold text-muted-foreground px-2">
+                    {group.label}
+                  </h3>
+                  <div className="bg-card border rounded-2xl overflow-hidden divide-y">
+                    {group.incidents.map((incident) => {
+                      const iHealth = incidentStatusToHealth(incident.status);
+                      const iColors = STATUS_COLORS[iHealth];
+                      return (
+                        <div
+                          key={incident.id}
+                          className="px-5 py-4 flex items-center justify-between gap-4"
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            <span
+                              className={`size-2 rounded-full shrink-0 ${iColors.dot}`}
+                            />
+                            <div className="min-w-0">
+                              <p className="text-sm font-medium truncate">
+                                {incident.publicName}
+                              </p>
+                              <p className="text-[10px] text-muted-foreground flex items-center gap-1 mt-0.5">
+                                <Clock className="size-2.5" />
+                                {formatIncidentTime(incident.startedAt)}
+                                {incident.resolvedAt
+                                  ? ` \u2013 ${formatIncidentTime(incident.resolvedAt)}`
+                                  : ""}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3 shrink-0">
+                            {incident.resolvedAt ? (
+                              <>
+                                {incident.durationMinutes != null && (
+                                  <span className="text-[10px] text-muted-foreground font-medium">
+                                    {formatDuration(incident.durationMinutes)}
+                                  </span>
+                                )}
+                                <span
+                                  className={`text-[10px] font-bold uppercase tracking-tight ${iColors.text}`}
+                                >
+                                  {incident.status === "degraded"
+                                    ? "Degraded"
+                                    : "Outage"}
+                                </span>
+                              </>
+                            ) : (
+                              <span
+                                className={`text-[10px] font-bold uppercase tracking-tight ${iColors.text} flex items-center gap-1`}
+                              >
+                                <span
+                                  className={`size-1.5 rounded-full animate-pulse ${iColors.dot}`}
+                                />
+                                Ongoing
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </section>
 
         {/* Footer */}

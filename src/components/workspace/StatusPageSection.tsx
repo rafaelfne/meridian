@@ -5,6 +5,16 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   ChevronDown,
   ChevronRight,
@@ -18,14 +28,20 @@ import {
   Eye,
   Info,
   CheckCircle2,
+  AlertTriangle,
+  Shield,
+  Clock,
 } from "lucide-react";
 import { toast } from "sonner";
 import { saveStatusPageConfig } from "@/modules/status-page/actions/save-status-page-config";
+import { setStatusOverride } from "@/modules/status-page/actions/set-status-override";
+import { resolveStatusOverride } from "@/modules/status-page/actions/resolve-status-override";
 import type {
   StatusPageSettingsProps,
   StatusPageProductItem,
   StatusPageFeatureItem,
   StatusPageConfigData,
+  StatusOverrideItem,
 } from "@/modules/status-page/types";
 
 function slugify(text: string): string {
@@ -238,6 +254,7 @@ export function StatusPageSection({
   workspaceName,
   config,
   availableProducts,
+  overrides,
 }: StatusPageSettingsProps) {
   const [isPending, startTransition] = useTransition();
   const [enabled, setEnabled] = useState(config?.enabled ?? false);
@@ -248,6 +265,13 @@ export function StatusPageSection({
   const [expandedProducts, setExpandedProducts] = useState<Set<string>>(
     new Set(),
   );
+
+  // Override form state
+  const [overrideTarget, setOverrideTarget] = useState("");
+  const [overrideStatus, setOverrideStatus] = useState<string>("");
+  const [overrideMessage, setOverrideMessage] = useState("");
+  const [isOverridePending, startOverrideTransition] = useTransition();
+  const [showResolvedOverrides, setShowResolvedOverrides] = useState(false);
 
   const [logoUrl, setLogoUrl] = useState<string | null>(
     config?.whiteLabel.logoUrl ?? null,
@@ -345,6 +369,53 @@ export function StatusPageSection({
     workspaceSlug,
   ]);
 
+  const handleSetOverride = useCallback(() => {
+    if (!overrideTarget || !overrideStatus) return;
+    const [targetType, targetId] = overrideTarget.split(":") as [
+      "product" | "feature",
+      string,
+    ];
+    startOverrideTransition(async () => {
+      const result = await setStatusOverride(workspaceSlug, {
+        targetType,
+        targetId,
+        status: overrideStatus as "investigating" | "identified" | "monitoring",
+        message: overrideMessage || undefined,
+      });
+      if (result.success) {
+        toast.success("Status override applied");
+        setOverrideTarget("");
+        setOverrideStatus("");
+        setOverrideMessage("");
+      } else {
+        toast.error(result.error ?? "Failed to set override");
+      }
+    });
+  }, [overrideTarget, overrideStatus, overrideMessage, workspaceSlug]);
+
+  const handleResolveOverride = useCallback(
+    (overrideId: string) => {
+      startOverrideTransition(async () => {
+        const result = await resolveStatusOverride(workspaceSlug, {
+          overrideId,
+        });
+        if (result.success) {
+          toast.success("Override resolved");
+        } else {
+          toast.error(result.error ?? "Failed to resolve override");
+        }
+      });
+    },
+    [workspaceSlug],
+  );
+
+  const activeOverrides = overrides.filter(
+    (o) => o.status !== "resolved" && !o.isExpired,
+  );
+  const resolvedOverrides = overrides.filter(
+    (o) => o.status === "resolved" || o.isExpired,
+  );
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
       {/* Left column — Settings */}
@@ -368,6 +439,201 @@ export function StatusPageSection({
         <div
           className={`transition-opacity space-y-6 ${!enabled ? "opacity-50 pointer-events-none" : ""}`}
         >
+          {/* Status Overrides */}
+          <Card>
+            <div className="p-4 border-b flex items-center justify-between">
+              <h3 className="text-xs font-medium uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                <Shield className="size-3.5" /> Status Overrides
+              </h3>
+              {activeOverrides.length > 0 && (
+                <Badge variant="destructive">
+                  {activeOverrides.length} Active
+                </Badge>
+              )}
+            </div>
+            <CardContent className="p-6 space-y-6">
+              {/* Active overrides */}
+              {activeOverrides.length > 0 ? (
+                <div className="space-y-2">
+                  <label className="text-sm font-medium block">
+                    Active Overrides
+                  </label>
+                  <div className="space-y-2">
+                    {activeOverrides.map((o) => (
+                      <div
+                        key={o.id}
+                        className="flex items-center justify-between gap-3 rounded-lg border p-3"
+                      >
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium truncate">
+                              {o.targetName}
+                            </span>
+                            <Badge
+                              variant={
+                                o.status === "monitoring"
+                                  ? "secondary"
+                                  : "destructive"
+                              }
+                            >
+                              {o.status}
+                            </Badge>
+                          </div>
+                          {o.message && (
+                            <p className="text-xs text-muted-foreground mt-1 truncate">
+                              {o.message}
+                            </p>
+                          )}
+                          <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1">
+                            <Clock className="size-2.5" />
+                            Expires{" "}
+                            {new Date(o.expiresAt).toLocaleString()}
+                            {o.setByName && (
+                              <span> &middot; Set by {o.setByName}</span>
+                            )}
+                          </p>
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleResolveOverride(o.id)}
+                          disabled={isOverridePending}
+                        >
+                          Resolve
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <CheckCircle2 className="size-4 text-emerald-500" />
+                  No active overrides
+                </div>
+              )}
+
+              {/* Set override form */}
+              <div className="space-y-3 border-t pt-4">
+                <label className="text-sm font-medium block">
+                  Set Override
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <Select
+                    value={overrideTarget}
+                    onValueChange={setOverrideTarget}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select target" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {items
+                        .filter((p) => p.visible)
+                        .map((p) => (
+                          <SelectGroup key={p.productId}>
+                            <SelectLabel>{p.publicName}</SelectLabel>
+                            <SelectItem value={`product:${p.productId}`}>
+                              {p.publicName} (Product)
+                            </SelectItem>
+                            {p.features
+                              .filter((f) => f.visible)
+                              .map((f) => (
+                                <SelectItem
+                                  key={f.featureId}
+                                  value={`feature:${f.featureId}`}
+                                >
+                                  {f.publicName}
+                                </SelectItem>
+                              ))}
+                          </SelectGroup>
+                        ))}
+                    </SelectContent>
+                  </Select>
+
+                  <Select
+                    value={overrideStatus}
+                    onValueChange={setOverrideStatus}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="investigating">
+                        Investigating
+                      </SelectItem>
+                      <SelectItem value="identified">Identified</SelectItem>
+                      <SelectItem value="monitoring">Monitoring</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <Input
+                  value={overrideMessage}
+                  onChange={(e) => setOverrideMessage(e.target.value)}
+                  placeholder="Public message (optional, max 500 chars)"
+                  maxLength={500}
+                />
+
+                <Button
+                  onClick={handleSetOverride}
+                  disabled={
+                    !overrideTarget ||
+                    !overrideStatus ||
+                    isOverridePending
+                  }
+                  size="sm"
+                >
+                  <AlertTriangle className="size-3.5 mr-1.5" />
+                  {isOverridePending ? "Setting..." : "Set Override"}
+                </Button>
+              </div>
+
+              {/* Resolved / expired overrides */}
+              {resolvedOverrides.length > 0 && (
+                <div className="border-t pt-4">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setShowResolvedOverrides((prev) => !prev)
+                    }
+                    className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {showResolvedOverrides ? (
+                      <ChevronDown className="size-4" />
+                    ) : (
+                      <ChevronRight className="size-4" />
+                    )}
+                    {resolvedOverrides.length} resolved / expired
+                  </button>
+                  {showResolvedOverrides && (
+                    <div className="mt-3 space-y-2">
+                      {resolvedOverrides.map((o) => (
+                        <div
+                          key={o.id}
+                          className="flex items-center justify-between gap-3 rounded-lg border border-dashed p-3 opacity-60"
+                        >
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-medium truncate">
+                                {o.targetName}
+                              </span>
+                              <Badge variant="outline">
+                                {o.isExpired ? "expired" : o.status}
+                              </Badge>
+                            </div>
+                            <p className="text-[10px] text-muted-foreground mt-1">
+                              {new Date(o.createdAt).toLocaleString()}
+                              {o.setByName && ` by ${o.setByName}`}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
           {/* General Settings */}
           <Card>
             <div className="p-4 border-b">

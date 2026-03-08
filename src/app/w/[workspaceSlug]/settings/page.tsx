@@ -87,6 +87,45 @@ export default async function SettingsPage({
         })
       : [];
 
+  const statusOverrides =
+    ctx.role === "OWNER"
+      ? await prisma.statusOverride.findMany({
+          where: { workspaceId: ctx.workspaceId },
+          orderBy: { createdAt: "desc" },
+          take: 20,
+          include: { user: { select: { name: true } } },
+        })
+      : [];
+
+  // Build a lookup for product/feature names
+  const productNameMap = new Map(
+    availableProducts.map((p) => [p.id, p.name]),
+  );
+  const featureNameMap = new Map(
+    availableProducts.flatMap((p) => p.features.map((f) => [f.id, f.name])),
+  );
+
+  const now = new Date();
+  const overridesData = statusOverrides.map((o) => ({
+    id: o.id,
+    targetType: o.targetType as "product" | "feature",
+    targetId: o.targetId,
+    targetName:
+      (o.targetType === "product"
+        ? productNameMap.get(o.targetId)
+        : featureNameMap.get(o.targetId)) ?? "Unknown",
+    status: o.status.toLowerCase() as
+      | "investigating"
+      | "identified"
+      | "monitoring"
+      | "resolved",
+    message: o.message,
+    setByName: o.user.name,
+    expiresAt: o.expiresAt.toISOString(),
+    createdAt: o.createdAt.toISOString(),
+    isExpired: o.status !== "RESOLVED" && o.expiresAt <= now,
+  }));
+
   const statusPageData = statusPageConfig
     ? {
         enabled: statusPageConfig.enabled,
@@ -139,6 +178,7 @@ export default async function SettingsPage({
       datadogIntegration={datadogIntegration}
       statusPageConfig={statusPageData}
       availableProducts={availableProducts}
+      overrides={overridesData}
     />
   );
 }

@@ -37,7 +37,7 @@ function getStatusInfo(status: string | undefined | null, datadogServices?: { na
   // Check if all services are NOT_FOUND (coverage warning)
   if (status === "NOT_FOUND") {
     const allNotFound = !datadogServices || datadogServices.every((s) => s.status === "NOT_FOUND");
-    if (allNotFound) return { cssClass: styles.statusNotFound!, label: "Not monitored" };
+    if (allNotFound) return null;
     return { cssClass: styles.statusNoData!, label: "No Data" };
   }
 
@@ -66,13 +66,36 @@ function formatStatusLabel(status: string): string {
   }
 }
 
+/** Maps a per-service datadogStatus to a CSS class + label for the inline indicator. */
+function svcStatusInfo(
+  datadogStatus: string | null | undefined,
+): { cssClass: string; label: string } | null {
+  switch (datadogStatus) {
+    case "OK":
+      return { cssClass: styles.statusOk!, label: "OK" };
+    case "WARN":
+      return { cssClass: styles.statusWarn!, label: "Warn" };
+    case "ALERT":
+      return { cssClass: styles.statusAlert!, label: "Alert" };
+    case "NO_DATA":
+      return { cssClass: styles.statusNoData!, label: "No Data" };
+    case "NOT_FOUND":
+      return { cssClass: styles.statusNotFound!, label: "Not monitored" };
+    default:
+      return null;
+  }
+}
+
 function SystemNodeInner({ id, data, selected }: SystemNodeProps) {
   const { onHighlight, highlightedSystemId, focusedNodeId } = useNodeHighlight();
   const [tooltipVisible, setTooltipVisible] = useState(false);
 
   const isHighlighted = highlightedSystemId === id;
   const isFocused = focusedNodeId === id;
-  const showPorts = data.services && data.services.length > 0;
+  const monitoredServices = data.services?.filter(
+    (s) => s.datadogStatus != null && s.datadogStatus !== "NOT_FOUND",
+  );
+  const showPorts = monitoredServices && monitoredServices.length > 0;
 
   const statusInfo = getStatusInfo(data.datadogStatus, data.datadogServices);
 
@@ -170,20 +193,29 @@ function SystemNodeInner({ id, data, selected }: SystemNodeProps) {
 
       {showPorts && (
         <div className={styles.servicePorts}>
-          {data.services!.map((svc) => (
-            <div key={svc.slug} className={styles.servicePort}>
-              <Handle
-                type="target"
-                position={Position.Left}
-                id={`svc-${svc.slug}`}
-                className={styles.serviceHandle}
-              />
-              <span className={styles.serviceTypeTag}>{svcTypeLabel(svc.type)}</span>
-              <span className={styles.serviceName} title={svc.slug}>
-                {svc.slug}
-              </span>
-            </div>
-          ))}
+          {monitoredServices!.map((svc) => {
+            const svcStatus = svcStatusInfo(svc.datadogStatus);
+            return (
+              <div key={svc.slug} className={styles.servicePort}>
+                <Handle
+                  type="target"
+                  position={Position.Left}
+                  id={`svc-${svc.slug}`}
+                  className={styles.serviceHandle}
+                />
+                <span className={styles.serviceTypeTag}>{svcTypeLabel(svc.type)}</span>
+                <span className={styles.serviceName} title={svc.slug}>
+                  {svc.slug}
+                </span>
+                {svcStatus && (
+                  <span
+                    className={clsx(styles.svcStatusDot, svcStatus.cssClass)}
+                    title={svcStatus.label}
+                  />
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
 
