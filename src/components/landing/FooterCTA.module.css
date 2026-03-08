@@ -1,98 +1,139 @@
 /* ── CTA Section ──────────────────────────────────────── */
 
 .cta {
+  padding: 6rem 1.5rem;
   position: relative;
-  padding: 8rem 1.5rem;
-  text-align: center;
+  z-index: 1;
   overflow: hidden;
 }
 
-.ctaGlow {
+.ctaCard {
+  max-width: 64rem;
+  margin: 0 auto;
+  background: linear-gradient(135deg, #4f46e5, #2563eb);
+  border-radius: 3rem;
+  padding: 4rem 3rem;
+  text-align: center;
+  position: relative;
+  box-shadow: 0 25px 50px -12px rgba(99, 102, 241, 0.2);
+  overflow: hidden;
+}
+
+.ctaDecor {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 100%;
-  height: 28rem;
-  background: radial-gradient(circle, rgba(6, 182, 212, 0.08) 0%, transparent 60%);
-  border-radius: 50%;
-  filter: blur(60px);
+  top: 0;
+  right: 0;
+  padding: 3rem;
+  opacity: 0.1;
   pointer-events: none;
+}
+
+.ctaGlobe {
+  width: 12rem;
+  height: 12rem;
+  color: #ffffff;
 }
 
 .ctaContent {
   position: relative;
   z-index: 1;
-  max-width: 40rem;
-  margin: 0 auto;
 }
 
-.heading {
-  font-family: var(--font-body);
+.ctaHeading {
   font-size: clamp(2rem, 5vw, 3.5rem);
-  font-weight: 700;
-  color: var(--meridian-text-primary);
-  line-height: 1.15;
+  font-weight: 900;
+  color: #ffffff;
   letter-spacing: -0.02em;
-  margin-bottom: 1.25rem;
+  margin-bottom: 1.5rem;
 }
 
-.tagline {
+.ctaText {
   font-size: 1.125rem;
-  color: var(--meridian-text-secondary);
-  margin-bottom: 2.5rem;
+  color: rgba(199, 210, 254, 0.9);
+  max-width: 36rem;
+  margin: 0 auto 2.5rem;
+  line-height: 1.6;
 }
 
-.ctaButton {
+.ctaButtons {
   display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.ctaSecondary {
+  display: inline-flex;
+  align-items: center;
   justify-content: center;
+  padding: 0.875rem 2.5rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #ffffff;
+  background: transparent;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 9999px;
+  text-decoration: none;
+  transition: background-color 0.2s ease;
+  width: 100%;
+}
+
+.ctaSecondary:hover {
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 /* ── Footer ───────────────────────────────────────────── */
 
 .footer {
-  border-top: 1px solid var(--meridian-border);
-  padding: 2rem 1.5rem;
+  border-top: 1px solid #0f172a;
+  padding: 3rem 1.5rem;
   position: relative;
   z-index: 1;
 }
 
 .footerInner {
-  max-width: 72rem;
+  max-width: 80rem;
   margin: 0 auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
-.footerLogo {
+.footerBrand {
   display: flex;
   align-items: center;
-  gap: 0.625rem;
+  gap: 0.5rem;
+  opacity: 0.5;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.footerBrand:hover {
+  opacity: 1;
 }
 
 .logoMark {
-  width: 1.25rem;
-  height: 1.25rem;
-  background-color: var(--meridian-bg-subtle);
-  border-radius: 0.25rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  background-color: #ffffff;
+  border-radius: 0.375rem;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .logoMark span {
-  color: var(--meridian-text-primary);
+  color: #000000;
   font-size: 0.625rem;
   font-weight: 900;
-  font-style: italic;
 }
 
-.copyright {
-  font-family: var(--font-display);
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: var(--meridian-text-muted);
+.brandName {
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+  text-transform: uppercase;
 }
 
 .footerLinks {
@@ -102,18 +143,46 @@
 
 .footerLink {
   font-size: 0.8125rem;
-  color: var(--meridian-text-muted);
+  color: #64748b;
   text-decoration: none;
   transition: color 0.15s ease;
 }
 
 .footerLink:hover {
-  color: var(--meridian-text-primary);
+  color: #ffffff;
 }
 
-@media (max-width: 640px) {
+.copyright {
+  font-size: 0.8125rem;
+  color: #64748b;
+}
+
+/* ── Responsive ───────────────────────────────────────── */
+
+@media (min-width: 640px) {
+  .ctaCard {
+    padding: 5rem;
+  }
+
+  .ctaButtons {
+    flex-direction: row;
+    justify-content: center;
+  }
+
+  .ctaSecondary {
+    width: auto;
+  }
+}
+
+@media (max-width: 768px) {
   .footerInner {
     flex-direction: column;
-    gap: 1rem;
+    gap: 1.5rem;
+    text-align: center;
+  }
+
+  .footerLinks {
+    flex-wrap: wrap;
+    justify-content: center;
   }
 }

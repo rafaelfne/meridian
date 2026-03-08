@@ -1,0 +1,177 @@
+.section {
+  padding: 6rem 1.5rem;
+  max-width: 80rem;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+  border-top: 1px solid #0f172a;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: center;
+}
+
+/* ── Content (left) ──────────────────────────────────── */
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.heading {
+  font-size: clamp(1.75rem, 5vw, 3rem);
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+}
+
+.text {
+  font-size: 1.125rem;
+  line-height: 1.7;
+  color: #94a3b8;
+}
+
+.textHighlight {
+  font-size: 1.125rem;
+  line-height: 1.7;
+  color: #e2e8f0;
+}
+
+.accentIndigo {
+  color: #818cf8;
+  font-weight: 600;
+}
+
+.accentBlue {
+  color: #60a5fa;
+  font-weight: 600;
+}
+
+.features {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-top: 0.5rem;
+}
+
+.featureItem {
+  display: flex;
+  gap: 1rem;
+}
+
+.featureIcon {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.5rem;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #818cf8;
+}
+
+.featureIcon[data-color="blue"] {
+  color: #60a5fa;
+}
+
+.featureTitle {
+  font-weight: 700;
+  color: #ffffff;
+  font-size: 0.9375rem;
+  margin-bottom: 0.125rem;
+}
+
+.featureText {
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+/* ── Visual (right) ──────────────────────────────────── */
+
+.visual {
+  position: relative;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ring1 {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(99, 102, 241, 0.1);
+  animation: spinSlow 60s linear infinite;
+}
+
+.ring2 {
+  position: absolute;
+  inset: 10%;
+  border-radius: 50%;
+  border: 1px solid rgba(59, 130, 246, 0.1);
+  animation: spinSlowReverse 45s linear infinite;
+}
+
+.poleText {
+  position: relative;
+  font-size: 6rem;
+  font-weight: 900;
+  color: rgba(255, 255, 255, 0.05);
+  letter-spacing: -0.04em;
+  user-select: none;
+}
+
+.poleLineVertical {
+  position: absolute;
+  left: 50%;
+  top: -5%;
+  bottom: -5%;
+  width: 1px;
+  background: linear-gradient(
+    to bottom,
+    #6366f1,
+    #ffffff,
+    #3b82f6
+  );
+  box-shadow: 0 0 20px rgba(99, 102, 241, 0.5);
+  transform: translateX(-50%);
+}
+
+@keyframes spinSlow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes spinSlowReverse {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(-360deg); }
+}
+
+@media (max-width: 768px) {
+  .layout {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+
+  .visual {
+    max-width: 20rem;
+    margin: 0 auto;
+  }
+
+  .poleText {
+    font-size: 4rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ring1,
+  .ring2 {
+    animation: none;
+  }
+}

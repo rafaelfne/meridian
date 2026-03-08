@@ -1,27 +1,27 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Upload, GitBranch, Network } from "lucide-react";
+import { Layers, Activity, ShieldCheck } from "lucide-react";
 import styles from "./FeaturesSection.module.css";
 
 const features = [
   {
-    icon: Upload,
-    title: "Upload",
-    body: "Drop a JSON inventory. Domains, services, databases, integrations, messaging — all captured in one schema.",
+    icon: Layers,
+    title: "Inventory Resolution",
+    body: "Automatically resolve dependencies between services, databases, and message brokers from simple JSON uploads.",
+    color: "indigo" as const,
+  },
+  {
+    icon: Activity,
+    title: "Product Hierarchy",
+    body: "Map technical systems to business products and features. Establish the link between code and revenue.",
     color: "blue" as const,
   },
   {
-    icon: GitBranch,
-    title: "Resolve",
-    body: "Dependency engine maps HTTP calls, Kafka topics, RabbitMQ queues, and shared databases. Automatically.",
-    color: "purple" as const,
-  },
-  {
-    icon: Network,
-    title: "Visualize",
-    body: "Interactive dependency graph. Click a node, trace every connection. Filter by domain, protocol, or language.",
-    color: "green" as const,
+    icon: ShieldCheck,
+    title: "Trust Communication",
+    body: "Generate white-labeled status pages with automated health data flowing directly from your Datadog monitors.",
+    color: "emerald" as const,
   },
 ];
 
@@ -49,6 +49,13 @@ export function FeaturesSection() {
 
   return (
     <section ref={sectionRef} id="features" className={styles.section}>
+      <div className={styles.header}>
+        <h2 className={styles.heading}>Everything connects.</h2>
+        <p className={styles.subheading}>
+          One platform to map, translate, and communicate your architecture.
+        </p>
+      </div>
+
       <div className={styles.grid}>
         {features.map((feature, i) => {
           const Icon = feature.icon;
@@ -60,14 +67,11 @@ export function FeaturesSection() {
               data-color={feature.color}
               style={{ transitionDelay: `${i * 120}ms` }}
             >
-              <div className={styles.cardGlow} />
-              <div className={styles.cardInner}>
-                <div className={styles.iconWrapper}>
-                  <Icon size={24} strokeWidth={1.5} />
-                </div>
-                <h3 className={styles.cardTitle}>{feature.title}</h3>
-                <p className={styles.cardBody}>{feature.body}</p>
+              <div className={styles.iconWrapper}>
+                <Icon size={24} strokeWidth={1.5} />
               </div>
+              <h3 className={styles.cardTitle}>{feature.title}</h3>
+              <p className={styles.cardBody}>{feature.body}</p>
             </div>
           );
         })}

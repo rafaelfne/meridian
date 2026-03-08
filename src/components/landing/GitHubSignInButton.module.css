@@ -35,6 +35,52 @@
   box-shadow: 0 4px 24px rgba(255, 255, 255, 0.2);
 }
 
+/* Primary/arrow variant — indigo pill for hero CTA */
+.button[data-icon="arrow"] {
+  color: #ffffff;
+  background-color: #4f46e5;
+  border-radius: 9999px;
+  font-weight: 700;
+  box-shadow: 0 20px 25px -5px rgba(99, 102, 241, 0.2);
+}
+
+.button[data-icon="arrow"]:hover {
+  background-color: #6366f1;
+  box-shadow: 0 20px 25px -5px rgba(99, 102, 241, 0.3);
+}
+
+.button[data-icon="arrow"][data-size="large"] {
+  padding: 1rem 2rem;
+  font-size: 1.125rem;
+}
+
+.arrowIcon {
+  width: 1.25rem;
+  height: 1.25rem;
+  transition: transform 0.2s ease;
+}
+
+.button[data-icon="arrow"]:hover .arrowIcon {
+  transform: translateX(4px);
+}
+
+/* Pill get started for navbar */
+.button[data-size="pill"] {
+  background-color: #ffffff;
+  color: #000000;
+  padding: 0.5rem 1.25rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  box-shadow: 0 4px 6px rgba(255, 255, 255, 0.05);
+}
+
+.button[data-size="pill"]:hover {
+  background-color: #eef2ff;
+  transform: scale(1.05);
+  box-shadow: 0 4px 6px rgba(255, 255, 255, 0.05);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .button {
     transition: none;
