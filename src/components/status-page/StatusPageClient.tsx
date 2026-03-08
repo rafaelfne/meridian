@@ -72,30 +72,21 @@ function statusIcon(status: HealthStatus, className: string) {
   }
 }
 
-function generateHistory(status: HealthStatus): HealthStatus[] {
-  return Array.from({ length: 40 }, (_, i) => {
-    switch (status) {
-      case "operational":
-        return "operational";
-      case "partial_outage":
-        return i > 34 ? "partial_outage" : "operational";
-      case "major_outage":
-        if (i > 36) return "major_outage";
-        if (i > 31) return "partial_outage";
-        return "operational";
-    }
-  });
+function getProductHistory(
+  productId: string,
+  dailyStatus: Record<string, HealthStatus[]>,
+): HealthStatus[] {
+  return dailyStatus[productId] ?? Array.from<HealthStatus>({ length: 90 }).fill("operational");
 }
 
-function uptimePercent(status: HealthStatus): string {
-  switch (status) {
-    case "operational":
-      return "100";
-    case "partial_outage":
-      return "98.45";
-    case "major_outage":
-      return "95.20";
-  }
+function uptimePercent(
+  productId: string,
+  dailyStatus: Record<string, HealthStatus[]>,
+): string {
+  const days = dailyStatus[productId];
+  if (!days || days.length === 0) return "100.00";
+  const operational = days.filter((d) => d === "operational").length;
+  return ((operational / days.length) * 100).toFixed(2);
 }
 
 function formatRelativeTime(iso: string): string {
@@ -300,7 +291,7 @@ export function StatusPageClient({ data }: { data: StatusPageData }) {
           <div className="space-y-3">
             {data.products.map((product) => {
               const isExpanded = expandedProducts.has(product.id);
-              const history = generateHistory(product.status);
+              const history = getProductHistory(product.id, data.productDailyStatus);
               const pColors = STATUS_COLORS[product.status];
               const pUsePrimary = product.status === "operational" && !!pc;
 
@@ -383,7 +374,7 @@ export function StatusPageClient({ data }: { data: StatusPageData }) {
                           className={pUsePrimary ? "" : pColors.text}
                           style={pUsePrimary ? { color: pc! } : undefined}
                         >
-                          {uptimePercent(product.status)}% uptime
+                          {uptimePercent(product.id, data.productDailyStatus)}% uptime
                         </span>
                         <span>Today</span>
                       </div>

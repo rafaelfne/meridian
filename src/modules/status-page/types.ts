@@ -48,5 +48,14 @@ export interface StatusPageSettingsProps {
     name: string;
     features: Array<{ id: string; name: string }>;
   }>;
+}
+
+export interface IncidentsSectionProps {
+  workspaceSlug: string;
+  availableProducts: Array<{
+    id: string;
+    name: string;
+    features: Array<{ id: string; name: string }>;
+  }>;
   overrides: StatusOverrideItem[];
 }

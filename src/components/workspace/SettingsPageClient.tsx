@@ -5,6 +5,7 @@ import { GeneralSettingsSection } from "./GeneralSettingsSection";
 import { MembersSection } from "./MembersSection";
 import { DatadogIntegrationSection } from "./DatadogIntegrationSection";
 import { StatusPageSection } from "./StatusPageSection";
+import { IncidentsSection } from "./IncidentsSection";
 import type { StatusPageConfigData, StatusOverrideItem } from "@/modules/status-page/types";
 
 interface SettingsPageClientProps {
@@ -73,6 +74,9 @@ export function SettingsPageClient({
           {userRole === "OWNER" && (
             <TabsTrigger value="status-page">Status Page</TabsTrigger>
           )}
+          {userRole === "OWNER" && (
+            <TabsTrigger value="incidents">Incidents</TabsTrigger>
+          )}
         </TabsList>
 
         <TabsContent value="general" className="mt-6">
@@ -107,6 +111,15 @@ export function SettingsPageClient({
               workspaceSlug={workspaceSlug}
               workspaceName={workspace.name}
               config={statusPageConfig}
+              availableProducts={availableProducts}
+            />
+          </TabsContent>
+        )}
+
+        {userRole === "OWNER" && (
+          <TabsContent value="incidents" className="mt-6">
+            <IncidentsSection
+              workspaceSlug={workspaceSlug}
               availableProducts={availableProducts}
               overrides={overrides}
             />
