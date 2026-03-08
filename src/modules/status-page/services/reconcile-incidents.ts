@@ -75,10 +75,8 @@ export async function reconcileIncidents(
         .map((fs) => fromDatadogStatus(fs.system.datadogStatus))
         .filter((s): s is HealthStatus => s !== null);
 
-      // Skip features with no monitored systems
-      if (systemStatuses.length === 0) continue;
-
-      const featureHealth = worstStatus(systemStatuses);
+      const featureHealth =
+        systemStatuses.length > 0 ? worstStatus(systemStatuses) : "operational";
 
       featureStatuses.push(featureHealth);
 
