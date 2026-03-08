@@ -58,6 +58,52 @@ export default async function SettingsPage({
         })
       : null;
 
+  const statusPageConfig =
+    ctx.role === "OWNER"
+      ? await prisma.statusPageConfig.findUnique({
+          where: { workspaceId: ctx.workspaceId },
+          include: {
+            products: {
+              include: { features: true },
+              orderBy: { displayOrder: "asc" },
+            },
+          },
+        })
+      : null;
+
+  const availableProducts =
+    ctx.role === "OWNER"
+      ? await prisma.product.findMany({
+          where: { workspaceId: ctx.workspaceId },
+          select: {
+            id: true,
+            name: true,
+            features: {
+              select: { id: true, name: true },
+              orderBy: { name: "asc" },
+            },
+          },
+          orderBy: { name: "asc" },
+        })
+      : [];
+
+  const statusPageData = statusPageConfig
+    ? {
+        enabled: statusPageConfig.enabled,
+        slug: statusPageConfig.slug,
+        items: statusPageConfig.products.map((p) => ({
+          productId: p.productId,
+          publicName: p.publicName,
+          visible: p.visible,
+          features: p.features.map((f) => ({
+            featureId: f.featureId,
+            publicName: f.publicName,
+            visible: f.visible,
+          })),
+        })),
+      }
+    : null;
+
   const isRevoked = datadogRow?.status === "REVOKED";
   const datadogIntegration = datadogRow
     ? {
@@ -84,6 +130,8 @@ export default async function SettingsPage({
       userRole={ctx.role}
       workspaceSlug={workspaceSlug}
       datadogIntegration={datadogIntegration}
+      statusPageConfig={statusPageData}
+      availableProducts={availableProducts}
     />
   );
 }

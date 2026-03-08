@@ -4,6 +4,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { GeneralSettingsSection } from "./GeneralSettingsSection";
 import { MembersSection } from "./MembersSection";
 import { DatadogIntegrationSection } from "./DatadogIntegrationSection";
+import { StatusPageSection } from "./StatusPageSection";
+import type { StatusPageConfigData } from "@/modules/status-page/types";
 
 interface SettingsPageClientProps {
   workspace: {
@@ -32,6 +34,12 @@ interface SettingsPageClientProps {
     apiKeyLast4: string;
     appKeyLast4: string;
   } | null;
+  statusPageConfig: StatusPageConfigData | null;
+  availableProducts: Array<{
+    id: string;
+    name: string;
+    features: Array<{ id: string; name: string }>;
+  }>;
 }
 
 export function SettingsPageClient({
@@ -41,6 +49,8 @@ export function SettingsPageClient({
   userRole,
   workspaceSlug,
   datadogIntegration,
+  statusPageConfig,
+  availableProducts,
 }: SettingsPageClientProps) {
   return (
     <div className="container mx-auto max-w-4xl space-y-8 py-8 px-4">
@@ -57,6 +67,9 @@ export function SettingsPageClient({
           )}
           {userRole === "OWNER" && (
             <TabsTrigger value="integrations">Integrations</TabsTrigger>
+          )}
+          {userRole === "OWNER" && (
+            <TabsTrigger value="status-page">Status Page</TabsTrigger>
           )}
         </TabsList>
 
@@ -82,6 +95,17 @@ export function SettingsPageClient({
             <DatadogIntegrationSection
               workspaceSlug={workspaceSlug}
               existing={datadogIntegration}
+            />
+          </TabsContent>
+        )}
+
+        {userRole === "OWNER" && (
+          <TabsContent value="status-page" className="mt-6">
+            <StatusPageSection
+              workspaceSlug={workspaceSlug}
+              workspaceName={workspace.name}
+              config={statusPageConfig}
+              availableProducts={availableProducts}
             />
           </TabsContent>
         )}

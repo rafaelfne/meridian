@@ -24,34 +24,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { SystemDetailTabs, type SystemTab } from "@/components/systems/SystemDetailTabs";
-
-function timeAgo(date: Date): string {
-  const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
-  if (seconds < 60) return "just now";
-  const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes}m ago`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  return `${days}d ago`;
-}
-
-function DatadogStatusBadge({ status }: { status: string | null }) {
-  switch (status) {
-    case "OK":
-      return <Badge variant="outline" className="text-green-600 border-green-400">OK</Badge>;
-    case "WARN":
-      return <Badge variant="outline" className="text-yellow-600 border-yellow-400">Warn</Badge>;
-    case "ALERT":
-      return <Badge variant="destructive">Alert</Badge>;
-    case "NO_DATA":
-      return <Badge variant="secondary">No Data</Badge>;
-    case "NOT_FOUND":
-      return <Badge variant="outline" className="text-yellow-600 border-yellow-400">Not monitored</Badge>;
-    default:
-      return <span className="text-sm text-muted-foreground">—</span>;
-  }
-}
+import { DatadogStatusBadge } from "@/components/shared/DatadogStatusBadge";
+import { timeAgo } from "@/lib/time";
 
 
 
@@ -476,7 +450,7 @@ export default async function SystemDetailPage({
                     <TableHead>Status</TableHead>
                     <TableHead>Monitors</TableHead>
                     <TableHead>Last Updated</TableHead>
-                    <TableHead className="w-[1%]" />
+                    <TableHead className="text-right" />
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -506,7 +480,7 @@ export default async function SystemDetailPage({
                             ? `Updated ${timeAgo(service.datadogStatusUpdatedAt)}`
                             : "—"}
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="text-right">
                           <a
                             href={ddUrl}
                             target="_blank"

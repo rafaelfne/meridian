@@ -81,6 +81,7 @@ model Workspace {
   inventoryUploads   InventoryUpload[]
   datadogIntegration DatadogIntegration?
   products           Product[]
+  statusPageConfig   StatusPageConfig?
 }
 
 model WorkspaceMember {
@@ -420,6 +421,7 @@ model Product {
   workspace   Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   systems     ProductSystem[]
   features    Feature[]
+  statusPageProducts StatusPageProduct[]
 
   @@unique([workspaceId, slug])
   @@unique([workspaceId, name])
@@ -447,6 +449,7 @@ model Feature {
 
   product     Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
   systems     FeatureSystem[]
+  statusPageFeatures StatusPageFeature[]
 
   @@unique([productId, name])
 }
@@ -461,4 +464,47 @@ model FeatureSystem {
   system    System   @relation(fields: [systemId], references: [id], onDelete: Cascade)
 
   @@unique([featureId, systemId])
+}
+
+// ── Status Page Models ──────────────────────────────────
+
+model StatusPageConfig {
+  id          String   @id @default(cuid())
+  workspaceId String   @unique
+  enabled     Boolean  @default(false)
+  slug        String   @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  workspace   Workspace           @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  products    StatusPageProduct[]
+}
+
+model StatusPageProduct {
+  id           String  @id @default(cuid())
+  statusPageId String
+  productId    String
+  publicName   String
+  visible      Boolean @default(true)
+  displayOrder Int     @default(0)
+
+  statusPage   StatusPageConfig    @relation(fields: [statusPageId], references: [id], onDelete: Cascade)
+  product      Product             @relation(fields: [productId], references: [id], onDelete: Cascade)
+  features     StatusPageFeature[]
+
+  @@unique([statusPageId, productId])
+}
+
+model StatusPageFeature {
+  id                  String  @id @default(cuid())
+  statusPageProductId String
+  featureId           String
+  publicName          String
+  visible             Boolean @default(true)
+  displayOrder        Int     @default(0)
+
+  statusPageProduct   StatusPageProduct @relation(fields: [statusPageProductId], references: [id], onDelete: Cascade)
+  feature             Feature           @relation(fields: [featureId], references: [id], onDelete: Cascade)
+
+  @@unique([statusPageProductId, featureId])
 }

@@ -57,6 +57,7 @@ interface FeaturesCardProps {
   features: FeatureItem[];
   allSystems: { id: string; name: string }[];
   canEdit: boolean;
+  alertSystemIds?: string[];
 }
 
 export function FeaturesCard({
@@ -65,6 +66,7 @@ export function FeaturesCard({
   features,
   allSystems,
   canEdit,
+  alertSystemIds,
 }: FeaturesCardProps) {
   const [createOpen, setCreateOpen] = useState(false);
   const [editingFeature, setEditingFeature] = useState<FeatureItem | null>(null);
@@ -105,7 +107,10 @@ export function FeaturesCard({
                           key={sys.id}
                           href={`/w/${workspaceSlug}/systems/${sys.slug}`}
                         >
-                          <Badge variant="secondary" className="cursor-pointer hover:bg-accent">
+                          <Badge
+                            variant={alertSystemIds?.includes(sys.id) ? "destructive" : "secondary"}
+                            className="cursor-pointer hover:bg-accent"
+                          >
                             {sys.name}
                           </Badge>
                         </Link>
