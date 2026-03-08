@@ -1,6 +1,6 @@
-import { Zap, Activity } from "lucide-react";
+import { Zap, Activity, ArrowRight } from "lucide-react";
+import Link from "next/link";
 import { HeroGraph } from "./HeroGraph";
-import { GitHubSignInButton } from "./GitHubSignInButton";
 import { FeaturesSection } from "./FeaturesSection";
 import { PhilosophySection } from "./PhilosophySection";
 import { FooterCTA } from "./FooterCTA";
@@ -40,7 +40,10 @@ export function LandingPage() {
           </p>
 
           <div className={styles.heroCtas}>
-            <GitHubSignInButton size="large" label="Start Mapping" icon="arrow" />
+            <Link href="/login" className={styles.heroCtaLink}>
+              Start Mapping
+              <ArrowRight className={styles.heroCtaArrow} />
+            </Link>
           </div>
         </div>
 

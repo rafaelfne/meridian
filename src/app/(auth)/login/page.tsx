@@ -1,5 +1,14 @@
+import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import { LoginForm } from "@/components/auth/LoginForm";
 
-export default function LoginPage() {
-  redirect("/");
+export const metadata = {
+  title: "Sign In - Meridian",
+};
+
+export default async function LoginPage() {
+  const session = await auth();
+  if (session?.user) redirect("/workspaces");
+
+  return <LoginForm />;
 }

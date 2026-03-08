@@ -75,6 +75,25 @@
   gap: 1rem;
 }
 
+.ctaLink {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 1.25rem;
+  background-color: #ffffff;
+  color: #000000;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background-color 0.15s ease, transform 0.15s ease;
+  box-shadow: 0 4px 6px rgba(255, 255, 255, 0.05);
+}
+
+.ctaLink:hover {
+  background-color: #eef2ff;
+  transform: scale(1.05);
+}
+
 /* Hamburger */
 .hamburger {
   display: none;
@@ -155,10 +174,12 @@
     margin-top: auto;
   }
 
-  .mobileCta button {
+  .mobileCta a {
+    display: block;
     width: 100%;
     padding: 1rem;
     border-radius: 1rem;
     font-size: 1rem;
+    text-align: center;
   }
 }

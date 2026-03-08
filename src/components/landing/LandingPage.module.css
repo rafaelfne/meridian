@@ -131,6 +131,37 @@
   padding-top: 0.5rem;
 }
 
+.heroCtaLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 2rem;
+  color: #ffffff;
+  background-color: #4f46e5;
+  border-radius: 9999px;
+  font-size: 1.125rem;
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: 0 20px 25px -5px rgba(99, 102, 241, 0.2);
+  transition: background-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.heroCtaLink:hover {
+  background-color: #6366f1;
+  transform: translateY(-1px);
+  box-shadow: 0 20px 25px -5px rgba(99, 102, 241, 0.3);
+}
+
+.heroCtaArrow {
+  width: 1.25rem;
+  height: 1.25rem;
+  transition: transform 0.2s ease;
+}
+
+.heroCtaLink:hover .heroCtaArrow {
+  transform: translateX(4px);
+}
+
 /* Dashboard Preview */
 .previewContainer {
   position: relative;

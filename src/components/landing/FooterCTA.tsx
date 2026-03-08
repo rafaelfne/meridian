@@ -1,5 +1,5 @@
 import { Globe } from "lucide-react";
-import { GitHubSignInButton } from "./GitHubSignInButton";
+import Link from "next/link";
 import styles from "./FooterCTA.module.css";
 
 export function FooterCTA() {
@@ -18,7 +18,9 @@ export function FooterCTA() {
               Align your architecture today.
             </p>
             <div className={styles.ctaButtons}>
-              <GitHubSignInButton size="pill" label="Get Started for Free" />
+              <Link href="/login" className={styles.ctaLink}>
+                Get Started for Free
+              </Link>
             </div>
           </div>
         </div>

@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { Menu, X } from "lucide-react";
-import { GitHubSignInButton } from "./GitHubSignInButton";
 import styles from "./Navbar.module.css";
 
 const NAV_LINKS = [
@@ -60,7 +60,9 @@ export function Navbar() {
 
         {/* Desktop actions */}
         <div className={styles.actions}>
-          <GitHubSignInButton size="pill" label="Get Started" />
+          <Link href="/login" className={styles.ctaLink}>
+            Get Started
+          </Link>
         </div>
 
         {/* Hamburger */}
@@ -110,7 +112,9 @@ export function Navbar() {
               ))}
             </div>
             <div className={styles.mobileCta}>
-              <GitHubSignInButton size="pill" label="Get Started" />
+              <Link href="/login" className={styles.ctaLink} onClick={closeMenu}>
+                Get Started
+              </Link>
             </div>
           </div>
         </div>
