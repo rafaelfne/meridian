@@ -25,7 +25,15 @@ export async function saveStatusPageConfig(
     };
   }
 
-  const { enabled, slug, items } = parsed.data;
+  const { enabled, slug, items, whiteLabel } = parsed.data;
+
+  const brandingFields = {
+    logoUrl: whiteLabel.logoUrl,
+    faviconUrl: whiteLabel.faviconUrl,
+    primaryColor: whiteLabel.primaryColor || null,
+    pageTitle: whiteLabel.pageTitle || null,
+    hidePoweredBy: whiteLabel.hidePoweredBy,
+  };
 
   try {
     await prisma.$transaction(async (tx) => {
@@ -43,10 +51,12 @@ export async function saveStatusPageConfig(
           workspaceId: ctx.workspaceId,
           enabled,
           slug,
+          ...brandingFields,
         },
         update: {
           enabled,
           slug,
+          ...brandingFields,
         },
       });
 

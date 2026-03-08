@@ -19,15 +19,22 @@ export async function generateMetadata({
   const config = await prisma.statusPageConfig.findUnique({
     where: { slug },
     select: {
+      pageTitle: true,
+      faviconUrl: true,
       workspace: { select: { name: true } },
     },
   });
 
   if (!config) return {};
 
+  const title = config.pageTitle || `${config.workspace.name} Status`;
+  const description = `Current operational status for ${config.pageTitle || config.workspace.name}`;
+
   return {
-    title: `${config.workspace.name} Status`,
-    description: `Current operational status for ${config.workspace.name}`,
+    title,
+    description,
+    icons: config.faviconUrl ? { icon: config.faviconUrl } : undefined,
+    openGraph: { title, description },
   };
 }
 
@@ -49,6 +56,12 @@ export interface StatusPageData {
   overall: HealthStatus;
   products: StatusProduct[];
   lastUpdated: string;
+  whiteLabel: {
+    logoUrl: string | null;
+    primaryColor: string | null;
+    pageTitle: string | null;
+    hidePoweredBy: boolean;
+  };
 }
 
 export default async function PublicStatusPage({
@@ -124,6 +137,12 @@ export default async function PublicStatusPage({
     overall,
     products,
     lastUpdated: new Date().toISOString(),
+    whiteLabel: {
+      logoUrl: config.logoUrl,
+      primaryColor: config.primaryColor,
+      pageTitle: config.pageTitle,
+      hidePoweredBy: config.hidePoweredBy,
+    },
   };
 
   return <StatusPageClient data={data} />;

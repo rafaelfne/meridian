@@ -3,15 +3,22 @@
 import { Fragment, useState, useMemo, useCallback, useTransition } from "react";
 import Link from "next/link";
 import {
+  Search,
+  ChevronDown,
+  ChevronRight,
+  Layers,
+  Database,
+  Share2,
+  FileText,
+  Globe,
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
-  FileText,
-  ChevronRight,
-  ChevronDown,
   ChevronsUpDown,
   Check,
   Plus,
+  Box,
+  ExternalLink,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
@@ -22,14 +29,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -48,10 +47,9 @@ import {
 import type { SystemListItemWithServices } from "@/modules/system/types";
 import { updateSlugsAction } from "@/modules/system/actions/update-slugs";
 import { createDomainAction } from "@/modules/system/actions/create-domain";
-import styles from "./SystemsTable.module.css";
 import clsx from "clsx";
 
-type SortField = "name" | "domain" | "language" | "framework";
+type SortField = "name" | "domain" | "language";
 type SortDirection = "asc" | "desc";
 
 interface SystemsTableProps {
@@ -131,10 +129,6 @@ export function SystemsTable({
         case "language":
           aVal = (a.language ?? "").toLowerCase();
           bVal = (b.language ?? "").toLowerCase();
-          break;
-        case "framework":
-          aVal = (a.framework ?? "").toLowerCase();
-          bVal = (b.framework ?? "").toLowerCase();
           break;
       }
 
@@ -225,14 +219,18 @@ export function SystemsTable({
           id,
           slug,
         })),
-        serviceDatadogTags: Object.entries(editedDatadogTags).map(([id, datadogServiceTag]) => ({
-          id,
-          datadogServiceTag,
-        })),
-        systemDomains: Object.entries(editedDomains).map(([id, domainId]) => ({
-          id,
-          domainId,
-        })),
+        serviceDatadogTags: Object.entries(editedDatadogTags).map(
+          ([id, datadogServiceTag]) => ({
+            id,
+            datadogServiceTag,
+          }),
+        ),
+        systemDomains: Object.entries(editedDomains).map(
+          ([id, domainId]) => ({
+            id,
+            domainId,
+          }),
+        ),
       });
 
       if (result.success) {
@@ -245,35 +243,42 @@ export function SystemsTable({
         toast.error(result.error ?? "Failed to update slugs");
       }
     });
-  }, [workspaceSlug, editedSystemSlugs, editedServiceSlugs, editedDatadogTags, editedDomains]);
+  }, [
+    workspaceSlug,
+    editedSystemSlugs,
+    editedServiceSlugs,
+    editedDatadogTags,
+    editedDomains,
+  ]);
 
   const renderSortIcon = (field: SortField) => {
     if (sortField !== field) {
-      return <ArrowUpDown className={clsx(styles.sortIcon)} size={14} />;
+      return <ArrowUpDown className="size-3.5 opacity-50" />;
     }
     const Icon = sortDirection === "asc" ? ArrowUp : ArrowDown;
-    return (
-      <Icon
-        className={clsx(styles.sortIcon, styles.sortIconActive)}
-        size={14}
-      />
-    );
+    return <Icon className="size-3.5" />;
   };
 
-  const totalColumns = 10;
-
   return (
-    <div className={styles.container}>
-      <div className={styles.filters}>
-        <Input
-          placeholder="Search systems…"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className={styles.searchInput}
-          aria-label="Search systems"
-        />
+    <div className="space-y-4">
+      {/* Filters */}
+      <div className="flex flex-col md:flex-row gap-4">
+        <div className="relative flex-1 group">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+          <Input
+            placeholder="Search systems..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-10"
+            aria-label="Search systems"
+          />
+        </div>
         <Select value={domainFilter} onValueChange={setDomainFilter}>
-          <SelectTrigger aria-label="Filter by domain">
+          <SelectTrigger
+            aria-label="Filter by domain"
+            className="w-auto min-w-[200px]"
+          >
+            <Globe className="mr-2 size-4 text-muted-foreground" />
             <SelectValue placeholder="All domains" />
           </SelectTrigger>
           <SelectContent>
@@ -287,60 +292,51 @@ export function SystemsTable({
         </Select>
       </div>
 
+      {/* Systems List */}
       {filteredAndSorted.length > 0 ? (
-        <div className={styles.tableWrapper}>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className={styles.expandHead} />
-              <TableHead>
-                <button
-                  type="button"
-                  className={styles.sortButton}
-                  onClick={() => handleSort("name")}
-                  aria-label="Sort by name"
-                >
-                  Name {renderSortIcon("name")}
-                </button>
-              </TableHead>
-              <TableHead>Alias</TableHead>
-              <TableHead>
-                <button
-                  type="button"
-                  className={styles.sortButton}
-                  onClick={() => handleSort("domain")}
-                  aria-label="Sort by domain"
-                >
-                  Domain {renderSortIcon("domain")}
-                </button>
-              </TableHead>
-              <TableHead className={styles.hideOnMobile}>
-                <button
-                  type="button"
-                  className={styles.sortButton}
-                  onClick={() => handleSort("language")}
-                  aria-label="Sort by language"
-                >
-                  Language {renderSortIcon("language")}
-                </button>
-              </TableHead>
-              <TableHead className={styles.hideOnMobile}>
-                <button
-                  type="button"
-                  className={styles.sortButton}
-                  onClick={() => handleSort("framework")}
-                  aria-label="Sort by framework"
-                >
-                  Framework {renderSortIcon("framework")}
-                </button>
-              </TableHead>
-              <TableHead className="text-right">Svc</TableHead>
-              <TableHead className={clsx("text-right", styles.hideOnMobile)}>DB</TableHead>
-              <TableHead className={clsx("text-right", styles.hideOnMobile)}>Int</TableHead>
-              <TableHead className="text-right">Docs</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
+        <div className="border rounded-2xl overflow-hidden bg-card shadow-sm">
+          {/* Table Header */}
+          <div className="grid grid-cols-12 gap-4 px-6 py-3 border-b bg-muted/30 text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+            <div className="col-span-4">
+              <button
+                type="button"
+                onClick={() => handleSort("name")}
+                className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
+                aria-label="Sort by name"
+              >
+                Name & Alias {renderSortIcon("name")}
+              </button>
+            </div>
+            <div className="col-span-2">
+              <button
+                type="button"
+                onClick={() => handleSort("domain")}
+                className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
+                aria-label="Sort by domain"
+              >
+                Domain {renderSortIcon("domain")}
+              </button>
+            </div>
+            <div className="col-span-3 hidden md:block">
+              <button
+                type="button"
+                onClick={() => handleSort("language")}
+                className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
+                aria-label="Sort by language"
+              >
+                Tech Stack {renderSortIcon("language")}
+              </button>
+            </div>
+            <div className="col-span-3 flex justify-end gap-6 pr-4">
+              <span>Svc</span>
+              <span className="hidden md:inline">DB</span>
+              <span className="hidden md:inline">Int</span>
+              <span>Docs</span>
+            </div>
+          </div>
+
+          {/* System Rows */}
+          <div className="divide-y">
             {filteredAndSorted.map((system) => {
               const isExpanded = expandedRows.has(system.id);
               const hasServices = system.services.length > 0;
@@ -353,49 +349,68 @@ export function SystemsTable({
 
               return (
                 <Fragment key={system.id}>
-                  <TableRow
-                    className={clsx(
-                      styles.systemRow,
-                      isExpanded && styles.systemRowExpanded,
-                    )}
+                  {/* Main Row */}
+                  <div
+                    role="row"
                     onClick={() => hasServices && toggleRow(system.id)}
+                    className={clsx(
+                      "grid grid-cols-12 gap-4 px-6 py-4 items-center transition-colors group",
+                      hasServices && "cursor-pointer hover:bg-muted/40",
+                      isExpanded && "bg-primary/5",
+                    )}
                   >
-                    <TableCell className={styles.expandCell}>
-                      {hasServices ? (
-                        isExpanded ? (
-                          <ChevronDown size={16} />
-                        ) : (
-                          <ChevronRight size={16} />
-                        )
-                      ) : null}
-                    </TableCell>
-                    <TableCell>
-                      <Link
-                        href={`/w/${workspaceSlug}/systems/${system.slug}`}
-                        className={styles.systemLink}
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        {system.name}
-                      </Link>
-                    </TableCell>
-                    <TableCell onClick={(e) => e.stopPropagation()}>
-                      <Input
-                        value={currentSystemSlug}
-                        onChange={(e) =>
-                          handleSystemSlugChange(
-                            system.id,
-                            system.slug,
-                            e.target.value,
-                          )
-                        }
+                    {/* Name & Alias */}
+                    <div className="col-span-4 flex items-center gap-3">
+                      <div
                         className={clsx(
-                          styles.slugInput,
-                          isSystemSlugDirty && styles.slugInputDirty,
+                          "p-1 rounded transition-colors shrink-0",
+                          hasServices
+                            ? isExpanded
+                              ? "bg-primary text-primary-foreground"
+                              : "bg-muted text-muted-foreground"
+                            : "invisible",
                         )}
-                        aria-label={`Alias for ${system.name}`}
-                      />
-                    </TableCell>
-                    <TableCell onClick={(e) => e.stopPropagation()}>
+                      >
+                        {isExpanded ? (
+                          <ChevronDown className="size-3.5" />
+                        ) : (
+                          <ChevronRight className="size-3.5" />
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <Link
+                          href={`/w/${workspaceSlug}/systems/${system.slug}`}
+                          className="text-sm font-semibold hover:text-primary transition-colors"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {system.name}
+                        </Link>
+                        <div onClick={(e) => e.stopPropagation()}>
+                          <Input
+                            value={currentSystemSlug}
+                            onChange={(e) =>
+                              handleSystemSlugChange(
+                                system.id,
+                                system.slug,
+                                e.target.value,
+                              )
+                            }
+                            className={clsx(
+                              "h-6 text-[11px] font-mono border-transparent bg-transparent px-1 mt-0.5 max-w-[14rem] shadow-none focus:border-input focus:bg-background",
+                              isSystemSlugDirty &&
+                                "border-primary/50 bg-primary/5",
+                            )}
+                            aria-label={`Alias for ${system.name}`}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Domain */}
+                    <div
+                      className="col-span-2"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <DomainCombobox
                         domains={localDomains}
                         value={currentDomainId}
@@ -416,138 +431,206 @@ export function SystemsTable({
                           )
                         }
                       />
-                    </TableCell>
-                    <TableCell className={styles.hideOnMobile}>{system.language ?? "—"}</TableCell>
-                    <TableCell className={styles.hideOnMobile}>{system.framework ?? "—"}</TableCell>
-                    <TableCell className="text-right">
-                      {system._count.services}
-                    </TableCell>
-                    <TableCell className={clsx("text-right", styles.hideOnMobile)}>
-                      {system._count.databases}
-                    </TableCell>
-                    <TableCell className={clsx("text-right", styles.hideOnMobile)}>
-                      {system._count.integrations}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {system._count.documents > 0 ? (
-                        <Link
-                          href={`/w/${workspaceSlug}/systems/${system.slug}`}
-                          className={styles.docsLink}
-                          onClick={(e) => e.stopPropagation()}
-                          title={`${system._count.documents} document${system._count.documents === 1 ? "" : "s"}`}
-                        >
-                          <FileText className="size-3.5" />
-                          {system._count.documents}
-                        </Link>
+                    </div>
+
+                    {/* Tech Stack */}
+                    <div className="col-span-3 hidden md:flex items-center gap-2 min-w-0">
+                      {system.language ? (
+                        <span className="text-[11px] px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20 font-medium shrink-0">
+                          {system.language}
+                        </span>
                       ) : (
-                        <span className="text-muted-foreground">0</span>
+                        <span className="text-muted-foreground">—</span>
                       )}
-                    </TableCell>
-                  </TableRow>
+                      {system.framework && (
+                        <span className="text-[11px] text-muted-foreground truncate">
+                          {system.framework}
+                        </span>
+                      )}
+                    </div>
 
+                    {/* Metrics */}
+                    <div className="col-span-3 flex justify-end gap-6 pr-4">
+                      <div className="flex flex-col items-center gap-1">
+                        <Layers
+                          className={clsx(
+                            "size-3.5",
+                            system._count.services > 5
+                              ? "text-primary"
+                              : "text-muted-foreground/50",
+                          )}
+                        />
+                        <span className="text-xs font-mono text-muted-foreground">
+                          {system._count.services}
+                        </span>
+                      </div>
+                      <div className="hidden md:flex flex-col items-center gap-1">
+                        <Database
+                          className={clsx(
+                            "size-3.5",
+                            system._count.databases > 0
+                              ? "text-emerald-500"
+                              : "text-muted-foreground/50",
+                          )}
+                        />
+                        <span className="text-xs font-mono text-muted-foreground">
+                          {system._count.databases}
+                        </span>
+                      </div>
+                      <div className="hidden md:flex flex-col items-center gap-1">
+                        <Share2
+                          className={clsx(
+                            "size-3.5",
+                            system._count.integrations > 10
+                              ? "text-amber-500"
+                              : "text-muted-foreground/50",
+                          )}
+                        />
+                        <span className="text-xs font-mono text-muted-foreground">
+                          {system._count.integrations}
+                        </span>
+                      </div>
+                      <div className="flex flex-col items-center gap-1">
+                        {system._count.documents > 0 ? (
+                          <Link
+                            href={`/w/${workspaceSlug}/systems/${system.slug}`}
+                            className="flex flex-col items-center gap-1 text-sky-500 hover:text-sky-400 transition-colors"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <FileText className="size-3.5" />
+                            <span className="text-xs font-mono">
+                              {system._count.documents}
+                            </span>
+                          </Link>
+                        ) : (
+                          <>
+                            <FileText className="size-3.5 text-muted-foreground/50" />
+                            <span className="text-xs font-mono text-muted-foreground">
+                              0
+                            </span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Expanded Services Area */}
                   {isExpanded && hasServices && (
-                    <TableRow className={styles.servicesRow}>
-                      <TableCell
-                        colSpan={totalColumns}
-                        className={styles.servicesCell}
-                      >
-                        <div className={styles.servicesContainer}>
-                          <Table>
-                            <TableHeader>
-                              <TableRow>
-                                <TableHead>Service Name</TableHead>
-                                <TableHead>Type</TableHead>
-                                <TableHead>Alias</TableHead>
-                                <TableHead>Datadog Tag</TableHead>
-                              </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                              {system.services.map((service) => {
-                                const currentServiceSlug =
-                                  editedServiceSlugs[service.id] ??
-                                  service.slug;
-                                const isServiceSlugDirty =
-                                  service.id in editedServiceSlugs;
-                                const originalTag = service.datadogServiceTag ?? service.slug;
-                                const currentTag =
-                                  editedDatadogTags[service.id] ?? originalTag;
-                                const isTagDirty =
-                                  service.id in editedDatadogTags;
+                    <div className="px-6 py-6 bg-muted/30 border-t">
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+                        <div className="md:col-span-3 space-y-3">
+                          <div className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground flex items-center gap-2">
+                            <Box className="size-3" /> Services (
+                            {system.services.length})
+                          </div>
 
-                                return (
-                                  <TableRow
-                                    key={service.id}
-                                    className={styles.serviceRow}
+                          {/* Service column labels */}
+                          <div className="grid grid-cols-4 gap-4 px-3 text-[10px] uppercase font-bold tracking-widest text-muted-foreground">
+                            <div>Service Name</div>
+                            <div>Type</div>
+                            <div>Alias</div>
+                            <div>Datadog Tag</div>
+                          </div>
+
+                          {/* Service rows */}
+                          {system.services.map((service) => {
+                            const currentServiceSlug =
+                              editedServiceSlugs[service.id] ?? service.slug;
+                            const isServiceSlugDirty =
+                              service.id in editedServiceSlugs;
+                            const originalTag =
+                              service.datadogServiceTag ?? service.slug;
+                            const currentTag =
+                              editedDatadogTags[service.id] ?? originalTag;
+                            const isTagDirty =
+                              service.id in editedDatadogTags;
+
+                            return (
+                              <div
+                                key={service.id}
+                                className="grid grid-cols-4 gap-4 items-center p-3 rounded-lg bg-card border"
+                              >
+                                <div className="text-sm font-medium truncate">
+                                  {service.name}
+                                </div>
+                                <div>
+                                  <Badge
+                                    variant="secondary"
+                                    className="text-[10px]"
                                   >
-                                    <TableCell>{service.name}</TableCell>
-                                    <TableCell>
-                                      <Badge variant="secondary">
-                                        {service.type}
-                                      </Badge>
-                                    </TableCell>
-                                    <TableCell>
-                                      <Input
-                                        value={currentServiceSlug}
-                                        onChange={(e) =>
-                                          handleServiceSlugChange(
-                                            service.id,
-                                            service.slug,
-                                            e.target.value,
-                                          )
-                                        }
-                                        className={clsx(
-                                          styles.slugInput,
-                                          isServiceSlugDirty &&
-                                            styles.slugInputDirty,
-                                        )}
-                                        aria-label={`Alias for service ${service.name}`}
-                                      />
-                                    </TableCell>
-                                    <TableCell>
-                                      <Input
-                                        value={currentTag}
-                                        onChange={(e) =>
-                                          handleDatadogTagChange(
-                                            service.id,
-                                            originalTag,
-                                            e.target.value,
-                                          )
-                                        }
-                                        className={clsx(
-                                          styles.slugInput,
-                                          isTagDirty &&
-                                            styles.slugInputDirty,
-                                        )}
-                                        placeholder={service.slug}
-                                        aria-label={`Datadog tag for service ${service.name}`}
-                                      />
-                                    </TableCell>
-                                  </TableRow>
-                                );
-                              })}
-                            </TableBody>
-                          </Table>
+                                    {service.type}
+                                  </Badge>
+                                </div>
+                                <Input
+                                  value={currentServiceSlug}
+                                  onChange={(e) =>
+                                    handleServiceSlugChange(
+                                      service.id,
+                                      service.slug,
+                                      e.target.value,
+                                    )
+                                  }
+                                  className={clsx(
+                                    "h-7 text-xs font-mono",
+                                    isServiceSlugDirty &&
+                                      "border-primary/50 bg-primary/5",
+                                  )}
+                                  aria-label={`Alias for service ${service.name}`}
+                                />
+                                <Input
+                                  value={currentTag}
+                                  onChange={(e) =>
+                                    handleDatadogTagChange(
+                                      service.id,
+                                      originalTag,
+                                      e.target.value,
+                                    )
+                                  }
+                                  className={clsx(
+                                    "h-7 text-xs font-mono",
+                                    isTagDirty &&
+                                      "border-primary/50 bg-primary/5",
+                                  )}
+                                  placeholder={service.slug}
+                                  aria-label={`Datadog tag for service ${service.name}`}
+                                />
+                              </div>
+                            );
+                          })}
                         </div>
-                      </TableCell>
-                    </TableRow>
+
+                        {/* Quick links */}
+                        <div className="flex flex-col justify-between items-end gap-4">
+                          <div className="flex gap-2">
+                            <Link
+                              href={`/w/${workspaceSlug}/systems/${system.slug}`}
+                              className="flex items-center gap-2 px-3 py-1.5 bg-primary/10 hover:bg-primary/20 text-primary text-xs font-medium rounded-lg transition-colors border border-primary/20"
+                            >
+                              <ExternalLink className="size-3.5" />
+                              View Details
+                            </Link>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   )}
                 </Fragment>
               );
             })}
-          </TableBody>
-        </Table>
+          </div>
         </div>
       ) : (
-        <div className={styles.emptyState}>
+        <div className="flex items-center justify-center min-h-48 text-sm text-muted-foreground border-2 border-dashed rounded-2xl">
           {search || (domainFilter && domainFilter !== "__all__")
             ? "No systems match your filters"
             : "No systems found"}
         </div>
       )}
 
+      {/* Confirm Bar */}
       {isDirty && (
-        <div className={styles.confirmBar}>
-          <span className={styles.changesSummary}>
+        <div className="flex items-center justify-end gap-4 pt-3 border-t">
+          <span className="text-sm text-muted-foreground">
             {Object.keys(editedSystemSlugs).length +
               Object.keys(editedServiceSlugs).length +
               Object.keys(editedDatadogTags).length +
@@ -617,15 +700,16 @@ function DomainCombobox({
           role="combobox"
           aria-expanded={open}
           className={clsx(
-            "w-full justify-between font-normal",
-            styles.slugInput,
-            isDirty && styles.slugInputDirty,
+            "h-auto py-1 px-2 text-xs rounded-md font-normal w-full justify-between",
+            isDirty
+              ? "border-primary/50 bg-primary/5"
+              : "border-border/50 bg-muted/50",
           )}
         >
           <span className="truncate">
             {selectedDomain?.name ?? "Select domain"}
           </span>
-          <ChevronsUpDown className="ml-1 size-3.5 shrink-0 opacity-50" />
+          <ChevronsUpDown className="ml-1 size-3 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[200px] p-0">

@@ -7,11 +7,14 @@ import type { StatusPageData } from "@/app/status/[slug]/page";
 import type { HealthStatus } from "@/modules/status-page/health";
 import { overallBanner, statusLabel } from "@/modules/status-page/health";
 
-function StatusBadge({ status }: { status: HealthStatus }) {
+function StatusBadge({ status, primaryColor }: { status: HealthStatus; primaryColor?: string | null }) {
   switch (status) {
     case "operational":
       return (
-        <span className="inline-flex items-center gap-1.5 text-sm font-medium text-emerald-600 dark:text-emerald-400">
+        <span
+          className={`inline-flex items-center gap-1.5 text-sm font-medium ${primaryColor ? "" : "text-emerald-600 dark:text-emerald-400"}`}
+          style={primaryColor ? { color: primaryColor } : undefined}
+        >
           <CheckCircle2 className="size-4" />
           {statusLabel(status)}
         </span>
@@ -33,12 +36,15 @@ function StatusBadge({ status }: { status: HealthStatus }) {
   }
 }
 
-function OverallBanner({ status }: { status: HealthStatus }) {
+function OverallBanner({ status, primaryColor }: { status: HealthStatus; primaryColor?: string | null }) {
   const base = "rounded-lg px-6 py-4 text-center text-lg font-semibold";
   switch (status) {
     case "operational":
       return (
-        <div className={`${base} bg-emerald-50 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200`}>
+        <div
+          className={`${base} ${primaryColor ? "" : "bg-emerald-50 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200"}`}
+          style={primaryColor ? { backgroundColor: `${primaryColor}14`, color: primaryColor } : undefined}
+        >
           <CheckCircle2 className="mx-auto mb-1 size-6" />
           {overallBanner(status)}
         </div>
@@ -87,11 +93,21 @@ export function StatusPageClient({ data }: { data: StatusPageData }) {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-12">
-      <h1 className="mb-8 text-center text-2xl font-bold tracking-tight">
-        {data.workspaceName} Status
-      </h1>
+      <div className="mb-8 flex flex-col items-center gap-3">
+        {data.whiteLabel.logoUrl && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={data.whiteLabel.logoUrl}
+            alt=""
+            className="h-10 w-auto"
+          />
+        )}
+        <h1 className="text-center text-2xl font-bold tracking-tight">
+          {data.whiteLabel.pageTitle || `${data.workspaceName} Status`}
+        </h1>
+      </div>
 
-      <OverallBanner status={data.overall} />
+      <OverallBanner status={data.overall} primaryColor={data.whiteLabel.primaryColor} />
 
       <div className="mt-8 space-y-2">
         {data.products.map((product) => {
@@ -111,7 +127,7 @@ export function StatusPageClient({ data }: { data: StatusPageData }) {
                   )}
                   <span className="font-medium">{product.publicName}</span>
                 </div>
-                <StatusBadge status={product.status} />
+                <StatusBadge status={product.status} primaryColor={data.whiteLabel.primaryColor} />
               </button>
 
               {isExpanded && product.features.length > 0 && (
@@ -124,7 +140,7 @@ export function StatusPageClient({ data }: { data: StatusPageData }) {
                       <span className="text-sm text-muted-foreground">
                         {feature.publicName}
                       </span>
-                      <StatusBadge status={feature.status} />
+                      <StatusBadge status={feature.status} primaryColor={data.whiteLabel.primaryColor} />
                     </div>
                   ))}
                 </div>
@@ -140,6 +156,12 @@ export function StatusPageClient({ data }: { data: StatusPageData }) {
           {new Date(data.lastUpdated).toLocaleString()}
         </time>
       </p>
+
+      {!data.whiteLabel.hidePoweredBy && (
+        <p className="mt-4 text-center text-xs text-muted-foreground">
+          Powered by Meridian
+        </p>
+      )}
     </div>
   );
 }

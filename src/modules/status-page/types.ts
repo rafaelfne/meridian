@@ -11,10 +11,19 @@ export interface StatusPageProductItem {
   features: StatusPageFeatureItem[];
 }
 
+export interface WhiteLabelConfig {
+  logoUrl: string | null;
+  faviconUrl: string | null;
+  primaryColor: string | null;
+  pageTitle: string | null;
+  hidePoweredBy: boolean;
+}
+
 export interface StatusPageConfigData {
   enabled: boolean;
   slug: string;
   items: StatusPageProductItem[];
+  whiteLabel: WhiteLabelConfig;
 }
 
 export interface StatusPageSettingsProps {

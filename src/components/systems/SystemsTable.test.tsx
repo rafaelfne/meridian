@@ -241,7 +241,6 @@ describe("SystemsTable", () => {
     expect(screen.getByLabelText("Sort by name")).toBeInTheDocument();
     expect(screen.getByLabelText("Sort by domain")).toBeInTheDocument();
     expect(screen.getByLabelText("Sort by language")).toBeInTheDocument();
-    expect(screen.getByLabelText("Sort by framework")).toBeInTheDocument();
   });
 
   it("renders domain options in the filter dropdown", () => {
@@ -286,7 +285,7 @@ describe("SystemsTable", () => {
     expect(screen.queryByText("Auth Worker")).not.toBeInTheDocument();
 
     // Click the system row to expand
-    fireEvent.click(screen.getByText("Auth Service").closest("tr")!);
+    fireEvent.click(screen.getByText("Auth Service").closest('[role="row"]')!);
 
     // Services should now be visible
     expect(screen.getByText("Auth API")).toBeInTheDocument();
@@ -302,7 +301,7 @@ describe("SystemsTable", () => {
       />,
     );
 
-    const systemRow = screen.getByText("Auth Service").closest("tr")!;
+    const systemRow = screen.getByText("Auth Service").closest('[role="row"]')!;
 
     // Expand
     fireEvent.click(systemRow);
@@ -322,7 +321,7 @@ describe("SystemsTable", () => {
       />,
     );
 
-    const billingRow = screen.getByText("Billing Engine").closest("tr")!;
+    const billingRow = screen.getByText("Billing Engine").closest('[role="row"]')!;
     fireEvent.click(billingRow);
 
     // No sub-table should appear (Billing Engine has 0 services)
@@ -339,7 +338,7 @@ describe("SystemsTable", () => {
     );
 
     // Expand Auth Service
-    fireEvent.click(screen.getByText("Auth Service").closest("tr")!);
+    fireEvent.click(screen.getByText("Auth Service").closest('[role="row"]')!);
 
     const serviceAliasInput = screen.getByLabelText(
       "Alias for service Auth API",

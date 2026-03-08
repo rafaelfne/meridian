@@ -21,13 +21,13 @@ export default async function WorkspaceLayout({
 
   return (
     <SessionProvider>
-      <div className="flex h-screen flex-col">
+      <div className="flex h-screen flex-col overflow-hidden">
         <AppHeader
           workspaceSlug={workspaceSlug}
           workspaceName={workspace?.name ?? workspaceSlug}
           userRole={ctx.role}
         />
-        <main className="flex flex-1 flex-col overflow-y-auto">{children}</main>
+        <main className="flex min-h-0 flex-1 flex-col overflow-y-auto">{children}</main>
       </div>
     </SessionProvider>
   );

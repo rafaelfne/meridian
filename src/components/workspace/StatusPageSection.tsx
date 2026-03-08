@@ -1,17 +1,24 @@
 "use client";
 
-import { useState, useTransition, useCallback } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { useState, useTransition, useCallback, useRef } from "react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { ChevronDown, ChevronRight, ExternalLink } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronRight,
+  ExternalLink,
+  Upload,
+  X,
+  Settings,
+  Globe,
+  Palette,
+  Package,
+  Eye,
+  Info,
+  CheckCircle2,
+} from "lucide-react";
 import { toast } from "sonner";
 import { saveStatusPageConfig } from "@/modules/status-page/actions/save-status-page-config";
 import type {
@@ -94,6 +101,138 @@ function buildInitialItems(
   return merged;
 }
 
+function handleImageUpload(
+  e: React.ChangeEvent<HTMLInputElement>,
+  setter: (url: string | null) => void,
+) {
+  const file = e.target.files?.[0];
+  if (!file) return;
+  if (file.size > 2 * 1024 * 1024) {
+    toast.error("Image must be under 2 MB");
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = () => setter(reader.result as string);
+  reader.readAsDataURL(file);
+}
+
+function StatusPagePreview({
+  pageTitle,
+  logoUrl,
+  primaryColor,
+  hidePoweredBy,
+  items,
+  workspaceName,
+}: {
+  pageTitle: string;
+  logoUrl: string | null;
+  primaryColor: string;
+  hidePoweredBy: boolean;
+  items: StatusPageProductItem[];
+  workspaceName: string;
+}) {
+  const visibleProducts = items.filter((p) => p.visible);
+  const color = primaryColor || "#10b981";
+
+  return (
+    <Card className="overflow-hidden flex flex-col aspect-[9/12]">
+      {/* Header */}
+      <div className="p-4 border-b bg-muted/30 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          {logoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={logoUrl} alt="" className="h-6 w-auto" />
+          ) : (
+            <div className="size-7 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${color}20` }}>
+              <div className="size-3.5 rounded-sm" style={{ backgroundColor: color }} />
+            </div>
+          )}
+          <span className="text-sm font-bold tracking-tight">
+            {pageTitle || `${workspaceName} Status`}
+          </span>
+        </div>
+        <div className="h-2 w-16 bg-muted rounded-full" />
+      </div>
+
+      {/* Content */}
+      <div className="p-5 flex-1">
+        {/* Overall status banner */}
+        <div
+          className="p-3 rounded-lg border mb-6"
+          style={{ borderColor: `${color}40`, backgroundColor: `${color}10` }}
+        >
+          <div className="flex items-center gap-2.5">
+            <div
+              className="size-2.5 rounded-full animate-pulse"
+              style={{ backgroundColor: color, boxShadow: `0 0 10px ${color}80` }}
+            />
+            <span className="text-xs font-medium" style={{ color }}>
+              All systems operational
+            </span>
+          </div>
+          <p className="text-[10px] text-muted-foreground mt-1.5">Updated 2 minutes ago</p>
+        </div>
+
+        {/* Products */}
+        <div>
+          <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium mb-2">
+            Services
+          </p>
+          {visibleProducts.length > 0 ? (
+            <div className="space-y-0">
+              {visibleProducts.map((p) => (
+                <div
+                  key={p.productId}
+                  className="flex items-center justify-between py-2 border-b last:border-0"
+                >
+                  <span className="text-xs text-muted-foreground">{p.publicName}</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] font-medium" style={{ color }}>
+                      Operational
+                    </span>
+                    <CheckCircle2 className="size-3" style={{ color }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="py-6 text-center border-2 border-dashed rounded-lg">
+              <p className="text-[10px] text-muted-foreground italic">No visible products</p>
+            </div>
+          )}
+        </div>
+
+        {/* Mock uptime bars */}
+        <div className="mt-6">
+          <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium mb-2">
+            Uptime (90 days)
+          </p>
+          <div className="flex gap-[2px] h-5">
+            {Array.from({ length: 45 }).map((_, i) => (
+              <div
+                key={i}
+                className="flex-1 rounded-sm"
+                style={{
+                  backgroundColor: i === 32 ? "#f59e0b" : `${color}60`,
+                }}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Footer */}
+      {!hidePoweredBy && (
+        <div className="p-3 text-center border-t bg-muted/20">
+          <p className="text-[10px] text-muted-foreground">
+            Powered by <span className="font-medium">Meridian</span>
+          </p>
+        </div>
+      )}
+    </Card>
+  );
+}
+
 export function StatusPageSection({
   workspaceSlug,
   workspaceName,
@@ -109,6 +248,25 @@ export function StatusPageSection({
   const [expandedProducts, setExpandedProducts] = useState<Set<string>>(
     new Set(),
   );
+
+  const [logoUrl, setLogoUrl] = useState<string | null>(
+    config?.whiteLabel.logoUrl ?? null,
+  );
+  const [faviconUrl, setFaviconUrl] = useState<string | null>(
+    config?.whiteLabel.faviconUrl ?? null,
+  );
+  const [primaryColor, setPrimaryColor] = useState(
+    config?.whiteLabel.primaryColor ?? "",
+  );
+  const [pageTitle, setPageTitle] = useState(
+    config?.whiteLabel.pageTitle ?? "",
+  );
+  const [hidePoweredBy, setHidePoweredBy] = useState(
+    config?.whiteLabel.hidePoweredBy ?? false,
+  );
+
+  const logoInputRef = useRef<HTMLInputElement>(null);
+  const faviconInputRef = useRef<HTMLInputElement>(null);
 
   const toggleExpand = useCallback((productId: string) => {
     setExpandedProducts((prev) => {
@@ -161,6 +319,13 @@ export function StatusPageSection({
         enabled,
         slug,
         items,
+        whiteLabel: {
+          logoUrl,
+          faviconUrl,
+          primaryColor: primaryColor || null,
+          pageTitle: pageTitle || null,
+          hidePoweredBy,
+        },
       });
       if (result.success) {
         toast.success("Status page settings saved");
@@ -168,161 +333,365 @@ export function StatusPageSection({
         toast.error(result.error ?? "Failed to save");
       }
     });
-  }, [enabled, slug, items, workspaceSlug]);
+  }, [
+    enabled,
+    slug,
+    items,
+    logoUrl,
+    faviconUrl,
+    primaryColor,
+    pageTitle,
+    hidePoweredBy,
+    workspaceSlug,
+  ]);
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle>Status Page</CardTitle>
-            <CardDescription>
-              Configure your public status page visibility and product names.
-            </CardDescription>
-          </div>
-          <Switch checked={enabled} onCheckedChange={setEnabled} />
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="flex items-end gap-4 justify-between">
-          <div className="space-y-2">
-            <label
-              htmlFor="status-page-slug"
-              className="text-sm font-medium text-foreground"
-            >
-              Slug
-            </label>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground whitespace-nowrap">
-                /status/
-              </span>
-              <Input
-                id="status-page-slug"
-                value={slug}
-                onChange={(e) => setSlug(e.target.value)}
-                placeholder="your-workspace"
-              />
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      {/* Left column — Settings */}
+      <div className="lg:col-span-7 space-y-6">
+        {/* Header & toggle */}
+        <Card>
+          <div className="flex items-center justify-between p-6">
+            <div>
+              <h2 className="text-lg font-semibold flex items-center gap-2">
+                <Settings className="size-5 text-primary" />
+                Status Page
+              </h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                Configure your public status page visibility and product names.
+              </p>
             </div>
+            <Switch checked={enabled} onCheckedChange={setEnabled} />
           </div>
+        </Card>
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() =>
-              window.open(`/status/${slug}`, "_blank")
-            }
-            disabled={!slug}
-          >
-            <ExternalLink className="mr-2 size-4" />
-            Preview
-          </Button>
-        </div>
-
-        {items.length > 0 && (
-          <div className="space-y-3">
-            <h3 className="text-sm font-medium text-foreground">Products</h3>
-            {items.map((product) => {
-              const isExpanded = expandedProducts.has(product.productId);
-              return (
-                <div
-                  key={product.productId}
-                  className="rounded-md border p-4"
-                >
-                  <div className="flex items-center justify-between">
-                    <button
-                      type="button"
-                      onClick={() => toggleExpand(product.productId)}
-                      className="flex items-center gap-2 text-sm font-medium"
-                    >
-                      {isExpanded ? (
-                        <ChevronDown className="size-4" />
-                      ) : (
-                        <ChevronRight className="size-4" />
-                      )}
-                      {product.publicName}
-                    </button>
-                    <Switch
-                      checked={product.visible}
-                      onCheckedChange={(checked) =>
-                        updateProduct(product.productId, { visible: checked })
-                      }
+        <div
+          className={`transition-opacity space-y-6 ${!enabled ? "opacity-50 pointer-events-none" : ""}`}
+        >
+          {/* General Settings */}
+          <Card>
+            <div className="p-4 border-b">
+              <h3 className="text-xs font-medium uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                <Globe className="size-3.5" /> General Settings
+              </h3>
+            </div>
+            <CardContent className="p-6 space-y-4">
+              <div>
+                <label className="text-sm font-medium mb-2 block">
+                  URL Slug
+                </label>
+                <div className="flex gap-2">
+                  <div className="flex-1 flex items-center border rounded-md overflow-hidden focus-within:ring-1 focus-within:ring-ring transition-colors">
+                    <span className="px-3 py-2 text-muted-foreground border-r bg-muted/50 text-sm whitespace-nowrap">
+                      /status/
+                    </span>
+                    <Input
+                      value={slug}
+                      onChange={(e) => setSlug(e.target.value)}
+                      placeholder="your-workspace"
+                      className="border-0 shadow-none focus-visible:ring-0"
                     />
                   </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => window.open(`/status/${slug}`, "_blank")}
+                    disabled={!slug}
+                    className="shrink-0"
+                  >
+                    <ExternalLink className="mr-2 size-4" />
+                    Preview
+                  </Button>
+                </div>
+              </div>
 
-                  {isExpanded && (
-                    <div className="mt-4 space-y-4 pl-6">
-                      <div className="space-y-2">
-                        <label className="text-sm text-muted-foreground">
-                          Public name
-                        </label>
-                        <Input
-                          value={product.publicName}
-                          onChange={(e) =>
+              <div>
+                <label className="text-sm font-medium mb-2 block">
+                  Page Title
+                </label>
+                <Input
+                  value={pageTitle}
+                  onChange={(e) => setPageTitle(e.target.value)}
+                  placeholder="e.g. Warren Status"
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Branding & Identity */}
+          <Card>
+            <div className="p-4 border-b">
+              <h3 className="text-xs font-medium uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                <Palette className="size-3.5" /> Branding & Identity
+              </h3>
+            </div>
+            <CardContent className="p-6 space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Logo */}
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Logo</label>
+                  <input
+                    ref={logoInputRef}
+                    type="file"
+                    accept="image/png,image/svg+xml"
+                    className="hidden"
+                    onChange={(e) => handleImageUpload(e, setLogoUrl)}
+                  />
+                  {logoUrl ? (
+                    <div className="flex items-center gap-2 p-3 border rounded-xl">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={logoUrl}
+                        alt="Logo preview"
+                        className="h-10 w-auto rounded bg-white p-1"
+                      />
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setLogoUrl(null)}
+                      >
+                        <X className="size-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div
+                      className="border-2 border-dashed rounded-xl p-4 hover:border-primary/50 transition-colors cursor-pointer group"
+                      onClick={() => logoInputRef.current?.click()}
+                    >
+                      <div className="flex flex-col items-center gap-2 py-2">
+                        <Upload className="size-6 text-muted-foreground group-hover:text-primary transition-colors" />
+                        <p className="text-xs text-muted-foreground">
+                          PNG or SVG, max 2 MB
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Favicon */}
+                <div>
+                  <label className="text-sm font-medium mb-2 block">
+                    Favicon
+                  </label>
+                  <input
+                    ref={faviconInputRef}
+                    type="file"
+                    accept="image/png,image/svg+xml,image/x-icon"
+                    className="hidden"
+                    onChange={(e) => handleImageUpload(e, setFaviconUrl)}
+                  />
+                  {faviconUrl ? (
+                    <div className="flex items-center gap-2 p-3 border rounded-xl">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={faviconUrl}
+                        alt="Favicon preview"
+                        className="size-8 rounded bg-white p-0.5"
+                      />
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setFaviconUrl(null)}
+                      >
+                        <X className="size-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div
+                      className="border-2 border-dashed rounded-xl p-4 hover:border-primary/50 transition-colors cursor-pointer group"
+                      onClick={() => faviconInputRef.current?.click()}
+                    >
+                      <div className="flex flex-col items-center gap-2 py-2">
+                        <Upload className="size-6 text-muted-foreground group-hover:text-primary transition-colors" />
+                        <p className="text-xs text-muted-foreground">
+                          PNG, SVG, or ICO, max 2 MB
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Primary color */}
+              <div>
+                <label className="text-sm font-medium mb-2 block">
+                  Primary Color
+                </label>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="color"
+                    value={primaryColor || "#10b981"}
+                    onChange={(e) => setPrimaryColor(e.target.value)}
+                    className="size-10 cursor-pointer rounded bg-transparent border-none"
+                  />
+                  <Input
+                    value={primaryColor}
+                    onChange={(e) => setPrimaryColor(e.target.value)}
+                    placeholder="#10b981"
+                    className="max-w-28 font-mono"
+                  />
+                </div>
+              </div>
+
+              {/* Hide footer toggle */}
+              <div className="flex items-center gap-3 pt-4 border-t">
+                <Switch
+                  checked={hidePoweredBy}
+                  onCheckedChange={setHidePoweredBy}
+                />
+                <label className="text-sm text-muted-foreground">
+                  Hide &quot;Powered by Meridian&quot; footer
+                </label>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Product Visibility */}
+          <Card>
+            <div className="p-4 border-b flex items-center justify-between">
+              <h3 className="text-xs font-medium uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                <Package className="size-3.5" /> Product Visibility
+              </h3>
+              <span className="text-xs bg-muted text-muted-foreground px-2 py-1 rounded-full">
+                {items.filter((p) => p.visible).length} Active
+              </span>
+            </div>
+            {items.length > 0 ? (
+              <div className="divide-y">
+                {items.map((product) => {
+                  const isExpanded = expandedProducts.has(product.productId);
+                  return (
+                    <div key={product.productId}>
+                      <div className="p-4 flex items-center justify-between hover:bg-muted/40 transition-colors group">
+                        <button
+                          type="button"
+                          onClick={() => toggleExpand(product.productId)}
+                          className="flex items-center gap-3"
+                        >
+                          {isExpanded ? (
+                            <ChevronDown className="size-4 text-muted-foreground" />
+                          ) : (
+                            <ChevronRight className="size-4 text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
+                          )}
+                          <span
+                            className={`text-sm ${product.visible ? "" : "text-muted-foreground italic"}`}
+                          >
+                            {product.publicName}
+                          </span>
+                        </button>
+                        <Switch
+                          checked={product.visible}
+                          onCheckedChange={(checked) =>
                             updateProduct(product.productId, {
-                              publicName: e.target.value,
+                              visible: checked,
                             })
                           }
                         />
                       </div>
 
-                      {product.features.length > 0 && (
-                        <div className="space-y-2">
-                          <label className="text-sm text-muted-foreground">
-                            Features
-                          </label>
+                      {isExpanded && (
+                        <div className="px-6 pb-4 space-y-3">
                           <div className="space-y-2">
-                            {product.features.map((feature) => (
-                              <div
-                                key={feature.featureId}
-                                className="flex items-center gap-3 rounded border p-3"
-                              >
-                                <Switch
-                                  checked={feature.visible}
-                                  onCheckedChange={(checked) =>
-                                    updateFeature(
-                                      product.productId,
-                                      feature.featureId,
-                                      { visible: checked },
-                                    )
-                                  }
-                                />
-                                <Input
-                                  value={feature.publicName}
-                                  onChange={(e) =>
-                                    updateFeature(
-                                      product.productId,
-                                      feature.featureId,
-                                      { publicName: e.target.value },
-                                    )
-                                  }
-                                  className="flex-1"
-                                />
-                              </div>
-                            ))}
+                            <label className="text-sm text-muted-foreground">
+                              Public name
+                            </label>
+                            <Input
+                              value={product.publicName}
+                              onChange={(e) =>
+                                updateProduct(product.productId, {
+                                  publicName: e.target.value,
+                                })
+                              }
+                            />
                           </div>
+
+                          {product.features.length > 0 && (
+                            <div className="space-y-2">
+                              <label className="text-sm text-muted-foreground">
+                                Features
+                              </label>
+                              <div className="space-y-2">
+                                {product.features.map((feature) => (
+                                  <div
+                                    key={feature.featureId}
+                                    className="flex items-center gap-3 rounded border p-3"
+                                  >
+                                    <Switch
+                                      checked={feature.visible}
+                                      onCheckedChange={(checked) =>
+                                        updateFeature(
+                                          product.productId,
+                                          feature.featureId,
+                                          { visible: checked },
+                                        )
+                                      }
+                                    />
+                                    <Input
+                                      value={feature.publicName}
+                                      onChange={(e) =>
+                                        updateFeature(
+                                          product.productId,
+                                          feature.featureId,
+                                          { publicName: e.target.value },
+                                        )
+                                      }
+                                      className="flex-1"
+                                    />
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        )}
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="p-6">
+                <p className="text-sm text-muted-foreground">
+                  No products found. Create products first to configure the
+                  status page.
+                </p>
+              </div>
+            )}
+          </Card>
+        </div>
 
-        {items.length === 0 && (
-          <p className="text-sm text-muted-foreground">
-            No products found. Create products first to configure the status
-            page.
-          </p>
-        )}
-
-        <div className="flex items-center gap-3">
+        {/* Save actions */}
+        <div className="flex items-center justify-end gap-3 pt-2">
           <Button onClick={handleSave} disabled={isPending}>
-            {isPending ? "Saving..." : "Save"}
+            {isPending ? "Saving..." : "Save Changes"}
           </Button>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+
+      {/* Right column — Live Preview */}
+      <div className="lg:col-span-5">
+        <div className="sticky top-12">
+          <div className="flex items-center gap-2 mb-4 text-muted-foreground text-xs font-medium uppercase tracking-widest px-2">
+            <Eye className="size-3.5" /> Live Preview
+          </div>
+
+          <StatusPagePreview
+            pageTitle={pageTitle}
+            logoUrl={logoUrl}
+            primaryColor={primaryColor}
+            hidePoweredBy={hidePoweredBy}
+            items={items}
+            workspaceName={workspaceName}
+          />
+
+          <div className="mt-6 p-4 rounded-xl bg-primary/10 border border-primary/20 flex gap-3">
+            <Info className="size-5 text-primary shrink-0 mt-0.5" />
+            <p className="text-xs text-primary/80 leading-relaxed">
+              Saved changes will be applied instantly to your public status
+              page. Make sure to validate the URL slug.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

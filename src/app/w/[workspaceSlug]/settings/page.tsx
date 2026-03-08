@@ -101,6 +101,13 @@ export default async function SettingsPage({
             visible: f.visible,
           })),
         })),
+        whiteLabel: {
+          logoUrl: statusPageConfig.logoUrl,
+          faviconUrl: statusPageConfig.faviconUrl,
+          primaryColor: statusPageConfig.primaryColor,
+          pageTitle: statusPageConfig.pageTitle,
+          hidePoweredBy: statusPageConfig.hidePoweredBy,
+        },
       }
     : null;
 

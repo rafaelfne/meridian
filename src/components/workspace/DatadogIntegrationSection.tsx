@@ -4,13 +4,7 @@ import { useState, useTransition, useCallback } from "react";
 import { testDatadogConnection } from "@/modules/workspace/actions/test-datadog-connection";
 import { saveDatadogIntegration } from "@/modules/workspace/actions/save-datadog-integration";
 import { revokeDatadogIntegration } from "@/modules/workspace/actions/revoke-datadog-integration";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,9 +14,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { CheckCircle2, XCircle, Ban, Loader2 } from "lucide-react";
+import {
+  Database,
+  CheckCircle2,
+  XCircle,
+  Trash2,
+  RefreshCw,
+  ShieldCheck,
+  ExternalLink,
+} from "lucide-react";
 
 const SITES = [
   { value: "datadoghq.com", label: "datadoghq.com (US1)" },
@@ -30,33 +31,6 @@ const SITES = [
   { value: "us3.datadoghq.com", label: "us3.datadoghq.com (US3)" },
   { value: "us5.datadoghq.com", label: "us5.datadoghq.com (US5)" },
 ] as const;
-
-function StatusBadge({
-  status,
-}: {
-  status: "connected" | "invalid" | "revoked";
-}) {
-  switch (status) {
-    case "connected":
-      return (
-        <Badge className="border-green-200 bg-green-100 text-green-800">
-          <CheckCircle2 className="mr-1 size-3" /> Connected
-        </Badge>
-      );
-    case "invalid":
-      return (
-        <Badge variant="destructive">
-          <XCircle className="mr-1 size-3" /> Invalid
-        </Badge>
-      );
-    case "revoked":
-      return (
-        <Badge variant="secondary">
-          <Ban className="mr-1 size-3" /> Revoked
-        </Badge>
-      );
-  }
-}
 
 interface DatadogIntegrationSectionProps {
   workspaceSlug: string;
@@ -84,6 +58,8 @@ export function DatadogIntegrationSection({
   const [isTesting, startTestTransition] = useTransition();
   const [isSaving, startSaveTransition] = useTransition();
   const [isRevoking, startRevokeTransition] = useTransition();
+
+  const isConnected = existing && existing.status === "connected";
 
   const handleTest = useCallback(() => {
     setTestResult(null);
@@ -147,156 +123,211 @@ export function DatadogIntegrationSection({
   }, [workspaceSlug]);
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle>Datadog</CardTitle>
-            <CardDescription>
-              Connect your Datadog account to fetch monitor data automatically.
-            </CardDescription>
+    <div className="max-w-3xl space-y-6">
+      {/* Main integration card */}
+      <Card className="overflow-hidden">
+        {/* Header */}
+        <div className="p-6 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-start gap-4">
+            <div className="size-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 border border-primary/20">
+              <Database className="size-6 text-primary" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold">Datadog</h2>
+              <p className="text-sm text-muted-foreground mt-1 max-w-md">
+                Connect your Datadog account to fetch monitor data
+                automatically.
+              </p>
+            </div>
           </div>
-          {existing && <StatusBadge status={existing.status} />}
+
+          {isConnected && (
+            <div className="flex items-center gap-2 self-start sm:self-center px-3 py-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 rounded-lg text-[11px] font-bold tracking-wide uppercase">
+              <CheckCircle2 className="size-3.5" />
+              Connected
+            </div>
+          )}
         </div>
-      </CardHeader>
-      <CardContent>
-        {existing && existing.status !== "revoked" && (
-          <div className="mb-6 space-y-2 rounded-md border p-4">
-            <div className="text-sm">
-              <span className="font-medium">API Key:</span>{" "}
-              <code className="text-muted-foreground">
-                {existing.apiKeyLast4}
-              </code>
-            </div>
-            <div className="text-sm">
-              <span className="font-medium">App Key:</span>{" "}
-              <code className="text-muted-foreground">
-                {existing.appKeyLast4}
-              </code>
-            </div>
-            <div className="text-sm">
-              <span className="font-medium">Site:</span> {existing.site}
-            </div>
-            <div className="text-muted-foreground text-sm">
-              Connected{" "}
-              {new Date(existing.connectedAt).toLocaleDateString(undefined, {
-                year: "numeric",
-                month: "short",
-                day: "numeric",
-              })}
-            </div>
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={handleRevoke}
-              disabled={isRevoking}
-              className="mt-2"
-            >
-              {isRevoking ? "Revoking..." : "Revoke Integration"}
-            </Button>
-          </div>
-        )}
 
-        <form onSubmit={handleSave} className="max-w-md space-y-4">
-          <div className="space-y-2">
-            <label
-              htmlFor="dd-api-key"
-              className="text-foreground text-sm font-medium"
-            >
-              API Key
-            </label>
-            <Input
-              id="dd-api-key"
-              type="password"
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-              placeholder="Enter Datadog API key"
-            />
-            {errors.apiKey && (
-              <p className="text-destructive text-sm">{errors.apiKey[0]}</p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <label
-              htmlFor="dd-app-key"
-              className="text-foreground text-sm font-medium"
-            >
-              Application Key
-            </label>
-            <Input
-              id="dd-app-key"
-              type="password"
-              value={appKey}
-              onChange={(e) => setAppKey(e.target.value)}
-              placeholder="Enter Datadog Application key"
-            />
-            {errors.appKey && (
-              <p className="text-destructive text-sm">{errors.appKey[0]}</p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <label
-              htmlFor="dd-site"
-              className="text-foreground text-sm font-medium"
-            >
-              Site
-            </label>
-            <Select value={site} onValueChange={setSite}>
-              <SelectTrigger id="dd-site" className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {SITES.map((s) => (
-                  <SelectItem key={s.value} value={s.value}>
-                    {s.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {errors.site && (
-              <p className="text-destructive text-sm">{errors.site[0]}</p>
-            )}
-          </div>
-
-          {testResult === "success" && (
-            <div className="flex items-center gap-2 text-sm text-green-600">
-              <CheckCircle2 className="size-4" /> Credentials valid
-            </div>
-          )}
-          {testResult === "failed" && (
-            <div className="text-destructive flex items-center gap-2 text-sm">
-              <XCircle className="size-4" /> Validation failed
+        <div className="p-6 space-y-8">
+          {/* Active configuration panel */}
+          {existing && existing.status !== "revoked" && (
+            <div className="border rounded-xl overflow-hidden bg-muted/30">
+              <div className="px-5 py-3 bg-muted/50 border-b">
+                <span className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">
+                  Active Configuration
+                </span>
+              </div>
+              <div className="p-5 grid grid-cols-1 sm:grid-cols-2 gap-y-5 gap-x-12">
+                <div className="space-y-1">
+                  <label className="text-[11px] text-muted-foreground uppercase font-bold">
+                    API Key
+                  </label>
+                  <div className="text-sm font-mono">
+                    {existing.apiKeyLast4}
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[11px] text-muted-foreground uppercase font-bold">
+                    App Key
+                  </label>
+                  <div className="text-sm font-mono">
+                    {existing.appKeyLast4}
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[11px] text-muted-foreground uppercase font-bold">
+                    Site (Region)
+                  </label>
+                  <div className="text-sm">{existing.site}</div>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[11px] text-muted-foreground uppercase font-bold">
+                    Connected
+                  </label>
+                  <div className="text-sm">
+                    {new Date(existing.connectedAt).toLocaleDateString(
+                      undefined,
+                      {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                      },
+                    )}
+                  </div>
+                </div>
+              </div>
+              <div className="px-5 py-3 border-t">
+                <button
+                  type="button"
+                  onClick={handleRevoke}
+                  disabled={isRevoking}
+                  className="flex items-center gap-2 text-xs font-semibold text-destructive/80 hover:text-destructive transition-colors bg-destructive/5 hover:bg-destructive/10 px-3 py-1.5 rounded-lg border border-destructive/10 disabled:opacity-50"
+                >
+                  <Trash2 className="size-3.5" />
+                  {isRevoking ? "Revoking..." : "Revoke Integration"}
+                </button>
+              </div>
             </div>
           )}
 
-          <div className="flex items-center gap-3">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleTest}
-              disabled={isTesting || !apiKey || !appKey}
+          {/* Credential form */}
+          <form onSubmit={handleSave} className="space-y-6">
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium block">API Key</label>
+                <Input
+                  type="password"
+                  value={apiKey}
+                  onChange={(e) => setApiKey(e.target.value)}
+                  placeholder="Enter Datadog API key"
+                />
+                {errors.apiKey && (
+                  <p className="text-destructive text-sm">
+                    {errors.apiKey[0]}
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium block">
+                  Application Key
+                </label>
+                <Input
+                  type="password"
+                  value={appKey}
+                  onChange={(e) => setAppKey(e.target.value)}
+                  placeholder="Enter Datadog Application key"
+                />
+                {errors.appKey && (
+                  <p className="text-destructive text-sm">
+                    {errors.appKey[0]}
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium block">Site</label>
+                <Select value={site} onValueChange={setSite}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SITES.map((s) => (
+                      <SelectItem key={s.value} value={s.value}>
+                        {s.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {errors.site && (
+                  <p className="text-destructive text-sm">{errors.site[0]}</p>
+                )}
+              </div>
+            </div>
+
+            {testResult === "success" && (
+              <div className="flex items-center gap-2 text-sm text-emerald-600 dark:text-emerald-400">
+                <CheckCircle2 className="size-4" /> Credentials valid
+              </div>
+            )}
+            {testResult === "failed" && (
+              <div className="flex items-center gap-2 text-sm text-destructive">
+                <XCircle className="size-4" /> Validation failed
+              </div>
+            )}
+
+            {/* Action buttons */}
+            <div className="flex flex-col sm:flex-row items-center gap-3 pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleTest}
+                disabled={isTesting || !apiKey || !appKey}
+                className="w-full sm:w-auto"
+              >
+                <RefreshCw
+                  className={`mr-2 size-4 ${isTesting ? "animate-spin" : ""}`}
+                />
+                {isTesting ? "Testing..." : "Test Connection"}
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSaving || !apiKey || !appKey}
+                className="w-full sm:flex-1"
+              >
+                {isSaving
+                  ? "Saving..."
+                  : existing && existing.status !== "revoked"
+                    ? "Update"
+                    : "Save"}
+              </Button>
+            </div>
+          </form>
+        </div>
+      </Card>
+
+      {/* Security footer */}
+      <div className="px-4 flex items-start gap-4 text-muted-foreground">
+        <ShieldCheck className="size-5 text-primary/50 shrink-0 mt-0.5" />
+        <div className="space-y-1">
+          <h4 className="text-[11px] font-bold uppercase tracking-tight">
+            Data Security
+          </h4>
+          <p className="text-xs leading-relaxed">
+            Your credentials are encrypted (AES-256) and never displayed in
+            full. See our{" "}
+            <a
+              href="/docs"
+              className="text-primary hover:underline inline-flex items-center gap-1"
             >
-              {isTesting ? (
-                <>
-                  <Loader2 className="mr-2 size-4 animate-spin" />
-                  Testing...
-                </>
-              ) : (
-                "Test Connection"
-              )}
-            </Button>
-            <Button type="submit" disabled={isSaving || !apiKey || !appKey}>
-              {isSaving
-                ? "Saving..."
-                : existing && existing.status !== "revoked"
-                  ? "Update"
-                  : "Save"}
-            </Button>
-          </div>
-        </form>
-      </CardContent>
-    </Card>
+              security documentation{" "}
+              <ExternalLink className="size-2.5" />
+            </a>
+            .
+          </p>
+        </div>
+      </div>
+    </div>
   );
 }

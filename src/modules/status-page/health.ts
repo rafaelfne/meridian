@@ -40,7 +40,7 @@ export function fromDatadogStatus(
 export function overallBanner(status: HealthStatus): string {
   switch (status) {
     case "operational":
-      return "All systems operational";
+      return "All products are operational";
     case "partial_outage":
       return "Partial degradation";
     case "major_outage":
