@@ -155,62 +155,83 @@ export default async function PublicStatusPage({
     }
   }
 
-  const products: StatusProduct[] = config.products.map((sp) => {
-    const features: StatusFeature[] = sp.features.map((sf) => {
-      const systemStatuses = sf.feature.systems
-        .map((fs) => fromDatadogStatus(fs.system.datadogStatus))
-        .filter((s): s is HealthStatus => s !== null);
+  const products: StatusProduct[] = config.products
+    .map((sp) => {
+      const features: StatusFeature[] = sp.features
+        .map((sf) => {
+          const systemStatuses = sf.feature.systems
+            .map((fs) => fromDatadogStatus(fs.system.datadogStatus))
+            .filter((s): s is HealthStatus => s !== null);
 
-      let featureStatus: HealthStatus =
-        systemStatuses.length > 0 ? worstStatus(systemStatuses) : "operational";
+          const featureOverride = activeOverrides.find(
+            (o) => o.targetType === "feature" && o.targetId === sf.featureId,
+          );
 
-      const featureOverride = activeOverrides.find(
-        (o) => o.targetType === "feature" && o.targetId === sf.featureId,
+          // Hide features with no monitored systems and no active override
+          if (systemStatuses.length === 0 && !featureOverride) {
+            return null;
+          }
+
+          let featureStatus: HealthStatus =
+            systemStatuses.length > 0
+              ? worstStatus(systemStatuses)
+              : "operational";
+
+          let override: StatusOverrideData | undefined;
+          if (featureOverride) {
+            const mappedStatus = mapOverrideStatus(featureOverride.status);
+            override = {
+              status: mappedStatus,
+              message: featureOverride.message,
+            };
+            const overrideHealth = overrideToHealth(mappedStatus);
+            featureStatus = worstStatus([featureStatus, overrideHealth]);
+          }
+
+          return {
+            id: sf.featureId,
+            publicName: sf.publicName,
+            status: featureStatus,
+            ...(override && { override }),
+          };
+        })
+        .filter((f): f is StatusFeature => f !== null);
+
+      const featureStatuses = features.map((f) => f.status);
+      let productStatus: HealthStatus =
+        featureStatuses.length > 0
+          ? worstStatus(featureStatuses)
+          : "operational";
+
+      const productOverride = activeOverrides.find(
+        (o) => o.targetType === "product" && o.targetId === sp.productId,
       );
 
-      let override: StatusOverrideData | undefined;
-      if (featureOverride) {
-        const mappedStatus = mapOverrideStatus(featureOverride.status);
-        override = { status: mappedStatus, message: featureOverride.message };
+      let prodOverride: StatusOverrideData | undefined;
+      if (productOverride) {
+        const mappedStatus = mapOverrideStatus(productOverride.status);
+        prodOverride = {
+          status: mappedStatus,
+          message: productOverride.message,
+        };
         const overrideHealth = overrideToHealth(mappedStatus);
-        featureStatus = worstStatus([featureStatus, overrideHealth]);
+        productStatus = worstStatus([productStatus, overrideHealth]);
+      }
+
+      // Hide products with no visible features and no active override
+      if (features.length === 0 && !productOverride) {
+        return null;
       }
 
       return {
-        id: sf.featureId,
-        publicName: sf.publicName,
-        status: featureStatus,
-        ...(override && { override }),
+        id: sp.productId,
+        publicName: sp.publicName,
+        status: productStatus,
+        features,
+        ...(prodOverride && { override: prodOverride }),
       };
-    });
-
-    const featureStatuses = features.map((f) => f.status);
-    let productStatus: HealthStatus =
-      featureStatuses.length > 0 ? worstStatus(featureStatuses) : "operational";
-
-    const productOverride = activeOverrides.find(
-      (o) => o.targetType === "product" && o.targetId === sp.productId,
-    );
-
-    let prodOverride: StatusOverrideData | undefined;
-    if (productOverride) {
-      const mappedStatus = mapOverrideStatus(productOverride.status);
-      prodOverride = {
-        status: mappedStatus,
-        message: productOverride.message,
-      };
-      const overrideHealth = overrideToHealth(mappedStatus);
-      productStatus = worstStatus([productStatus, overrideHealth]);
-    }
-
-    return {
-      id: sp.productId,
-      publicName: sp.publicName,
-      status: productStatus,
-      features,
-      ...(prodOverride && { override: prodOverride }),
-    };
-  });
+    })
+    .filter((p): p is StatusProduct => p !== null);
 
   const productStatuses = products.map((p) => p.status);
   const overall =
