@@ -35,21 +35,17 @@ export default async function ProductsPage({
   ]);
 
   return (
-    <div className="container mx-auto max-w-7xl space-y-8 py-8 px-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Products</h1>
-          <p className="text-muted-foreground">
-            Organize systems under business-facing products
-          </p>
-        </div>
-        <CreateProductButton
-          workspaceSlug={workspaceSlug}
-          systems={systems}
-        />
-      </div>
-
-      <ProductsTable products={products} workspaceSlug={workspaceSlug} />
+    <div className="container mx-auto max-w-6xl py-8 px-4">
+      <ProductsTable
+        products={products}
+        workspaceSlug={workspaceSlug}
+        createButton={
+          <CreateProductButton
+            workspaceSlug={workspaceSlug}
+            systems={systems}
+          />
+        }
+      />
     </div>
   );
 }

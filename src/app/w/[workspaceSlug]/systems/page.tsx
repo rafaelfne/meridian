@@ -46,14 +46,7 @@ export default async function SystemsPage({
   ]);
 
   return (
-    <div className="container mx-auto max-w-7xl space-y-8 py-8 px-4">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Systems</h1>
-        <p className="text-muted-foreground">
-          Browse and search all registered systems
-        </p>
-      </div>
-
+    <div className="container mx-auto max-w-6xl py-8 px-4">
       <SystemsTable systems={systems} domains={domains} workspaceSlug={workspaceSlug} />
     </div>
   );
