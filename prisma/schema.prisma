@@ -17,12 +17,14 @@ model User {
   emailVerified DateTime?
   image         String?
   password      String?
+  tokenVersion  Int       @default(0)
   accounts          Account[]
   sessions          Session[]
   workspaceMembers  WorkspaceMember[]
   documents         Document[]
   documentRevisions DocumentRevision[]
   statusOverrides   StatusOverride[]
+  passwordResetTokens PasswordResetToken[]
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 }
@@ -59,6 +61,17 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  tokenHash String
+  expiresAt DateTime
+  usedAt    DateTime?
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([tokenHash])
 }
 
 // ── Workspace Models ────────────────────────────────────

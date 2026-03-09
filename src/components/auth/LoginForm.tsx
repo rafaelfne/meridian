@@ -2,9 +2,10 @@
 
 import { useActionState, useEffect, useState } from "react";
 import { signIn } from "next-auth/react";
+import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { Eye, EyeOff, Loader2, Check, X } from "lucide-react";
+import { Loader2, Check, X } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -15,6 +16,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { PasswordInput } from "@/components/auth/PasswordInput";
 import { register } from "@/modules/auth/actions/register";
 import { loginWithCredentials } from "@/modules/auth/actions/login";
 import styles from "./LoginForm.module.css";
@@ -29,55 +31,10 @@ const PASSWORD_RULES = [
   { test: (v: string) => /[0-9]/.test(v), label: "One number" },
 ] as const;
 
-function PasswordInput({
-  id,
-  name,
-  autoComplete,
-  required,
-  minLength,
-  value,
-  onChange,
-}: {
-  id: string;
-  name: string;
-  autoComplete: string;
-  required?: boolean;
-  minLength?: number;
-  value?: string;
-  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
-}) {
-  const [visible, setVisible] = useState(false);
-
-  return (
-    <div className={styles.passwordWrapper}>
-      <Input
-        id={id}
-        name={name}
-        type={visible ? "text" : "password"}
-        required={required}
-        minLength={minLength}
-        autoComplete={autoComplete}
-        value={value}
-        onChange={onChange}
-      />
-      <button
-        type="button"
-        className={styles.eyeButton}
-        onClick={() => setVisible((v) => !v)}
-        aria-label={visible ? "Hide password" : "Show password"}
-        tabIndex={-1}
-      >
-        {visible ? (
-          <EyeOff className={styles.eyeIcon} />
-        ) : (
-          <Eye className={styles.eyeIcon} />
-        )}
-      </button>
-    </div>
-  );
-}
-
 export function LoginForm() {
+  const searchParams = useSearchParams();
+  const resetSuccess = searchParams.get("reset") === "success";
+
   const [activeTab, setActiveTab] = useState("signin");
   const [password, setPassword] = useState("");
 
@@ -113,6 +70,12 @@ export function LoginForm() {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {resetSuccess && (
+            <p className={styles.success}>
+              Password reset successfully. Sign in with your new password.
+            </p>
+          )}
+
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className={styles.tabsList}>
               <TabsTrigger value="signin">Sign In</TabsTrigger>
@@ -139,6 +102,9 @@ export function LoginForm() {
                     required
                     autoComplete="current-password"
                   />
+                  <Link href="/forgot-password" className={styles.forgotLink}>
+                    Forgot password?
+                  </Link>
                 </div>
                 {loginResult.error && (
                   <p className={styles.error}>{loginResult.error}</p>

@@ -44,12 +44,36 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
   ],
   callbacks: {
     ...authConfig.callbacks,
-    jwt({ token, user, profile }) {
+    async jwt({ token, user, profile }) {
       if (user) {
         token.id = user.id;
+        // Stamp tokenVersion on sign-in
+        const dbUser = await prisma.user.findUnique({
+          where: { id: user.id! },
+          select: { tokenVersion: true },
+        });
+        token.tokenVersion = dbUser?.tokenVersion ?? 0;
+        token.tokenVersionCheckedAt = Date.now();
       }
       if (profile && "login" in profile) {
         token.username = profile.login as string;
+      }
+      // Periodically check tokenVersion (every 5 minutes)
+      if (
+        token.id &&
+        !user &&
+        (!token.tokenVersionCheckedAt ||
+          Date.now() - token.tokenVersionCheckedAt > 5 * 60 * 1000)
+      ) {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: token.id as string },
+          select: { tokenVersion: true },
+        });
+        if (!dbUser || dbUser.tokenVersion !== token.tokenVersion) {
+          // Token version mismatch — force re-authentication
+          return null as unknown as typeof token;
+        }
+        token.tokenVersionCheckedAt = Date.now();
       }
       return token;
     },
