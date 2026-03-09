@@ -278,8 +278,8 @@ describe("buildGraphData", () => {
 
   it("only includes services targeted by edges (not all services)", () => {
     const services = [
-      { slug: "api-orders", name: "API Orders", type: "API" },
-      { slug: "worker-sync", name: "Worker Sync", type: "WORKER" },
+      { slug: "api-orders", name: "API Orders", type: "API", datadogStatus: "OK" },
+      { slug: "worker-sync", name: "Worker Sync", type: "WORKER", datadogStatus: "OK" },
     ];
     const systems = [
       makeSystem({ id: "sys-1" }),
@@ -299,7 +299,7 @@ describe("buildGraphData", () => {
 
     const targetNode = result.nodes.find((n) => n.id === "sys-2")!;
     expect(targetNode.data.services).toEqual([
-      { slug: "api-orders", name: "API Orders", type: "API" },
+      { slug: "api-orders", name: "API Orders", type: "API", datadogStatus: "OK" },
     ]);
   });
 
@@ -361,9 +361,9 @@ describe("buildGraphData", () => {
 
   it("computes taller layout for nodes with targeted services", () => {
     const services = [
-      { slug: "api-a", name: "API A", type: "API" },
-      { slug: "api-b", name: "API B", type: "API" },
-      { slug: "worker-c", name: "Worker C", type: "WORKER" },
+      { slug: "api-a", name: "API A", type: "API", datadogStatus: "OK" },
+      { slug: "api-b", name: "API B", type: "API", datadogStatus: "OK" },
+      { slug: "worker-c", name: "Worker C", type: "WORKER", datadogStatus: "OK" },
     ];
     const systems = [
       makeSystem({ id: "sys-1" }),
