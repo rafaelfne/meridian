@@ -17,7 +17,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -36,16 +35,6 @@ import { getDashboardMetrics } from "@/modules/dashboard/services/get-dashboard-
 import { requireWorkspaceAccess } from "@/lib/workspace-context";
 import { timeAgo } from "@/lib/time";
 import { cn } from "@/lib/utils";
-
-const SEVERITY_VARIANT: Record<
-  string,
-  "default" | "secondary" | "destructive" | "outline"
-> = {
-  CRITICAL: "destructive",
-  HIGH: "destructive",
-  MEDIUM: "secondary",
-  LOW: "outline",
-};
 
 const STATUS_VARIANT: Record<
   string,

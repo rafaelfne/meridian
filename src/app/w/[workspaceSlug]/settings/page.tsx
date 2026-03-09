@@ -97,6 +97,20 @@ export default async function SettingsPage({
         })
       : [];
 
+  const apiKeysData =
+    ctx.role === "OWNER"
+      ? await prisma.apiKey.findMany({
+          where: {
+            workspaceId: ctx.workspaceId,
+            revokedAt: null,
+          },
+          include: {
+            creator: { select: { name: true } },
+          },
+          orderBy: { createdAt: "desc" },
+        })
+      : [];
+
   // Build a lookup for product/feature names
   const productNameMap = new Map(
     availableProducts.map((p) => [p.id, p.name]),
@@ -164,6 +178,17 @@ export default async function SettingsPage({
       }
     : null;
 
+  const apiKeys = apiKeysData.map((k) => ({
+    id: k.id,
+    name: k.name,
+    keyPrefix: k.keyPrefix,
+    createdAt: k.createdAt.toISOString(),
+    lastUsedAt: k.lastUsedAt?.toISOString() ?? null,
+    expiresAt: k.expiresAt?.toISOString() ?? null,
+    revokedAt: k.revokedAt?.toISOString() ?? null,
+    createdByName: k.creator.name,
+  }));
+
   return (
     <SettingsPageClient
       workspace={workspace}
@@ -179,6 +204,7 @@ export default async function SettingsPage({
       statusPageConfig={statusPageData}
       availableProducts={availableProducts}
       overrides={overridesData}
+      apiKeys={apiKeys}
     />
   );
 }

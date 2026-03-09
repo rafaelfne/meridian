@@ -62,6 +62,7 @@ export interface StatusPageData {
   workspaceName: string;
   overall: HealthStatus;
   products: StatusProduct[];
+  productDailyStatus: Record<string, HealthStatus[]>;
   lastUpdated: string;
   whiteLabel: {
     logoUrl: string | null;
@@ -70,8 +71,6 @@ export interface StatusPageData {
     hidePoweredBy: boolean;
   };
   incidentHistory: IncidentGroup[];
-  /** Per-product 90-day status: productId → array of 90 HealthStatus (index 0 = 90 days ago, 89 = today) */
-  productDailyStatus: Record<string, HealthStatus[]>;
 }
 
 export interface IncidentItem {
@@ -129,88 +128,26 @@ export default async function PublicStatusPage({
     notFound();
   }
 
-  // Fetch active (non-resolved, non-expired) overrides
-  const activeOverrides = await prisma.statusOverride.findMany({
-    where: {
-      workspaceId: config.workspaceId,
-      status: { not: "RESOLVED" },
-      expiresAt: { gt: new Date() },
-    },
-  });
-
-  function overrideToHealth(
-    status: "investigating" | "identified" | "monitoring",
-  ): HealthStatus {
-    return status === "monitoring" ? "partial_outage" : "major_outage";
-  }
-
-  function mapOverrideStatus(
-    dbStatus: string,
-  ): "investigating" | "identified" | "monitoring" {
-    switch (dbStatus) {
-      case "INVESTIGATING":
-        return "investigating";
-      case "IDENTIFIED":
-        return "identified";
-      default:
-        return "monitoring";
-    }
-  }
-
   const products: StatusProduct[] = config.products.map((sp) => {
     const features: StatusFeature[] = sp.features.map((sf) => {
       const systemStatuses = sf.feature.systems
         .map((fs) => fromDatadogStatus(fs.system.datadogStatus))
         .filter((s): s is HealthStatus => s !== null);
 
-      let featureStatus: HealthStatus =
-        systemStatuses.length > 0 ? worstStatus(systemStatuses) : "operational";
-
-      const featureOverride = activeOverrides.find(
-        (o) => o.targetType === "feature" && o.targetId === sf.featureId,
-      );
-
-      let override: StatusOverrideData | undefined;
-      if (featureOverride) {
-        const mappedStatus = mapOverrideStatus(featureOverride.status);
-        override = { status: mappedStatus, message: featureOverride.message };
-        const overrideHealth = overrideToHealth(mappedStatus);
-        featureStatus = worstStatus([featureStatus, overrideHealth]);
-      }
-
       return {
         id: sf.featureId,
         publicName: sf.publicName,
-        status: featureStatus,
-        ...(override && { override }),
+        status: systemStatuses.length > 0 ? worstStatus(systemStatuses) : "operational",
       };
     });
 
     const featureStatuses = features.map((f) => f.status);
-    let productStatus: HealthStatus =
-      featureStatuses.length > 0 ? worstStatus(featureStatuses) : "operational";
-
-    const productOverride = activeOverrides.find(
-      (o) => o.targetType === "product" && o.targetId === sp.productId,
-    );
-
-    let prodOverride: StatusOverrideData | undefined;
-    if (productOverride) {
-      const mappedStatus = mapOverrideStatus(productOverride.status);
-      prodOverride = {
-        status: mappedStatus,
-        message: productOverride.message,
-      };
-      const overrideHealth = overrideToHealth(mappedStatus);
-      productStatus = worstStatus([productStatus, overrideHealth]);
-    }
 
     return {
       id: sp.productId,
       publicName: sp.publicName,
-      status: productStatus,
+      status: featureStatuses.length > 0 ? worstStatus(featureStatuses) : "operational",
       features,
-      ...(prodOverride && { override: prodOverride }),
     };
   });
 
@@ -218,9 +155,10 @@ export default async function PublicStatusPage({
   const overall =
     productStatuses.length > 0 ? worstStatus(productStatuses) : "operational";
 
-  // Fetch incidents for the past 90 days
-  const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
-  const [incidents, manualOverrides] = await Promise.all([
+  // Fetch incidents and active overrides for the past 90 days
+  const now = new Date();
+  const ninetyDaysAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+  const [incidents, activeOverrides] = await Promise.all([
     prisma.incident.findMany({
       where: {
         workspaceId: config.workspaceId,
@@ -231,19 +169,58 @@ export default async function PublicStatusPage({
     prisma.statusOverride.findMany({
       where: {
         workspaceId: config.workspaceId,
-        createdAt: { gte: ninetyDaysAgo },
+        status: { not: "RESOLVED" },
+        expiresAt: { gt: now },
       },
-      orderBy: { createdAt: "desc" },
     }),
   ]);
 
-  // Build name lookup from status page config
-  const nameMap = new Map<string, string>();
-  for (const sp of config.products) {
-    nameMap.set(`product:${sp.productId}`, sp.publicName);
-    for (const sf of sp.features) {
-      nameMap.set(`feature:${sf.featureId}`, sf.publicName);
+  // Build override lookup by targetId
+  const overrideMap = new Map<string, StatusOverrideData>();
+  for (const o of activeOverrides) {
+    overrideMap.set(o.targetId, {
+      status: o.status.toLowerCase() as StatusOverrideData["status"],
+      message: o.message,
+    });
+  }
+
+  // Attach overrides to products and features
+  for (const product of products) {
+    const productOverride = overrideMap.get(product.id);
+    if (productOverride) product.override = productOverride;
+    for (const feature of product.features) {
+      const featureOverride = overrideMap.get(feature.id);
+      if (featureOverride) feature.override = featureOverride;
     }
+  }
+
+  // Compute daily status per product over the last 90 days
+  const productDailyStatus: Record<string, HealthStatus[]> = {};
+  const productIds = new Set(products.map((p) => p.id));
+  for (const pid of productIds) {
+    const days: HealthStatus[] = [];
+    for (let i = 89; i >= 0; i--) {
+      const dayStart = new Date(now);
+      dayStart.setHours(0, 0, 0, 0);
+      dayStart.setDate(dayStart.getDate() - i);
+      const dayEnd = new Date(dayStart);
+      dayEnd.setDate(dayEnd.getDate() + 1);
+
+      const dayIncidents = incidents.filter(
+        (inc) =>
+          inc.affectedProductId === pid &&
+          inc.startedAt < dayEnd &&
+          (inc.resolvedAt === null || inc.resolvedAt > dayStart),
+      );
+
+      if (dayIncidents.length === 0) {
+        days.push("operational");
+      } else {
+        const hasOutage = dayIncidents.some((inc) => inc.status === "OUTAGE");
+        days.push(hasOutage ? "major_outage" : "partial_outage");
+      }
+    }
+    productDailyStatus[pid] = days;
   }
 
   const incidentHistory: IncidentGroup[] = [];
@@ -266,123 +243,16 @@ export default async function PublicStatusPage({
     });
   }
 
-  const now = new Date();
-  for (const ov of manualOverrides) {
-    const publicName =
-      nameMap.get(`${ov.targetType}:${ov.targetId}`) ?? "Unknown";
-    const isResolved = ov.status === "RESOLVED";
-    const isExpired = !isResolved && ov.expiresAt <= now;
-    const resolvedAt = isResolved
-      ? ov.updatedAt
-      : isExpired
-        ? ov.expiresAt
-        : null;
-    const durationMinutes = resolvedAt
-      ? Math.round((resolvedAt.getTime() - ov.createdAt.getTime()) / 60_000)
-      : null;
-
-    const date = new Date(ov.createdAt);
-    const label = date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-    });
-    if (!monthMap.has(label)) monthMap.set(label, []);
-    monthMap.get(label)!.push({
-      id: ov.id,
-      publicName,
-      status:
-        ov.status === "MONITORING" ? "degraded" : "outage",
-      startedAt: ov.createdAt.toISOString(),
-      resolvedAt: resolvedAt?.toISOString() ?? null,
-      durationMinutes,
-    });
-  }
-
-  // Sort items within each month by startedAt descending
   for (const [label, items] of monthMap) {
-    items.sort(
-      (a, b) =>
-        new Date(b.startedAt).getTime() - new Date(a.startedAt).getTime(),
-    );
     incidentHistory.push({ label, incidents: items });
-  }
-
-  // Build per-product 90-day daily status from real incident data
-  const DAYS = 90;
-  const dayMs = 24 * 60 * 60 * 1000;
-  const todayStart = new Date();
-  todayStart.setHours(0, 0, 0, 0);
-  const startDay = new Date(todayStart.getTime() - (DAYS - 1) * dayMs);
-
-  // Map featureId → productId for resolving feature-level overrides
-  const featureToProduct = new Map<string, string>();
-  for (const sp of config.products) {
-    for (const sf of sp.features) {
-      featureToProduct.set(sf.featureId, sp.productId);
-    }
-  }
-
-  const productIds = new Set(products.map((p) => p.id));
-  const productDailyStatus: Record<string, HealthStatus[]> = {};
-  for (const pid of productIds) {
-    productDailyStatus[pid] = Array.from<HealthStatus>({ length: DAYS }).fill(
-      "operational",
-    );
-  }
-
-  function markDays(
-    productId: string,
-    start: Date,
-    end: Date,
-    health: HealthStatus,
-  ) {
-    const bars = productDailyStatus[productId];
-    if (!bars) return;
-    for (let d = 0; d < DAYS; d++) {
-      const dayStart = new Date(startDay.getTime() + d * dayMs);
-      const dayEnd = new Date(dayStart.getTime() + dayMs);
-      if (start < dayEnd && end > dayStart) {
-        if (
-          health === "major_outage" ||
-          (health === "partial_outage" && bars[d] !== "major_outage")
-        ) {
-          bars[d] = health;
-        }
-      }
-    }
-  }
-
-  // Auto-incidents
-  for (const inc of incidents) {
-    if (!productIds.has(inc.affectedProductId)) continue;
-    const health: HealthStatus =
-      inc.status === "DEGRADED" ? "partial_outage" : "major_outage";
-    const end = inc.resolvedAt ?? now;
-    markDays(inc.affectedProductId, inc.startedAt, end, health);
-  }
-
-  // Manual overrides
-  for (const ov of manualOverrides) {
-    let productId: string | undefined;
-    if (ov.targetType === "product") {
-      productId = ov.targetId;
-    } else {
-      productId = featureToProduct.get(ov.targetId);
-    }
-    if (!productId || !productIds.has(productId)) continue;
-    const health: HealthStatus =
-      ov.status === "MONITORING" ? "partial_outage" : "major_outage";
-    const isResolved = ov.status === "RESOLVED";
-    const isExpired = !isResolved && ov.expiresAt <= now;
-    const end = isResolved ? ov.updatedAt : isExpired ? ov.expiresAt : now;
-    markDays(productId, ov.createdAt, end, health);
   }
 
   const data: StatusPageData = {
     workspaceName: config.workspace.name,
     overall,
     products,
-    lastUpdated: new Date().toISOString(),
+    productDailyStatus,
+    lastUpdated: now.toISOString(),
     whiteLabel: {
       logoUrl: config.logoUrl,
       primaryColor: config.primaryColor,
@@ -390,7 +260,6 @@ export default async function PublicStatusPage({
       hidePoweredBy: config.hidePoweredBy,
     },
     incidentHistory,
-    productDailyStatus,
   };
 
   return <StatusPageClient data={data} />;

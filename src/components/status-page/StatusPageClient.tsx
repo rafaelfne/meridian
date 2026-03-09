@@ -134,11 +134,9 @@ function overrideDisplayLabel(status: StatusOverrideData["status"]): string {
       return "Identified";
     case "monitoring":
       return "Monitoring";
+    default:
+      return status;
   }
-}
-
-function overrideToHealth(status: StatusOverrideData["status"]): HealthStatus {
-  return status === "monitoring" ? "partial_outage" : "major_outage";
 }
 
 /* ── Component ───────────────────────────────── */

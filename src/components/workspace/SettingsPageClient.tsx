@@ -4,9 +4,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { GeneralSettingsSection } from "./GeneralSettingsSection";
 import { MembersSection } from "./MembersSection";
 import { DatadogIntegrationSection } from "./DatadogIntegrationSection";
+import { ApiKeysSection } from "./ApiKeysSection";
 import { StatusPageSection } from "./StatusPageSection";
 import { IncidentsSection } from "./IncidentsSection";
 import type { StatusPageConfigData, StatusOverrideItem } from "@/modules/status-page/types";
+import type { ApiKeyItem } from "@/modules/api-keys/types";
 
 interface SettingsPageClientProps {
   workspace: {
@@ -42,6 +44,7 @@ interface SettingsPageClientProps {
     features: Array<{ id: string; name: string }>;
   }>;
   overrides: StatusOverrideItem[];
+  apiKeys: ApiKeyItem[];
 }
 
 export function SettingsPageClient({
@@ -54,6 +57,7 @@ export function SettingsPageClient({
   statusPageConfig,
   availableProducts,
   overrides,
+  apiKeys,
 }: SettingsPageClientProps) {
   return (
     <div className="container mx-auto max-w-4xl space-y-8 py-8 px-4">
@@ -98,10 +102,16 @@ export function SettingsPageClient({
 
         {userRole === "OWNER" && (
           <TabsContent value="integrations" className="mt-6">
-            <DatadogIntegrationSection
-              workspaceSlug={workspaceSlug}
-              existing={datadogIntegration}
-            />
+            <div className="space-y-8">
+              <DatadogIntegrationSection
+                workspaceSlug={workspaceSlug}
+                existing={datadogIntegration}
+              />
+              <ApiKeysSection
+                workspaceSlug={workspaceSlug}
+                apiKeys={apiKeys}
+              />
+            </div>
           </TabsContent>
         )}
 

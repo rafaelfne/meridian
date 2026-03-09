@@ -25,6 +25,7 @@ model User {
   documentRevisions DocumentRevision[]
   statusOverrides   StatusOverride[]
   passwordResetTokens PasswordResetToken[]
+  apiKeys           ApiKey[]
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 }
@@ -74,6 +75,25 @@ model PasswordResetToken {
   @@index([tokenHash])
 }
 
+model ApiKey {
+  id          String    @id @default(cuid())
+  workspaceId String
+  name        String
+  keyHash     String
+  keyPrefix   String
+  lastUsedAt  DateTime?
+  expiresAt   DateTime?
+  revokedAt   DateTime?
+  createdBy   String
+  createdAt   DateTime  @default(now())
+
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  creator     User      @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+
+  @@index([keyHash])
+  @@index([workspaceId])
+}
+
 // ── Workspace Models ────────────────────────────────────
 
 enum WorkspaceRole {
@@ -98,6 +118,7 @@ model Workspace {
   statusPageConfig   StatusPageConfig?
   incidents          Incident[]
   statusOverrides    StatusOverride[]
+  apiKeys            ApiKey[]
 }
 
 model WorkspaceMember {
