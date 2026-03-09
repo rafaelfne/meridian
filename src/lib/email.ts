@@ -3,12 +3,11 @@ import { Resend } from "resend";
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function sendPasswordResetEmail(to: string, resetUrl: string) {
-  try {
-    await resend.emails.send({
-      from: "Meridian <noreply@mrdn.pro>",
-      to,
-      subject: "Reset your Meridian password",
-      html: `
+  await resend.emails.send({
+    from: "Meridian <noreply@mrdn.pro>",
+    to,
+    subject: "Reset your Meridian password",
+    html: `
       <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 2rem;">
         <h2 style="margin-bottom: 1rem;">Reset your password</h2>
         <p style="color: #555; line-height: 1.6;">
@@ -25,8 +24,5 @@ export async function sendPasswordResetEmail(to: string, resetUrl: string) {
         </p>
       </div>
     `,
-    });
-  } catch (error) {
-    console.error("Error sending password reset email:", error);
-  }
+  });
 }
